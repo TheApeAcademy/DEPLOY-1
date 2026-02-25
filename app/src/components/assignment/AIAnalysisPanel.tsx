@@ -1,16 +1,7 @@
+
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { 
-  Brain, 
-  CheckCircle, 
-  XCircle, 
-  Clock, 
-  TrendingUp, 
-  FileText,
-  DollarSign,
-  Sparkles,
-  RefreshCw
-} from 'lucide-react';
+import { Brain, CheckCircle, XCircle, Clock, TrendingUp, FileText, DollarSign, Sparkles, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -24,11 +15,7 @@ interface AIAnalysisPanelProps {
   onAnalysisFailed: (error: string) => void;
 }
 
-export function AIAnalysisPanel({ 
-  assignment, 
-  onAnalysisComplete, 
-  onAnalysisFailed 
-}: AIAnalysisPanelProps) {
+export function AIAnalysisPanel({ assignment, onAnalysisComplete, onAnalysisFailed }: AIAnalysisPanelProps) {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [progress, setProgress] = useState(0);
   const [analysis, setAnalysis] = useState<AIAnalysis | null>(assignment.analysis || null);
@@ -44,9 +31,7 @@ export function AIAnalysisPanel({
     setIsAnalyzing(true);
     setProgress(0);
     setError(null);
-
     const result = await analyzeAssignment(assignment, (p) => setProgress(p));
-
     if (result.success && result.analysis) {
       setAnalysis(result.analysis);
       onAnalysisComplete(result.analysis);
@@ -54,7 +39,6 @@ export function AIAnalysisPanel({
       setError(result.error || 'Analysis failed');
       onAnalysisFailed(result.error || 'Analysis failed');
     }
-
     setIsAnalyzing(false);
   };
 
@@ -62,9 +46,7 @@ export function AIAnalysisPanel({
     setIsAnalyzing(true);
     setProgress(0);
     setError(null);
-
     const result = await reanalyzeAssignment(assignment, (p) => setProgress(p));
-
     if (result.success && result.analysis) {
       setAnalysis(result.analysis);
       onAnalysisComplete(result.analysis);
@@ -72,7 +54,6 @@ export function AIAnalysisPanel({
       setError(result.error || 'Reanalysis failed');
       onAnalysisFailed(result.error || 'Reanalysis failed');
     }
-
     setIsAnalyzing(false);
   };
 
@@ -94,12 +75,7 @@ export function AIAnalysisPanel({
             Assignment Review
           </CardTitle>
           {analysis && !isAnalyzing && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleReReview}
-              className="text-gray-500 hover:text-emerald-700"
-            >
+            <Button variant="ghost" size="sm" onClick={handleReReview} className="text-gray-500 hover:text-emerald-700">
               <RefreshCw className="h-4 w-4 mr-1" />
               Re-analyze
             </Button>
@@ -108,28 +84,17 @@ export function AIAnalysisPanel({
       </CardHeader>
       <CardContent>
         <AnimatePresence mode="wait">
+
           {!analysis && !isAnalyzing && !error && (
-            <motion.div
-              key="start"
-              variants={fadeInUp}
-              initial="initial"
-              animate="animate"
-              exit="exit"
-              className="text-center py-8"
-            >
+            <motion.div key="start" variants={fadeInUp} initial="initial" animate="animate" exit="exit" className="text-center py-8">
               <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-emerald-100 to-green-100 flex items-center justify-center">
                 <Sparkles className="h-10 w-10 text-emerald-600" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                Ready to Analyze
-              </h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Ready to Analyze</h3>
               <p className="text-gray-600 mb-6 max-w-sm mx-auto">
                 Our team will evaluate your assignment to determine complexity, estimated cost, and feasibility.
               </p>
-              <Button
-                onClick={handleAnalyze}
-                className="h-12 px-8 rounded-xl bg-gradient-to-r from-emerald-700 to-emerald-500 hover:from-emerald-800 hover:to-emerald-600"
-              >
+              <Button onClick={handleAnalyze} className="h-12 px-8 rounded-xl bg-gradient-to-r from-emerald-700 to-emerald-500 hover:from-emerald-800 hover:to-emerald-600">
                 <Brain className="h-5 w-5 mr-2" />
                 Start Review
               </Button>
@@ -137,64 +102,31 @@ export function AIAnalysisPanel({
           )}
 
           {isAnalyzing && (
-            <motion.div
-              key="analyzing"
-              variants={fadeInUp}
-              initial="initial"
-              animate="animate"
-              exit="exit"
-              className="py-8"
-            >
+            <motion.div key="analyzing" variants={fadeInUp} initial="initial" animate="animate" exit="exit" className="py-8">
               <div className="text-center mb-6">
-                <motion.div
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
-                  className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-emerald-700 to-emerald-500 flex items-center justify-center"
-                >
+                <motion.div animate={{ rotate: 360 }} transition={{ duration: 2, repeat: Infinity, ease: 'linear' }} className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-emerald-700 to-emerald-500 flex items-center justify-center">
                   <Brain className="h-8 w-8 text-white" />
                 </motion.div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-1">
-                  Reviewing Assignment...
-                </h3>
-                <p className="text-gray-600">
-                  Evaluating complexity, requirements, and estimated effort
-                </p>
+                <h3 className="text-lg font-semibold text-gray-900 mb-1">Reviewing Assignment...</h3>
+                <p className="text-gray-600">Evaluating complexity, requirements, and estimated effort</p>
               </div>
-              
               <div className="space-y-4">
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Analysis Progress</span>
+                  <span className="text-gray-600">Progress</span>
                   <span className="font-medium text-emerald-700">{progress}%</span>
                 </div>
                 <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: `${progress}%` }}
-                    transition={{ duration: 0.3 }}
-                    className="h-full bg-gradient-to-r from-emerald-700 to-emerald-500 rounded-full"
-                  />
+                  <motion.div initial={{ width: 0 }} animate={{ width: `${progress}%` }} transition={{ duration: 0.3 }} className="h-full bg-gradient-to-r from-emerald-700 to-emerald-500 rounded-full" />
                 </div>
-                
                 <div className="grid grid-cols-3 gap-3 mt-6">
                   {[
                     { label: 'Scanning content', icon: FileText, active: progress >= 20 },
                     { label: 'Evaluating complexity', icon: TrendingUp, active: progress >= 50 },
                     { label: 'Calculating cost', icon: DollarSign, active: progress >= 80 },
                   ].map((step) => (
-                    <motion.div
-                      key={step.label}
-                      initial={{ opacity: 0.5 }}
-                      animate={{ opacity: step.active ? 1 : 0.5 }}
-                      className={`text-center p-3 rounded-xl ${
-                        step.active ? 'bg-emerald-50' : 'bg-gray-50'
-                      }`}
-                    >
-                      <step.icon className={`h-5 w-5 mx-auto mb-2 ${
-                        step.active ? 'text-emerald-600' : 'text-gray-400'
-                      }`} />
-                      <p className={`text-xs ${step.active ? 'text-emerald-700' : 'text-gray-500'}`}>
-                        {step.label}
-                      </p>
+                    <motion.div key={step.label} initial={{ opacity: 0.5 }} animate={{ opacity: step.active ? 1 : 0.5 }} className={`text-center p-3 rounded-xl ${step.active ? 'bg-emerald-50' : 'bg-gray-50'}`}>
+                      <step.icon className={`h-5 w-5 mx-auto mb-2 ${step.active ? 'text-emerald-600' : 'text-gray-400'}`} />
+                      <p className={`text-xs ${step.active ? 'text-emerald-700' : 'text-gray-500'}`}>{step.label}</p>
                     </motion.div>
                   ))}
                 </div>
@@ -203,26 +135,13 @@ export function AIAnalysisPanel({
           )}
 
           {error && !isAnalyzing && (
-            <motion.div
-              key="error"
-              variants={fadeInUp}
-              initial="initial"
-              animate="animate"
-              exit="exit"
-              className="text-center py-8"
-            >
+            <motion.div key="error" variants={fadeInUp} initial="initial" animate="animate" exit="exit" className="text-center py-8">
               <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-red-100 flex items-center justify-center">
                 <XCircle className="h-10 w-10 text-red-500" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                Analysis Failed
-              </h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Review Failed</h3>
               <p className="text-gray-600 mb-6">{error}</p>
-              <Button
-                onClick={handleAnalyze}
-                variant="outline"
-                className="rounded-xl"
-              >
+              <Button onClick={handleAnalyze} variant="outline" className="rounded-xl">
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Try Again
               </Button>
@@ -230,28 +149,15 @@ export function AIAnalysisPanel({
           )}
 
           {analysis && !isAnalyzing && (
-            <motion.div
-              key="result"
-              variants={fadeInUp}
-              initial="initial"
-              animate="animate"
-              exit="exit"
-              className="space-y-4"
-            >
-              <div className={`p-4 rounded-xl ${
-                analysis.inScope 
-                  ? 'bg-green-50 border border-green-200' 
-                  : 'bg-red-50 border border-red-200'
-              }`}>
+            <motion.div key="result" variants={fadeInUp} initial="initial" animate="animate" exit="exit" className="space-y-4">
+              <div className={`p-4 rounded-xl ${analysis.inScope ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
                 <div className="flex items-center gap-3">
                   {analysis.inScope ? (
                     <>
                       <CheckCircle className="h-6 w-6 text-green-500" />
                       <div>
                         <h4 className="font-semibold text-green-900">Assignment In Scope</h4>
-                        <p className="text-sm text-green-700">
-                          This assignment can be completed. Proceed to payment.
-                        </p>
+                        <p className="text-sm text-green-700">This assignment can be completed. Proceed to payment.</p>
                       </div>
                     </>
                   ) : (
@@ -259,9 +165,7 @@ export function AIAnalysisPanel({
                       <XCircle className="h-6 w-6 text-red-500" />
                       <div>
                         <h4 className="font-semibold text-red-900">Assignment Out of Scope</h4>
-                        <p className="text-sm text-red-700">
-                          {analysis.outOfScopeReason || 'This assignment cannot be completed.'}
-                        </p>
+                        <p className="text-sm text-red-700">{analysis.outOfScopeReason || 'This assignment cannot be completed.'}</p>
                       </div>
                     </>
                   )}
@@ -272,23 +176,18 @@ export function AIAnalysisPanel({
                 <motion.div variants={scaleIn} initial="initial" animate="animate" transition={{ delay: 0.1 }} className="p-4 rounded-xl bg-gray-50 text-center">
                   <TrendingUp className="h-5 w-5 mx-auto mb-2 text-emerald-600" />
                   <p className="text-xs text-gray-500 mb-1">Complexity</p>
-                  <Badge className={`capitalize ${getComplexityColor(analysis.complexity)}`}>
-                    {analysis.complexity}
-                  </Badge>
+                  <Badge className={`capitalize ${getComplexityColor(analysis.complexity)}`}>{analysis.complexity}</Badge>
                 </motion.div>
-
                 <motion.div variants={scaleIn} initial="initial" animate="animate" transition={{ delay: 0.2 }} className="p-4 rounded-xl bg-gray-50 text-center">
                   <Clock className="h-5 w-5 mx-auto mb-2 text-blue-500" />
                   <p className="text-xs text-gray-500 mb-1">Est. Hours</p>
                   <p className="font-semibold text-gray-900">{analysis.estimatedHours}h</p>
                 </motion.div>
-
                 <motion.div variants={scaleIn} initial="initial" animate="animate" transition={{ delay: 0.3 }} className="p-4 rounded-xl bg-gray-50 text-center">
                   <DollarSign className="h-5 w-5 mx-auto mb-2 text-green-500" />
                   <p className="text-xs text-gray-500 mb-1">Est. Cost</p>
                   <p className="font-semibold text-gray-900">£{analysis.estimatedCost.toFixed(2)}</p>
                 </motion.div>
-
                 <motion.div variants={scaleIn} initial="initial" animate="animate" transition={{ delay: 0.4 }} className="p-4 rounded-xl bg-gray-50 text-center">
                   <Sparkles className="h-5 w-5 mx-auto mb-2 text-yellow-500" />
                   <p className="text-xs text-gray-500 mb-1">Confidence</p>
@@ -296,48 +195,23 @@ export function AIAnalysisPanel({
                 </motion.div>
               </div>
 
-              {(analysis.wordCount || analysis.pageCount || analysis.requirements.length > 0) && (
+              {analysis.requirements.length > 0 && (
                 <div className="p-4 rounded-xl bg-emerald-50/50">
                   <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
                     <FileText className="h-4 w-4" />
-                    Additional Details
+                    Detected Requirements
                   </h4>
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    {analysis.wordCount && (
-                      <div>
-                        <span className="text-gray-500">Est. Word Count:</span>{' '}
-                        <span className="font-medium">{analysis.wordCount}</span>
-                      </div>
-                    )}
-                    {analysis.pageCount && (
-                      <div>
-                        <span className="text-gray-500">Est. Page Count:</span>{' '}
-                        <span className="font-medium">{analysis.pageCount}</span>
-                      </div>
-                    )}
-                    {analysis.subjectArea && (
-                      <div>
-                        <span className="text-gray-500">Subject Area:</span>{' '}
-                        <span className="font-medium">{analysis.subjectArea}</span>
-                      </div>
-                    )}
+                  <div className="flex flex-wrap gap-2">
+                    {analysis.requirements.map((req, idx) => (
+                      <Badge key={idx} variant="secondary" className="text-xs">{req}</Badge>
+                    ))}
                   </div>
-                  {analysis.requirements.length > 0 && (
-                    <div className="mt-3">
-                      <span className="text-gray-500 text-sm">Detected Requirements:</span>
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        {analysis.requirements.map((req, idx) => (
-                          <Badge key={idx} variant="secondary" className="text-xs">{req}</Badge>
-                        ))}
-                      </div>
-                    </div>
-                  )}
                 </div>
               )}
 
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Analysis Confidence</span>
+                  <span className="text-gray-600">Confidence</span>
                   <span className="font-medium text-emerald-700">{Math.round(analysis.confidence * 100)}%</span>
                 </div>
                 <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
@@ -345,18 +219,13 @@ export function AIAnalysisPanel({
                     initial={{ width: 0 }}
                     animate={{ width: `${analysis.confidence * 100}%` }}
                     transition={{ duration: 0.5, delay: 0.3 }}
-                    className={`h-full rounded-full ${
-                      analysis.confidence >= 0.8 
-                        ? 'bg-gradient-to-r from-green-500 to-green-400'
-                        : analysis.confidence >= 0.6
-                        ? 'bg-gradient-to-r from-yellow-500 to-yellow-400'
-                        : 'bg-gradient-to-r from-red-500 to-red-400'
-                    }`}
+                    className={`h-full rounded-full ${analysis.confidence >= 0.8 ? 'bg-gradient-to-r from-green-500 to-green-400' : 'bg-gradient-to-r from-yellow-500 to-yellow-400'}`}
                   />
                 </div>
               </div>
             </motion.div>
           )}
+
         </AnimatePresence>
       </CardContent>
     </Card>
