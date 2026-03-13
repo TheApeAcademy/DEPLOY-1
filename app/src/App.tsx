@@ -12,6 +12,7 @@ import { AdminDashboard } from '@/components/dashboard/AdminDashboard';
 import { RegionSelectionModal } from '@/components/RegionSelectionModal';
 import { AuthModal } from '@/components/AuthModal';
 import { ThemeProvider } from '@/contexts/ThemeContext';
+import { HelpWidget } from '@/components/HelpWidget';
 import type { User, UserPreferences, Assignment } from '@/types';
 import { supabase } from '@/lib/supabase';
 import { getCurrentUser, signOut, updateProfile } from '@/services/auth';
@@ -161,17 +162,19 @@ function AppInner() {
               onBack={() => setCurrentPage(user.role === 'admin' ? 'admin' : 'home')}
               onLogout={handleLogout}
               onUserUpdate={(updated) => setUser(updated)}
+              onOpenTerms={() => setCurrentPage('terms')}
+              onOpenPrivacy={() => setCurrentPage('privacy')}
             />
           </motion.div>
         )}
         {currentPage === 'terms' && (
           <motion.div key="terms" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <TermsPage onBack={() => setCurrentPage(user ? (user.role === 'admin' ? 'admin' : 'home') : 'landing')} />
+            <TermsPage onBack={() => setCurrentPage(user ? (user.role === 'admin' ? 'admin' : 'settings') : 'landing')} />
           </motion.div>
         )}
         {currentPage === 'privacy' && (
           <motion.div key="privacy" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <PrivacyPage onBack={() => setCurrentPage(user ? (user.role === 'admin' ? 'admin' : 'home') : 'landing')} />
+            <PrivacyPage onBack={() => setCurrentPage(user ? (user.role === 'admin' ? 'admin' : 'settings') : 'landing')} />
           </motion.div>
         )}
       </AnimatePresence>
@@ -179,6 +182,7 @@ function AppInner() {
       <RegionSelectionModal isOpen={showRegionModal} onClose={() => setShowRegionModal(false)} onComplete={handleRegionComplete} />
       <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} onAuth={handleAuth} />
       {showProfile && <div className="fixed inset-0 z-30" onClick={() => setShowProfile(false)} />}
+      <HelpWidget />
     </>
   );
 }

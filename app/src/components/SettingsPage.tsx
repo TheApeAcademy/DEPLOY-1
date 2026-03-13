@@ -10,7 +10,6 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import type { User } from '@/types';
 import { supabase } from '@/lib/supabase';
-import { updateProfile } from '@/services/auth';
 import { useTheme, type ThemeMode } from '@/contexts/ThemeContext';
 
 interface SettingsPageProps {
@@ -18,9 +17,11 @@ interface SettingsPageProps {
   onBack: () => void;
   onLogout: () => void;
   onUserUpdate: (updated: User) => void;
+  onOpenTerms: () => void;
+  onOpenPrivacy: () => void;
 }
 
-export function SettingsPage({ user, onBack, onLogout, onUserUpdate }: SettingsPageProps) {
+export function SettingsPage({ user, onBack, onLogout, onUserUpdate, onOpenTerms, onOpenPrivacy }: SettingsPageProps) {
   const { theme, setTheme } = useTheme();
 
   const [name, setName] = useState(user.name);
@@ -275,8 +276,8 @@ export function SettingsPage({ user, onBack, onLogout, onUserUpdate }: SettingsP
                 </button>
               </div>
               <div className="flex gap-4 pt-2">
-                <a href="/terms" target="_blank" className="text-sm text-emerald-600 dark:text-emerald-400 hover:underline">Terms & Conditions</a>
-                <a href="/privacy" target="_blank" className="text-sm text-emerald-600 dark:text-emerald-400 hover:underline">Privacy Policy</a>
+                <button onClick={onOpenTerms} className="text-sm text-emerald-600 dark:text-emerald-400 hover:underline text-left">Terms & Conditions</button>
+                <button onClick={onOpenPrivacy} className="text-sm text-emerald-600 dark:text-emerald-400 hover:underline text-left">Privacy Policy</button>
               </div>
             </CardContent>
           </Card>
