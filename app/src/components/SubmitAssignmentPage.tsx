@@ -127,6 +127,9 @@ export function SubmitAssignmentPage({ user, onBack, onSubmit, onLogin }: Submit
 
   const handleAnalysisComplete = (completedAnalysis: AIAnalysis) => {
     setAnalysis(completedAnalysis);
+setAnalysis(completedAnalysis);`:
+```
+setCurrentAssignment(prev => prev ? { ...prev, paymentAmount: completedAnalysis.estimatedCost } : prev);
     
     if (completedAnalysis.inScope) {
       toast.success('Analysis complete! Proceed to payment.');
