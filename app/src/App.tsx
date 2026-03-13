@@ -5,17 +5,21 @@ import { LandingPage } from '@/components/LandingPage';
 import { HomePage } from '@/components/HomePage';
 import { SubmitAssignmentPage } from '@/components/SubmitAssignmentPage';
 import { SuccessPage } from '@/components/SuccessPage';
+import { SettingsPage } from '@/components/SettingsPage';
+import { TermsPage } from '@/components/TermsPage';
+import { PrivacyPage } from '@/components/PrivacyPage';
 import { AdminDashboard } from '@/components/dashboard/AdminDashboard';
 import { RegionSelectionModal } from '@/components/RegionSelectionModal';
 import { AuthModal } from '@/components/AuthModal';
+import { ThemeProvider } from '@/contexts/ThemeContext';
 import type { User, UserPreferences, Assignment } from '@/types';
 import { supabase } from '@/lib/supabase';
 import { getCurrentUser, signOut, updateProfile } from '@/services/auth';
 import { logActivity } from '@/services/database';
 
-type Page = 'landing' | 'home' | 'submit' | 'success' | 'admin';
+type Page = 'landing' | 'home' | 'submit' | 'success' | 'admin' | 'settings' | 'terms' | 'privacy';
 
-function App() {
+function AppInner() {
   const [currentPage, setCurrentPage] = useState<Page>('landing');
   const [user, setUser] = useState<User | null>(null);
   const [preferences, setPreferences] = useState<UserPreferences | null>(null);
@@ -25,7 +29,6 @@ function App() {
   const [showProfile, setShowProfile] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Restore session on mount — Supabase persists session in localStorage automatically
   useEffect(() => {
     const restoreSession = async () => {
       const currentUser = await getCurrentUser();
@@ -46,7 +49,6 @@ function App() {
 
     restoreSession();
 
-    // Listen for auth state changes (tab switches, token refresh)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_OUT' || !session) {
         setUser(null);
@@ -124,9 +126,17 @@ function App() {
         )}
         {currentPage === 'home' && (
           <motion.div key="home" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <HomePage user={user} preferences={preferences} onSubmitAssignment={handleNavigateToSubmit}
-              onSelectRegion={() => setShowRegionModal(true)} onLogin={() => setShowAuthModal(true)}
-              onLogout={handleLogout} showProfile={showProfile} setShowProfile={setShowProfile} />
+            <HomePage
+              user={user}
+              preferences={preferences}
+              onSubmitAssignment={handleNavigateToSubmit}
+              onSelectRegion={() => setShowRegionModal(true)}
+              onLogin={() => setShowAuthModal(true)}
+              onLogout={handleLogout}
+              onOpenSettings={() => setCurrentPage('settings')}
+              showProfile={showProfile}
+              setShowProfile={setShowProfile}
+            />
           </motion.div>
         )}
         {currentPage === 'submit' && (
@@ -144,12 +154,40 @@ function App() {
             <AdminDashboard onLogout={handleLogout} />
           </motion.div>
         )}
+        {currentPage === 'settings' && user && (
+          <motion.div key="settings" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <SettingsPage
+              user={user}
+              onBack={() => setCurrentPage(user.role === 'admin' ? 'admin' : 'home')}
+              onLogout={handleLogout}
+              onUserUpdate={(updated) => setUser(updated)}
+            />
+          </motion.div>
+        )}
+        {currentPage === 'terms' && (
+          <motion.div key="terms" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <TermsPage onBack={() => setCurrentPage(user ? (user.role === 'admin' ? 'admin' : 'home') : 'landing')} />
+          </motion.div>
+        )}
+        {currentPage === 'privacy' && (
+          <motion.div key="privacy" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <PrivacyPage onBack={() => setCurrentPage(user ? (user.role === 'admin' ? 'admin' : 'home') : 'landing')} />
+          </motion.div>
+        )}
       </AnimatePresence>
 
       <RegionSelectionModal isOpen={showRegionModal} onClose={() => setShowRegionModal(false)} onComplete={handleRegionComplete} />
       <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} onAuth={handleAuth} />
       {showProfile && <div className="fixed inset-0 z-30" onClick={() => setShowProfile(false)} />}
     </>
+  );
+}
+
+function App() {
+  return (
+    <ThemeProvider>
+      <AppInner />
+    </ThemeProvider>
   );
 }
 
