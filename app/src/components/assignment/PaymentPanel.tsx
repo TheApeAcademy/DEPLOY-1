@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { CreditCard, CheckCircle, XCircle, Shield, ArrowRight, Loader2, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -19,111 +20,95 @@ interface PaymentPanelProps {
   onPaymentFailed: (error: string) => void;
 }
 
+const loadAndPay = (config: Record<string, unknown>) => {
+  return new Promise<void>((resolve, reject) => {
+    const existing = document.getElementById('flw-sdk');
+    if (existing) existing.remove();
+    const s = document.createElement('script');
+    s.id = 'flw-sdk';
+    s.src = 'https://checkout.flutterwave.com/v3.js';
+    s.onload = () => {
+      const flw = (window as any).FlutterwaveCheckout;
+      if (!flw) { reject(new Error('FlutterwaveCheckout not found')); return; }
+      flw(config);
+      resolve();
+    };
+    s.onerror = () => reject(new Error('Script failed to load'));
+    document.head.appendChild(s);
+  });
+};
+
 export function PaymentPanel({ assignment, user, onPaymentComplete, onPaymentFailed }: PaymentPanelProps) {
   const [step, setStep] = useState<'ready' | 'verifying' | 'success' | 'error'>('ready');
   const [error, setError] = useState<string | null>(null);
   const [txRef, setTxRef] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [sdkReady, setSdkReady] = useState(false);
 
-  useEffect(() => {
-    if ((window as any).FlutterwaveCheckout) { setSdkReady(true); return; }
-    const existing = document.getElementById('flutterwave-sdk');
-    if (existing) existing.remove();
-    const script = document.createElement('script');
-    script.id = 'flutterwave-sdk';
-    script.src = 'https://checkout.flutterwave.com/v3.js';
-    script.async = true;
-    script.onload = () => {
-      setTimeout(() => {
-        if ((window as any).FlutterwaveCheckout) {
-          setSdkReady(true);
-        } else {
-          setError('Payment system failed to initialise. Please refresh.');
-        }
-      }, 800);
-    };
-    script.onerror = () => {
-      setError('Payment system failed to load. Please refresh the page.');
-    };
-    document.head.appendChild(script);
-  }, []);
-
-  const handlePay = () => {
+  const handlePay = async () => {
     if (!assignment.paymentAmount) { toast.error('No payment amount set'); return; }
-    const flw = (window as any).FlutterwaveCheckout;
-    if (!flw) { toast.error('Payment system not ready. Please refresh the page.'); return; }
+    setIsLoading(true);
 
     const ref = generateTxRef();
     setTxRef(ref);
-    setIsLoading(true);
 
-    flw({
-      public_key: FLW_PUBLIC_KEY,
-      tx_ref: ref,
-      amount: assignment.paymentAmount,
-      currency: 'GBP',
-      payment_options: 'card',
-      customer: {
-        email: user.email,
-        name: user.name,
-      },
-      customizations: {
-        title: 'ApeAcademy',
-        description: `Payment for ${assignment.assignmentType || 'Assignment'} — ${assignment.courseName}`,
-        logo: 'https://deploy-1-p1ke.vercel.app/favicon.svg',
-      },
-      callback: async (response: any) => {
-        setIsLoading(false);
-        if (response.status === 'successful') {
-          setStep('verifying');
-          const { success, error: recErr } = await recordPayment(
-            assignment.id,
-            ref,
-            String(response.transaction_id),
-            assignment.paymentAmount!,
-          );
-          if (success) {
-            await logActivity({
-              type: 'payment_completed',
-              userId: user.id,
-              userName: user.name,
-              assignmentId: assignment.id,
-              description: `Payment of £${assignment.paymentAmount} completed. Ref: ${ref}`,
-            });
-            setStep('success');
-            onPaymentComplete({
-              id: ref,
-              assignmentId: assignment.id,
-              userId: user.id,
-              amount: assignment.paymentAmount!,
-              currency: 'GBP',
-              status: 'completed',
-              provider: 'wise',
-              createdAt: new Date().toISOString(),
-            });
+    try {
+      await loadAndPay({
+        public_key: FLW_PUBLIC_KEY,
+        tx_ref: ref,
+        amount: assignment.paymentAmount,
+        currency: 'GBP',
+        payment_options: 'card',
+        customer: { email: user.email, name: user.name },
+        customizations: {
+          title: 'ApeAcademy',
+          description: `Payment for ${assignment.assignmentType || 'Assignment'} — ${assignment.courseName}`,
+          logo: 'https://deploy-1-p1ke.vercel.app/favicon.svg',
+        },
+        callback: async (response: any) => {
+          setIsLoading(false);
+          if (response.status === 'successful') {
+            setStep('verifying');
+            const { success, error: recErr } = await recordPayment(
+              assignment.id, ref, String(response.transaction_id), assignment.paymentAmount!,
+            );
+            if (success) {
+              await logActivity({
+                type: 'payment_completed',
+                userId: user.id,
+                userName: user.name,
+                assignmentId: assignment.id,
+                description: `Payment of £${assignment.paymentAmount} completed. Ref: ${ref}`,
+              });
+              setStep('success');
+              onPaymentComplete({
+                id: ref,
+                assignmentId: assignment.id,
+                userId: user.id,
+                amount: assignment.paymentAmount!,
+                currency: 'GBP',
+                status: 'completed',
+                provider: 'wise',
+                createdAt: new Date().toISOString(),
+              });
+            } else {
+              setError(recErr || 'Payment received but not recorded. Contact support. Ref: ' + ref);
+              setStep('error');
+            }
           } else {
-            setError(recErr || 'Payment received but failed to record. Contact support with ref: ' + ref);
+            setError('Payment not completed. Please try again.');
             setStep('error');
+            onPaymentFailed('Payment not completed');
           }
-        } else {
-          setError('Payment was not completed. Please try again.');
-          setStep('error');
-          onPaymentFailed('Payment not completed');
-        }
-      },
-      onclose: () => {
-        setIsLoading(false);
-      },
-    });
+        },
+        onclose: () => { setIsLoading(false); },
+      });
+    } catch (err) {
+      setIsLoading(false);
+      toast.error('Could not load payment system. Check your connection and try again.');
+    }
   };
 
-  const handleRetry = () => {
-    setStep('ready');
-    setError(null);
-    setTxRef(null);
-    setIsLoading(false);
-  };
+  const handleRetry = () => { setStep('ready'); setError(null); setTxRef(null); setIsLoading(false); };
 
   return (
     <Card className="backdrop-blur-xl bg-white/80 border-white/20 shadow-lg overflow-hidden">
@@ -135,7 +120,6 @@ export function PaymentPanel({ assignment, user, onPaymentComplete, onPaymentFai
       </CardHeader>
       <CardContent>
         <AnimatePresence mode="wait">
-
           {step === 'ready' && (
             <motion.div key="ready" variants={fadeInUp} initial="initial" animate="animate" exit="exit" className="text-center py-8">
               <div className="w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center"
@@ -152,21 +136,16 @@ export function PaymentPanel({ assignment, user, onPaymentComplete, onPaymentFai
                 <Shield className="h-4 w-4 text-emerald-600" />
                 <span>Secured by Flutterwave — bank-level encryption</span>
               </div>
-              <Button
-                onClick={handlePay}
-                disabled={isLoading || !sdkReady}
+              <Button onClick={handlePay} disabled={isLoading}
                 className="h-12 px-8 rounded-xl text-white font-semibold"
-                style={{ background: 'linear-gradient(135deg,#047857,#10b981)' }}
-              >
+                style={{ background: 'linear-gradient(135deg,#047857,#10b981)' }}>
                 {isLoading
                   ? <Loader2 className="h-5 w-5 animate-spin" />
                   : <span className="flex items-center gap-2">Pay £{assignment.paymentAmount?.toFixed(2)} <ArrowRight className="h-5 w-5" /></span>
                 }
               </Button>
-              {!sdkReady && <p className="text-xs text-gray-400 mt-3">Loading payment system...</p>}
             </motion.div>
           )}
-
           {step === 'verifying' && (
             <motion.div key="verifying" variants={fadeInUp} initial="initial" animate="animate" exit="exit" className="text-center py-8">
               <motion.div animate={{ scale: [1, 1.1, 1] }} transition={{ duration: 1.5, repeat: Infinity }}
@@ -178,7 +157,6 @@ export function PaymentPanel({ assignment, user, onPaymentComplete, onPaymentFai
               <p className="text-sm text-gray-500">Just a moment while we confirm your payment.</p>
             </motion.div>
           )}
-
           {step === 'success' && (
             <motion.div key="success" variants={fadeInUp} initial="initial" animate="animate" exit="exit" className="text-center py-8">
               <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', duration: 0.5 }}
@@ -199,7 +177,6 @@ export function PaymentPanel({ assignment, user, onPaymentComplete, onPaymentFai
               </div>
             </motion.div>
           )}
-
           {step === 'error' && (
             <motion.div key="error" variants={fadeInUp} initial="initial" animate="animate" exit="exit" className="text-center py-8">
               <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-red-100 flex items-center justify-center">
@@ -212,7 +189,6 @@ export function PaymentPanel({ assignment, user, onPaymentComplete, onPaymentFai
               </Button>
             </motion.div>
           )}
-
         </AnimatePresence>
       </CardContent>
     </Card>
