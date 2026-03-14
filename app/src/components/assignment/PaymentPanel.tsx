@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { CreditCard, CheckCircle, XCircle, Shield, ArrowRight, Loader2, RefreshCw } from 'lucide-react';
@@ -30,29 +29,30 @@ export function PaymentPanel({ assignment, user, onPaymentComplete, onPaymentFai
   useEffect(() => {
     if ((window as any).FlutterwaveCheckout) { setSdkReady(true); return; }
     const existing = document.getElementById('flutterwave-sdk');
-    if (existing) { existing.remove(); }
+    if (existing) existing.remove();
     const script = document.createElement('script');
     script.id = 'flutterwave-sdk';
     script.src = 'https://checkout.flutterwave.com/v3.js';
     script.async = true;
     script.onload = () => {
-      setTimeout(() => setSdkReady(true), 500);
+      setTimeout(() => {
+        if ((window as any).FlutterwaveCheckout) {
+          setSdkReady(true);
+        } else {
+          setError('Payment system failed to initialise. Please refresh.');
+        }
+      }, 800);
     };
     script.onerror = () => {
-      setError('Payment system failed to load. Please refresh.');
+      setError('Payment system failed to load. Please refresh the page.');
     };
     document.head.appendChild(script);
   }, []);
 
   const handlePay = () => {
-    if (!sdkReady) { toast.error('Payment system not ready. Please refresh.'); return; }
     if (!assignment.paymentAmount) { toast.error('No payment amount set'); return; }
-
     const flw = (window as any).FlutterwaveCheckout;
-    if (!flw) {
-      toast.error('Payment system unavailable. Please refresh the page.');
-      return;
-    }
+    if (!flw) { toast.error('Payment system not ready. Please refresh the page.'); return; }
 
     const ref = generateTxRef();
     setTxRef(ref);
@@ -107,7 +107,6 @@ export function PaymentPanel({ assignment, user, onPaymentComplete, onPaymentFai
             setStep('error');
           }
         } else {
-          setIsLoading(false);
           setError('Payment was not completed. Please try again.');
           setStep('error');
           onPaymentFailed('Payment not completed');
