@@ -13,6 +13,7 @@ import { RegionSelectionModal } from '@/components/RegionSelectionModal';
 import { AuthModal } from '@/components/AuthModal';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import { HelpWidget } from '@/components/HelpWidget';
+import { recordPayment } from '@/services/payment';
 import type { User, UserPreferences, Assignment } from '@/types';
 import { supabase } from '@/lib/supabase';
 import { getCurrentUser, signOut, updateProfile } from '@/services/auth';
@@ -29,6 +30,29 @@ function AppInner() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Handle Flutterwave redirect return
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('flw_return') === '1') {
+      const status = params.get('status');
+      const ref = localStorage.getItem('flw_pending_ref');
+      const assignmentId = localStorage.getItem('flw_pending_assignment');
+      const amount = Number(localStorage.getItem('flw_pending_amount'));
+      const transactionId = params.get('transaction_id') || ref || '';
+      if (status === 'successful' && ref && assignmentId) {
+        recordPayment(assignmentId, ref, transactionId, amount).then(() => {
+          toast.success('Payment confirmed! Your assignment is now in progress.');
+          localStorage.removeItem('flw_pending_ref');
+          localStorage.removeItem('flw_pending_assignment');
+          localStorage.removeItem('flw_pending_amount');
+        });
+      } else if (status === 'cancelled') {
+        toast.error('Payment was cancelled.');
+      }
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, []);
 
   useEffect(() => {
     const restoreSession = async () => {
