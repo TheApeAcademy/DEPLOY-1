@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { CreditCard, CheckCircle, XCircle, Shield, ArrowRight, Loader2, RefreshCw } from 'lucide-react';
@@ -19,42 +20,43 @@ interface PaymentPanelProps {
   onPaymentFailed: (error: string) => void;
 }
 
-const loadFlutterwaveScript = (): Promise<void> => {
-  return new Promise((resolve, reject) => {
-    if (document.getElementById('flutterwave-sdk')) { resolve(); return; }
-    const script = document.createElement('script');
-    script.id = 'flutterwave-sdk';
-    script.src = 'https://checkout.flutterwave.com/v3.js';
-    script.onload = () => resolve();
-    script.onerror = () => reject(new Error('Failed to load Flutterwave'));
-    document.head.appendChild(script);
-  });
-};
-
 export function PaymentPanel({ assignment, user, onPaymentComplete, onPaymentFailed }: PaymentPanelProps) {
-  const [step, setStep] = useState<'ready' | 'processing' | 'verifying' | 'success' | 'error'>('ready');
+  const [step, setStep] = useState<'ready' | 'verifying' | 'success' | 'error'>('ready');
   const [error, setError] = useState<string | null>(null);
   const [txRef, setTxRef] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [sdkReady, setSdkReady] = useState(false);
 
   useEffect(() => {
-    loadFlutterwaveScript()
-      .then(() => setSdkReady(true))
-      .catch(() => setError('Payment system failed to load. Please refresh.'));
+    if ((window as any).FlutterwaveCheckout) { setSdkReady(true); return; }
+    const existing = document.getElementById('flutterwave-sdk');
+    if (existing) { existing.remove(); }
+    const script = document.createElement('script');
+    script.id = 'flutterwave-sdk';
+    script.src = 'https://checkout.flutterwave.com/v3.js';
+    script.async = true;
+    script.onload = () => {
+      setTimeout(() => setSdkReady(true), 500);
+    };
+    script.onerror = () => {
+      setError('Payment system failed to load. Please refresh.');
+    };
+    document.head.appendChild(script);
   }, []);
 
-  const handlePay = async () => {
+  const handlePay = () => {
     if (!sdkReady) { toast.error('Payment system not ready. Please refresh.'); return; }
     if (!assignment.paymentAmount) { toast.error('No payment amount set'); return; }
+
+    const flw = (window as any).FlutterwaveCheckout;
+    if (!flw) {
+      toast.error('Payment system unavailable. Please refresh the page.');
+      return;
+    }
 
     const ref = generateTxRef();
     setTxRef(ref);
     setIsLoading(true);
-    setStep('processing');
-
-    const flw = (window as any).FlutterwaveCheckout;
-    if (!flw) { setError('Payment system unavailable'); setStep('error'); setIsLoading(false); return; }
 
     flw({
       public_key: FLW_PUBLIC_KEY,
@@ -72,12 +74,13 @@ export function PaymentPanel({ assignment, user, onPaymentComplete, onPaymentFai
         logo: 'https://deploy-1-p1ke.vercel.app/favicon.svg',
       },
       callback: async (response: any) => {
-        setStep('verifying');
+        setIsLoading(false);
         if (response.status === 'successful') {
+          setStep('verifying');
           const { success, error: recErr } = await recordPayment(
             assignment.id,
             ref,
-            response.transaction_id,
+            String(response.transaction_id),
             assignment.paymentAmount!,
           );
           if (success) {
@@ -89,7 +92,6 @@ export function PaymentPanel({ assignment, user, onPaymentComplete, onPaymentFai
               description: `Payment of £${assignment.paymentAmount} completed. Ref: ${ref}`,
             });
             setStep('success');
-            setIsLoading(false);
             onPaymentComplete({
               id: ref,
               assignmentId: assignment.id,
@@ -101,23 +103,18 @@ export function PaymentPanel({ assignment, user, onPaymentComplete, onPaymentFai
               createdAt: new Date().toISOString(),
             });
           } else {
-            setError(recErr || 'Payment recorded but DB update failed. Contact support.');
+            setError(recErr || 'Payment received but failed to record. Contact support with ref: ' + ref);
             setStep('error');
-            setIsLoading(false);
           }
         } else {
+          setIsLoading(false);
           setError('Payment was not completed. Please try again.');
           setStep('error');
-          setIsLoading(false);
           onPaymentFailed('Payment not completed');
         }
       },
       onclose: () => {
-        if (step === 'processing') {
-          setStep('ready');
-          setIsLoading(false);
-          toast.info('Payment cancelled');
-        }
+        setIsLoading(false);
       },
     });
   };
@@ -140,7 +137,7 @@ export function PaymentPanel({ assignment, user, onPaymentComplete, onPaymentFai
       <CardContent>
         <AnimatePresence mode="wait">
 
-          {(step === 'ready' || step === 'processing') && (
+          {step === 'ready' && (
             <motion.div key="ready" variants={fadeInUp} initial="initial" animate="animate" exit="exit" className="text-center py-8">
               <div className="w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center"
                 style={{ background: 'linear-gradient(135deg,#d1fae5,#a7f3d0)' }}>
@@ -164,7 +161,7 @@ export function PaymentPanel({ assignment, user, onPaymentComplete, onPaymentFai
               >
                 {isLoading
                   ? <Loader2 className="h-5 w-5 animate-spin" />
-                  : <>Pay £{assignment.paymentAmount?.toFixed(2)} <ArrowRight className="h-5 w-5 ml-2" /></>
+                  : <span className="flex items-center gap-2">Pay £{assignment.paymentAmount?.toFixed(2)} <ArrowRight className="h-5 w-5" /></span>
                 }
               </Button>
               {!sdkReady && <p className="text-xs text-gray-400 mt-3">Loading payment system...</p>}
@@ -173,12 +170,9 @@ export function PaymentPanel({ assignment, user, onPaymentComplete, onPaymentFai
 
           {step === 'verifying' && (
             <motion.div key="verifying" variants={fadeInUp} initial="initial" animate="animate" exit="exit" className="text-center py-8">
-              <motion.div
-                animate={{ scale: [1, 1.1, 1] }}
-                transition={{ duration: 1.5, repeat: Infinity }}
+              <motion.div animate={{ scale: [1, 1.1, 1] }} transition={{ duration: 1.5, repeat: Infinity }}
                 className="w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center"
-                style={{ background: 'linear-gradient(135deg,#047857,#10b981)' }}
-              >
+                style={{ background: 'linear-gradient(135deg,#047857,#10b981)' }}>
                 <Loader2 className="h-10 w-10 text-white animate-spin" />
               </motion.div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Confirming Payment...</h3>
@@ -188,12 +182,8 @@ export function PaymentPanel({ assignment, user, onPaymentComplete, onPaymentFai
 
           {step === 'success' && (
             <motion.div key="success" variants={fadeInUp} initial="initial" animate="animate" exit="exit" className="text-center py-8">
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ type: 'spring', duration: 0.5 }}
-                className="w-20 h-20 mx-auto mb-4 rounded-full bg-emerald-100 flex items-center justify-center"
-              >
+              <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', duration: 0.5 }}
+                className="w-20 h-20 mx-auto mb-4 rounded-full bg-emerald-100 flex items-center justify-center">
                 <CheckCircle className="h-10 w-10 text-emerald-600" />
               </motion.div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Payment Confirmed!</h3>
