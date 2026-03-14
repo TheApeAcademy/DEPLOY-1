@@ -1,12 +1,16 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { CreditCard, CheckCircle, XCircle, Lock, Shield, ArrowRight, Loader2, RefreshCw, ExternalLink, Clock } from 'lucide-react';
+import { CreditCard, CheckCircle, XCircle, Shield, ArrowRight, Loader2, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { toast } from 'sonner';
 import type { Payment, Assignment } from '@/types';
-import { initiatePayment, verifyPayment } from '@/services/payment';
+import { generateTxRef, recordPayment } from '@/services/payment';
+import { logActivity } from '@/services/database';
 import { fadeInUp } from '@/data/constants';
+
+const FLW_PUBLIC_KEY = import.meta.env.VITE_FLW_PUBLIC_KEY as string;
 
 interface PaymentPanelProps {
   assignment: Assignment;
@@ -15,104 +19,114 @@ interface PaymentPanelProps {
   onPaymentFailed: (error: string) => void;
 }
 
+const loadFlutterwaveScript = (): Promise<void> => {
+  return new Promise((resolve, reject) => {
+    if (document.getElementById('flutterwave-sdk')) { resolve(); return; }
+    const script = document.createElement('script');
+    script.id = 'flutterwave-sdk';
+    script.src = 'https://checkout.flutterwave.com/v3.js';
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error('Failed to load Flutterwave'));
+    document.head.appendChild(script);
+  });
+};
+
 export function PaymentPanel({ assignment, user, onPaymentComplete, onPaymentFailed }: PaymentPanelProps) {
-  const [step, setStep] = useState<'ready' | 'checkout' | 'verifying' | 'success' | 'error'>('ready');
-  const [txRef, setTxRef] = useState<string | null>(null);
-  const [paymentId, setPaymentId] = useState<string | null>(null);
-  const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null);
+  const [step, setStep] = useState<'ready' | 'processing' | 'verifying' | 'success' | 'error'>('ready');
   const [error, setError] = useState<string | null>(null);
+  const [txRef, setTxRef] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [pollCount, setPollCount] = useState(0);
-  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [sdkReady, setSdkReady] = useState(false);
 
-  // Stop polling on unmount
-  useEffect(() => () => { if (pollRef.current) clearInterval(pollRef.current); }, []);
+  useEffect(() => {
+    loadFlutterwaveScript()
+      .then(() => setSdkReady(true))
+      .catch(() => setError('Payment system failed to load. Please refresh.'));
+  }, []);
 
-  const handleStartPayment = async () => {
+  const handlePay = async () => {
+    if (!sdkReady) { toast.error('Payment system not ready. Please refresh.'); return; }
+    if (!assignment.paymentAmount) { toast.error('No payment amount set'); return; }
+
+    const ref = generateTxRef();
+    setTxRef(ref);
     setIsLoading(true);
-    setError(null);
+    setStep('processing');
 
-    if (!assignment.paymentAmount) {
-      setError('No payment amount set');
-      setStep('error');
-      setIsLoading(false);
-      return;
-    }
+    const flw = (window as any).FlutterwaveCheckout;
+    if (!flw) { setError('Payment system unavailable'); setStep('error'); setIsLoading(false); return; }
 
-    const result = await initiatePayment(assignment.id, assignment.paymentAmount);
-
-    if (!result.success) {
-      setError(result.error || 'Failed to create payment');
-      setStep('error');
-      onPaymentFailed(result.error || 'Failed');
-      setIsLoading(false);
-      return;
-    }
-
-    setTxRef(result.txRef!);
-    setPaymentId(result.paymentId!);
-    setCheckoutUrl(result.checkoutUrl || null);
-    setStep('checkout');
-    setIsLoading(false);
-
-    // Open Wise checkout in new tab
-    if (result.checkoutUrl) {
-      window.open(result.checkoutUrl, '_blank');
-    }
-  };
-
-  const handleOpenCheckout = () => {
-    if (checkoutUrl) window.open(checkoutUrl, '_blank');
-  };
-
-  const handleVerify = async () => {
-    if (!txRef) return;
-    setStep('verifying');
-    setIsLoading(true);
-    setPollCount(0);
-
-    // Poll every 5 seconds for up to 10 minutes
-    pollRef.current = setInterval(async () => {
-      setPollCount(c => c + 1);
-      const result = await verifyPayment(txRef);
-
-      if (result.success && result.status === 'completed') {
-        if (pollRef.current) clearInterval(pollRef.current);
-        setStep('success');
-        setIsLoading(false);
-        onPaymentComplete({
-          id: paymentId || txRef,
-          assignmentId: assignment.id,
-          userId: user.id,
-          amount: assignment.paymentAmount!,
-          currency: 'GBP',
-          status: 'completed',
-          provider: 'wise',
-          createdAt: new Date().toISOString(),
-        });
-      } else if (result.status === 'failed') {
-        if (pollRef.current) clearInterval(pollRef.current);
-        setError('Payment failed or expired on Wise');
-        setStep('error');
-        setIsLoading(false);
-        onPaymentFailed('Payment failed');
-      } else if (pollCount >= 120) { // 10 minutes
-        if (pollRef.current) clearInterval(pollRef.current);
-        setError('Verification timed out. Contact support with your order ID.');
-        setStep('error');
-        setIsLoading(false);
-      }
-    }, 5000);
+    flw({
+      public_key: FLW_PUBLIC_KEY,
+      tx_ref: ref,
+      amount: assignment.paymentAmount,
+      currency: 'GBP',
+      payment_options: 'card',
+      customer: {
+        email: user.email,
+        name: user.name,
+      },
+      customizations: {
+        title: 'ApeAcademy',
+        description: `Payment for ${assignment.assignmentType || 'Assignment'} — ${assignment.courseName}`,
+        logo: 'https://deploy-1-p1ke.vercel.app/favicon.svg',
+      },
+      callback: async (response: any) => {
+        setStep('verifying');
+        if (response.status === 'successful') {
+          const { success, error: recErr } = await recordPayment(
+            assignment.id,
+            ref,
+            response.transaction_id,
+            assignment.paymentAmount!,
+          );
+          if (success) {
+            await logActivity({
+              type: 'payment_completed',
+              userId: user.id,
+              userName: user.name,
+              assignmentId: assignment.id,
+              description: `Payment of £${assignment.paymentAmount} completed. Ref: ${ref}`,
+            });
+            setStep('success');
+            setIsLoading(false);
+            onPaymentComplete({
+              id: ref,
+              assignmentId: assignment.id,
+              userId: user.id,
+              amount: assignment.paymentAmount!,
+              currency: 'GBP',
+              status: 'completed',
+              provider: 'wise',
+              createdAt: new Date().toISOString(),
+            });
+          } else {
+            setError(recErr || 'Payment recorded but DB update failed. Contact support.');
+            setStep('error');
+            setIsLoading(false);
+          }
+        } else {
+          setError('Payment was not completed. Please try again.');
+          setStep('error');
+          setIsLoading(false);
+          onPaymentFailed('Payment not completed');
+        }
+      },
+      onclose: () => {
+        if (step === 'processing') {
+          setStep('ready');
+          setIsLoading(false);
+          toast.info('Payment cancelled');
+        }
+      },
+    });
   };
 
   const handleRetry = () => {
-    if (pollRef.current) clearInterval(pollRef.current);
     setStep('ready');
     setError(null);
     setTxRef(null);
-    setPaymentId(null);
-    setCheckoutUrl(null);
-    setPollCount(0);
+    setIsLoading(false);
   };
 
   return (
@@ -126,10 +140,10 @@ export function PaymentPanel({ assignment, user, onPaymentComplete, onPaymentFai
       <CardContent>
         <AnimatePresence mode="wait">
 
-          {/* READY */}
-          {step === 'ready' && (
+          {(step === 'ready' || step === 'processing') && (
             <motion.div key="ready" variants={fadeInUp} initial="initial" animate="animate" exit="exit" className="text-center py-8">
-              <div className="w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center" style={{ background: 'linear-gradient(135deg,#d1fae5,#a7f3d0)' }}>
+              <div className="w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center"
+                style={{ background: 'linear-gradient(135deg,#d1fae5,#a7f3d0)' }}>
                 <span className="text-4xl">💳</span>
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Ready to Pay</h3>
@@ -140,73 +154,53 @@ export function PaymentPanel({ assignment, user, onPaymentComplete, onPaymentFai
               <p className="text-xs text-gray-400 mb-6">British Pounds (GBP)</p>
               <div className="flex items-center justify-center gap-2 text-sm text-gray-500 mb-6">
                 <Shield className="h-4 w-4 text-emerald-600" />
-                <span>Secured by Wise — bank-level encryption</span>
+                <span>Secured by Flutterwave — bank-level encryption</span>
               </div>
-              <Button onClick={handleStartPayment} disabled={isLoading}
+              <Button
+                onClick={handlePay}
+                disabled={isLoading || !sdkReady}
                 className="h-12 px-8 rounded-xl text-white font-semibold"
-                style={{ background: 'linear-gradient(135deg,#047857,#10b981)' }}>
-                {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : (<>Pay with Wise <ArrowRight className="h-5 w-5 ml-2" /></>)}
+                style={{ background: 'linear-gradient(135deg,#047857,#10b981)' }}
+              >
+                {isLoading
+                  ? <Loader2 className="h-5 w-5 animate-spin" />
+                  : <>Pay £{assignment.paymentAmount?.toFixed(2)} <ArrowRight className="h-5 w-5 ml-2" /></>
+                }
               </Button>
+              {!sdkReady && <p className="text-xs text-gray-400 mt-3">Loading payment system...</p>}
             </motion.div>
           )}
 
-          {/* CHECKOUT */}
-          {step === 'checkout' && (
-            <motion.div key="checkout" variants={fadeInUp} initial="initial" animate="animate" exit="exit" className="text-center py-8 space-y-5">
-              <div className="text-5xl mb-2">🔗</div>
-              <h3 className="text-lg font-semibold text-gray-900">Wise Checkout Opened</h3>
-              <p className="text-sm text-gray-600 max-w-xs mx-auto">
-                Complete your payment in the Wise tab that just opened. Once done, click <strong>I've Paid</strong> below.
-              </p>
-              {checkoutUrl && (
-                <button onClick={handleOpenCheckout}
-                  className="inline-flex items-center gap-2 text-sm text-emerald-700 font-medium underline">
-                  <ExternalLink className="h-4 w-4" /> Open Wise again
-                </button>
-              )}
-              <div className="p-3 rounded-xl bg-gray-50 text-xs text-gray-500 font-mono">
-                Order ref: {txRef}
-              </div>
-              <div className="flex gap-3 justify-center">
-                <Button variant="outline" onClick={handleRetry} className="rounded-xl">Cancel</Button>
-                <Button onClick={handleVerify}
-                  className="rounded-xl text-white font-semibold px-8"
-                  style={{ background: 'linear-gradient(135deg,#047857,#10b981)' }}>
-                  <CheckCircle className="h-4 w-4 mr-2" /> I've Paid
-                </Button>
-              </div>
-            </motion.div>
-          )}
-
-          {/* VERIFYING */}
           {step === 'verifying' && (
             <motion.div key="verifying" variants={fadeInUp} initial="initial" animate="animate" exit="exit" className="text-center py-8">
-              <motion.div animate={{ scale: [1, 1.1, 1] }} transition={{ duration: 1.5, repeat: Infinity }}
+              <motion.div
+                animate={{ scale: [1, 1.1, 1] }}
+                transition={{ duration: 1.5, repeat: Infinity }}
                 className="w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center"
-                style={{ background: 'linear-gradient(135deg,#047857,#10b981)' }}>
+                style={{ background: 'linear-gradient(135deg,#047857,#10b981)' }}
+              >
                 <Loader2 className="h-10 w-10 text-white animate-spin" />
               </motion.div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Verifying Payment…</h3>
-              <p className="text-sm text-gray-500 mb-4">Checking with Wise. This can take up to 60 seconds.</p>
-              <div className="flex items-center justify-center gap-2 text-xs text-gray-400">
-                <Clock className="h-3 w-3" />
-                <span>Check {pollCount} of 120</span>
-              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Confirming Payment...</h3>
+              <p className="text-sm text-gray-500">Just a moment while we confirm your payment.</p>
             </motion.div>
           )}
 
-          {/* SUCCESS */}
           {step === 'success' && (
             <motion.div key="success" variants={fadeInUp} initial="initial" animate="animate" exit="exit" className="text-center py-8">
-              <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', duration: 0.5 }}
-                className="w-20 h-20 mx-auto mb-4 rounded-full bg-emerald-100 flex items-center justify-center">
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: 'spring', duration: 0.5 }}
+                className="w-20 h-20 mx-auto mb-4 rounded-full bg-emerald-100 flex items-center justify-center"
+              >
                 <CheckCircle className="h-10 w-10 text-emerald-600" />
               </motion.div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Payment Confirmed!</h3>
-              <p className="text-gray-600 mb-4">£{assignment.paymentAmount?.toFixed(2)} received. Your assignment is now submitted.</p>
+              <p className="text-gray-600 mb-4">£{assignment.paymentAmount?.toFixed(2)} received. Your assignment is now in progress.</p>
               <div className="p-4 rounded-xl bg-gray-50 max-w-xs mx-auto text-sm space-y-2">
                 <div className="flex justify-between">
-                  <span className="text-gray-500">Order ID</span>
+                  <span className="text-gray-500">Reference</span>
                   <span className="font-mono text-xs">{txRef?.slice(-12)}</span>
                 </div>
                 <div className="flex justify-between">
@@ -217,7 +211,6 @@ export function PaymentPanel({ assignment, user, onPaymentComplete, onPaymentFai
             </motion.div>
           )}
 
-          {/* ERROR */}
           {step === 'error' && (
             <motion.div key="error" variants={fadeInUp} initial="initial" animate="animate" exit="exit" className="text-center py-8">
               <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-red-100 flex items-center justify-center">

@@ -1,4 +1,3 @@
-// All Wise calls go through Supabase Edge Function — API key never touches browser
 import { supabase } from '@/lib/supabase';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
@@ -19,33 +18,52 @@ const edgeFn = async (fnName: string, body: Record<string, unknown>) => {
   return res.json();
 };
 
-export const createWiseQuote = async (amount: number) => {
-  return {
-    sourceAmount: amount,
-    sourceCurrency: 'GBP',
-    exchangeRate: 1,
-    fee: Math.round(amount * 0.005 * 100) / 100,
-    targetAmount: Math.round(amount * 0.995 * 100) / 100,
-    targetCurrency: 'GBP',
-  };
+export const generateTxRef = () => {
+  return `APE-${Date.now()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
 };
 
-export const initiatePayment = async (assignmentId: string, amount: number) => {
-  const result = await edgeFn('verify-payment', {
-    action: 'initiate',
-    assignmentId,
-    amount,
-    currency: 'GBP',
-    redirectOrigin: window.location.origin,
-  });
-  if (result.error) return { success: false, error: result.error };
-  return { success: true, paymentId: result.paymentId, txRef: result.txRef, checkoutUrl: result.checkoutUrl };
+export const verifyFlutterwavePayment = async (transactionId: string, expectedAmount: number) => {
+  try {
+    const result = await edgeFn('verify-payment', {
+      action: 'verify_flutterwave',
+      transactionId,
+      expectedAmount,
+    });
+    if (result.error) return { success: false, error: result.error };
+    return { success: true, status: result.status };
+  } catch {
+    return { success: false, error: 'Verification failed' };
+  }
 };
 
-export const verifyPayment = async (txRef: string) => {
-  const result = await edgeFn('verify-payment', { action: 'verify', txRef });
+export const recordPayment = async (
+  assignmentId: string,
+  txRef: string,
+  transactionId: string,
+  amount: number,
+) => {
+  const { error } = await supabase
+    .from('assignments')
+    .update({
+      status: 'paid',
+      payment_id: txRef,
+      payment_amount: amount,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', assignmentId);
+
+  return { success: !error, error: error?.message };
+};
+
+export const adminUpdateStatus = async (
+  assignmentId: string,
+  status: string,
+  paymentAmount?: number,
+  notes?: string,
+) => {
+  const result = await edgeFn('admin-update-status', { assignmentId, status, paymentAmount, notes });
   if (result.error) return { success: false, error: result.error };
-  return { success: result.success, status: result.status, paymentId: result.paymentId };
+  return { success: true, assignment: result.assignment };
 };
 
 export const calculatePrice = async (params: {
@@ -56,11 +74,13 @@ export const calculatePrice = async (params: {
 }) => {
   const result = await edgeFn('calculate-price', params);
   if (result.error) return null;
-  return result as { price: number; complexity: string; estimatedHours: number; urgency: string; inScope: boolean; reason?: string; currency: string };
-};
-
-export const adminUpdateStatus = async (assignmentId: string, status: string, paymentAmount?: number, notes?: string) => {
-  const result = await edgeFn('admin-update-status', { assignmentId, status, paymentAmount, notes });
-  if (result.error) return { success: false, error: result.error };
-  return { success: true, assignment: result.assignment };
+  return result as {
+    price: number;
+    complexity: string;
+    estimatedHours: number;
+    urgency: string;
+    inScope: boolean;
+    reason?: string;
+    currency: string;
+  };
 };
