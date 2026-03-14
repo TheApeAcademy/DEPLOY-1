@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { CreditCard, CheckCircle, XCircle, Shield, ArrowRight, Loader2, RefreshCw } from 'lucide-react';
@@ -11,7 +10,7 @@ import { generateTxRef, recordPayment } from '@/services/payment';
 import { logActivity } from '@/services/database';
 import { fadeInUp } from '@/data/constants';
 
-const FLW_PUBLIC_KEY = import.meta.env.VITE_FLW_PUBLIC_KEY as string;
+const FLW_PUBLIC_KEY = import.meta.env.VITE_FLW_PUBLIC_KEY || 'FLWPUBK_TEST-45e93c9680c0b2bc34599da8d4822a59-X';
 
 interface PaymentPanelProps {
   assignment: Assignment;
@@ -33,12 +32,10 @@ export function PaymentPanel({ assignment, user, onPaymentComplete, onPaymentFai
     const ref = generateTxRef();
     setTxRef(ref);
 
-    // Save txRef and assignmentId to localStorage so we can verify on return
     localStorage.setItem('flw_pending_ref', ref);
     localStorage.setItem('flw_pending_assignment', assignment.id);
     localStorage.setItem('flw_pending_amount', String(assignment.paymentAmount));
 
-    // Build Flutterwave hosted payment URL
     const params = new URLSearchParams({
       public_key: FLW_PUBLIC_KEY,
       tx_ref: ref,
