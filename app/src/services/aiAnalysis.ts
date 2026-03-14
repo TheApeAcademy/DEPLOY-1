@@ -22,18 +22,23 @@ const calculatePriceLocally = (assignment: Assignment) => {
     : 7;
   const urgency = daysUntilDue <= 1 ? 'express' : daysUntilDue <= 3 ? 'urgent' : 'normal';
 
-  const baseHours: Record<string, number> = { low: 2, medium: 4, high: 8 };
-  const typeMultipliers: Record<string, number> = {
-    Essay: 1, 'Research Paper': 2, Project: 1.5, Homework: 0.5,
-    'Lab Report': 1.2, Presentation: 0.8, 'Case Study': 1.5,
-    Thesis: 3, Dissertation: 4, Other: 1,
+  const basePrices: Record<string, number> = {
+    Homework: 15,
+    Essay: 30,
+    'Lab Report': 35,
+    Presentation: 30,
+    'Case Study': 45,
+    Project: 50,
+    'Research Paper': 60,
+    Thesis: 100,
+    Dissertation: 150,
+    Other: 25,
   };
-  const estimatedHours = Math.round(baseHours[complexity] * (typeMultipliers[type] || 1));
 
-  const rates: Record<string, number> = { low: 10, medium: 15, high: 25 };
+  const estimatedHours = complexity === 'low' ? 2 : complexity === 'medium' ? 4 : 8;
   const urgencyAdd: Record<string, number> = { normal: 0, urgent: 10, express: 20 };
-
-  const price = Math.round((rates[complexity] * estimatedHours + urgencyAdd[urgency]) * 100) / 100;
+  const basePrice = basePrices[type] || 25;
+  const price = Math.round((basePrice + urgencyAdd[urgency]) * 100) / 100;
 
   return { price, complexity, estimatedHours, urgency, inScope: true, currency: 'GBP' };
 };
@@ -113,8 +118,10 @@ export const reanalyzeAssignment = async (
 
 const extractRequirements = (description?: string): string[] => {
   if (!description) return [];
-  const checks = ['APA', 'MLA', 'Chicago', 'references', 'bibliography', 'citations',
-    'double-spaced', 'word count', 'page count', 'data analysis', 'charts', 'appendix'];
+  const checks = [
+    'APA', 'MLA', 'Chicago', 'references', 'bibliography', 'citations',
+    'double-spaced', 'word count', 'page count', 'data analysis', 'charts', 'appendix'
+  ];
   const d = description.toLowerCase();
   return checks.filter(c => d.includes(c.toLowerCase()));
 };
