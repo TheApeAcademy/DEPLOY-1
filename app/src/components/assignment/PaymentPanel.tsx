@@ -10,7 +10,7 @@ import { generateTxRef, recordPayment } from '@/services/payment';
 import { logActivity } from '@/services/database';
 import { fadeInUp } from '@/data/constants';
 
-const FLW_PUBLIC_KEY = import.meta.env.VITE_FLW_PUBLIC_KEY || 'FLWPUBK_TEST-45e93c9680c0b2bc34599da8d4822a59-X';
+const FLW_PUBLIC_KEY = import.meta.env.VITE_FLW_PUBLIC_KEY || 'FLWPUBK-573134e5b4849c518275b425abbfeb71-X';
 
 interface PaymentPanelProps {
   assignment: Assignment;
