@@ -1,15 +1,13 @@
-import { createClient } from '@supabase/supabase-js';
-import crypto from 'crypto';
+const { createClient } = require('@supabase/supabase-js');
 
 const supabase = createClient(
   process.env.VITE_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  // Verify it's actually from Flutterwave
   const hash = req.headers['verif-hash'];
   if (!hash || hash !== process.env.FLW_SECRET_HASH) {
     return res.status(401).json({ error: 'Invalid signature' });
@@ -20,7 +18,6 @@ export default async function handler(req, res) {
   if (event.event === 'charge.completed' && event.data.status === 'successful') {
     const { tx_ref, amount, currency, customer } = event.data;
 
-    // Find assignment by tx_ref or customer email
     const { data: assignments } = await supabase
       .from('assignments')
       .select('*')
@@ -53,4 +50,4 @@ export default async function handler(req, res) {
   }
 
   return res.status(200).json({ received: true });
-}
+};
