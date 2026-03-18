@@ -13,6 +13,7 @@ import {
   Clock,
   Activity,
   BarChart3,
+  MessageSquare,
   LogOut,
   X
 } from 'lucide-react';
@@ -123,9 +124,12 @@ ApeAcademy Team`
   const [alerts, setAlerts] = useState<any[]>([]);
 
   const [users, setUsers] = useState<any[]>([]);
+  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [suggestionsLoading, setSuggestionsLoading] = useState(false);
 
   useEffect(() => {
     getAllUsers().then(setUsers);
+    fetchSuggestions();
   }, []);
 
   const handleRefresh = () => {
@@ -133,6 +137,24 @@ ApeAcademy Team`
     refreshLogs();
     refreshAssignments();
     getAllUsers().then(setUsers);
+    fetchSuggestions();
+  };
+
+  const fetchSuggestions = async () => {
+    setSuggestionsLoading(true);
+    const { supabase } = await import('@/lib/supabase');
+    const { data } = await supabase
+      .from('suggestions')
+      .select('*')
+      .order('created_at', { ascending: false });
+    setSuggestions(data || []);
+    setSuggestionsLoading(false);
+  };
+
+  const handleMarkSuggestionRead = async (id: string) => {
+    const { supabase } = await import('@/lib/supabase');
+    await supabase.from('suggestions').update({ status: 'read' }).eq('id', id);
+    setSuggestions(prev => prev.map(s => s.id === id ? { ...s, status: 'read' } : s));
   };
 
   const handleMarkAlertRead = (id: string) => {
@@ -230,6 +252,14 @@ ApeAcademy Team`
               {unreadAlerts.length > 0 && (
                 <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
                   {unreadAlerts.length}
+                </span>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="suggestions" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm relative">
+              Suggestions
+              {suggestions.filter(s => s.status === 'unread').length > 0 && (
+                <span className="absolute -top-1 -right-1 w-5 h-5 bg-emerald-500 text-white text-xs rounded-full flex items-center justify-center">
+                  {suggestions.filter(s => s.status === 'unread').length}
                 </span>
               )}
             </TabsTrigger>
@@ -625,6 +655,70 @@ ApeAcademy Team`
               </CardContent>
             </Card>
           </TabsContent>
+          <TabsContent value="suggestions" className="space-y-4">
+            <Card className="backdrop-blur-xl bg-white/80 border-white/20 shadow-lg">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold flex items-center gap-2">
+                  <MessageSquare className="h-5 w-5 text-emerald-600" />
+                  Student Suggestions
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {suggestionsLoading ? (
+                  <div className="text-center py-8 text-gray-400">Loading...</div>
+                ) : suggestions.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500">
+                    <MessageSquare className="h-12 w-12 mx-auto mb-3 text-gray-300" />
+                    <p>No suggestions yet</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {suggestions.map((s, index) => (
+                      <motion.div
+                        key={s.id}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.05 }}
+                        className={`p-4 rounded-xl border transition-colors ${
+                          s.status === 'unread'
+                            ? 'bg-emerald-50/60 border-emerald-200'
+                            : 'bg-gray-50/50 border-gray-100'
+                        }`}
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 capitalize">
+                                {s.category}
+                              </span>
+                              {s.status === 'unread' && (
+                                <span className="w-2 h-2 bg-emerald-500 rounded-full" />
+                              )}
+                            </div>
+                            <p className="text-sm text-gray-800 leading-relaxed">{s.message}</p>
+                            <p className="text-xs text-gray-400 mt-2">
+                              {s.user_name || 'Anonymous'} • {s.user_email || ''} • {new Date(s.created_at).toLocaleString()}
+                            </p>
+                          </div>
+                          {s.status === 'unread' && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleMarkSuggestionRead(s.id)}
+                              className="text-xs text-emerald-600 hover:text-emerald-700 shrink-0"
+                            >
+                              Mark Read
+                            </Button>
+                          )}
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
         </Tabs>
       </main>
 
