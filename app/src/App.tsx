@@ -12,6 +12,7 @@ import { AdminDashboard } from '@/components/dashboard/AdminDashboard';
 import { RegionSelectionModal } from '@/components/RegionSelectionModal';
 import { AuthModal } from '@/components/AuthModal';
 import { ThemeProvider } from '@/contexts/ThemeContext';
+import { TopicRequestPage } from '@/components/TopicRequestPage';
 import { HelpWidget } from '@/components/HelpWidget';
 import { recordPayment } from '@/services/payment';
 import type { User, UserPreferences, Assignment } from '@/types';
@@ -167,6 +168,8 @@ function AppInner() {
         {currentPage === 'submit' && (
           <motion.div key="submit" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             <SubmitAssignmentPage user={user} onBack={() => setCurrentPage('home')} onSubmit={handleSubmitAssignment} onLogin={() => setShowAuthModal(true)} />
+          ) : currentPage === 'topic' ? (
+            <TopicRequestPage user={user} onBack={() => setCurrentPage('home')} onLogin={() => setShowAuthModal(true)} />
           </motion.div>
         )}
         {currentPage === 'success' && currentAssignment && (

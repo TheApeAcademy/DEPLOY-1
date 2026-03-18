@@ -22,6 +22,7 @@ interface HomePageProps {
   user: User | null;
   preferences: UserPreferences | null;
   onSubmitAssignment: () => void;
+  onRequestTopic: () => void;
   onSelectRegion: () => void;
   onLogin: () => void;
   onLogout: () => void;
@@ -34,6 +35,7 @@ export function HomePage({
   user,
   preferences,
   onSubmitAssignment,
+  onRequestTopic,
   onSelectRegion,
   onLogin,
   onLogout,
@@ -263,6 +265,34 @@ export function HomePage({
             </CardContent>
           </Card>
 
+          <Card className="backdrop-blur-xl bg-gradient-to-br from-blue-600 to-indigo-500 border-0 shadow-lg hover:shadow-xl transition-shadow cursor-pointer group"
+            onClick={onRequestTopic}
+          >
+            <CardContent className="p-8">
+              <div className="flex items-start justify-between">
+                <div>
+                  <div className="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                    <BookOpen className="h-7 w-7 text-white" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-white mb-2">
+                    Learn a Topic
+                  </h3>
+                  <p className="text-white/80">
+                    Get a personalised learning document on any topic you're struggling with
+                  </p>
+                </div>
+                <ChevronRight className="h-8 w-8 text-white/60 group-hover:translate-x-2 transition-transform" />
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.35 }}
+          className="grid md:grid-cols-1 gap-6 mb-8"
+        >
           <Card className="backdrop-blur-xl bg-white/80 dark:bg-gray-900/80 border-white/20 dark:border-gray-700/30 shadow-lg">
             <CardHeader>
               <CardTitle className="text-lg font-semibold flex items-center gap-2 text-gray-900 dark:text-white">
