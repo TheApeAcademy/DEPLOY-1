@@ -20,7 +20,7 @@ import { supabase } from '@/lib/supabase';
 import { getCurrentUser, signOut, updateProfile } from '@/services/auth';
 import { logActivity } from '@/services/database';
 
-type Page = 'landing' | 'home' | 'submit' | 'success' | 'admin' | 'settings' | 'terms' | 'privacy';
+type Page = 'landing' | 'home' | 'submit' | 'success' | 'admin' | 'settings' | 'terms' | 'privacy' | 'topic';
 
 function AppInner() {
   const [currentPage, setCurrentPage] = useState<Page>('landing');
