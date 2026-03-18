@@ -169,7 +169,7 @@ export function TopicRequestPage({ user, onBack, onLogin }: TopicRequestPageProp
                 </h3>
 
                 <div>
-                  <Label htmlFor="topicName">Topic Name *</Label>
+                  <Label htmlFor="topicName">Topic Name</Label>
                   <Input id="topicName" placeholder="e.g. Photosynthesis, Integration by Parts, The French Revolution"
                     value={topicName} onChange={e => setTopicName(e.target.value)}
                     required className="h-12 rounded-xl bg-gray-50 mt-1" />
@@ -178,7 +178,7 @@ export function TopicRequestPage({ user, onBack, onLogin }: TopicRequestPageProp
 
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
-                    <Label>Subject *</Label>
+                    <Label>Subject</Label>
                     <select value={subject} onChange={e => setSubject(e.target.value)} required
                       className="w-full h-12 rounded-xl bg-gray-50 border border-gray-200 px-3 text-sm mt-1">
                       <option value="">Select subject</option>
@@ -186,7 +186,7 @@ export function TopicRequestPage({ user, onBack, onLogin }: TopicRequestPageProp
                     </select>
                   </div>
                   <div>
-                    <Label>Level of Study *</Label>
+                    <Label>Level of Study</Label>
                     <select value={level} onChange={e => setLevel(e.target.value)} required
                       className="w-full h-12 rounded-xl bg-gray-50 border border-gray-200 px-3 text-sm mt-1">
                       <option value="">Select level</option>
@@ -196,7 +196,7 @@ export function TopicRequestPage({ user, onBack, onLogin }: TopicRequestPageProp
                 </div>
 
                 <div>
-                  <Label htmlFor="specificQuestions">Specific Questions or Confusion Points *</Label>
+                  <Label htmlFor="specificQuestions">Specific Questions or Confusion Points</Label>
                   <Textarea id="specificQuestions"
                     placeholder="What exactly don't you understand? e.g. 'I understand what photosynthesis is but I don't understand the light-dependent reactions or why chlorophyll absorbs specific wavelengths'"
                     value={specificQuestions} onChange={e => setSpecificQuestions(e.target.value)}
