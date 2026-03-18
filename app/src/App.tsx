@@ -160,6 +160,7 @@ function AppInner() {
               onLogin={() => setShowAuthModal(true)}
               onLogout={handleLogout}
               onOpenSettings={() => setCurrentPage('settings')}
+              onRequestTopic={() => setCurrentPage('topic')}
               showProfile={showProfile}
               setShowProfile={setShowProfile}
             />
@@ -168,7 +169,10 @@ function AppInner() {
         {currentPage === 'submit' && (
           <motion.div key="submit" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             <SubmitAssignmentPage user={user} onBack={() => setCurrentPage('home')} onSubmit={handleSubmitAssignment} onLogin={() => setShowAuthModal(true)} />
-          ) : currentPage === 'topic' ? (
+          </motion.div>
+        )}
+        {currentPage === 'topic' && (
+          <motion.div key="topic" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             <TopicRequestPage user={user} onBack={() => setCurrentPage('home')} onLogin={() => setShowAuthModal(true)} />
           </motion.div>
         )}
