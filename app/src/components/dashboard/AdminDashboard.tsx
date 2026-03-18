@@ -14,6 +14,7 @@ import {
   Activity,
   BarChart3,
   MessageSquare,
+  BookOpen,
   LogOut,
   X
 } from 'lucide-react';
@@ -126,10 +127,13 @@ ApeAcademy Team`
   const [users, setUsers] = useState<any[]>([]);
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [suggestionsLoading, setSuggestionsLoading] = useState(false);
+  const [topics, setTopics] = useState<any[]>([]);
+  const [topicsLoading, setTopicsLoading] = useState(false);
 
   useEffect(() => {
     getAllUsers().then(setUsers);
     fetchSuggestions();
+    fetchTopics();
   }, []);
 
   const handleRefresh = () => {
@@ -138,6 +142,7 @@ ApeAcademy Team`
     refreshAssignments();
     getAllUsers().then(setUsers);
     fetchSuggestions();
+    fetchTopics();
   };
 
   const fetchSuggestions = async () => {
@@ -149,6 +154,17 @@ ApeAcademy Team`
       .order('created_at', { ascending: false });
     setSuggestions(data || []);
     setSuggestionsLoading(false);
+  };
+
+  const fetchTopics = async () => {
+    setTopicsLoading(true);
+    const { supabase } = await import('@/lib/supabase');
+    const { data } = await supabase
+      .from('topics')
+      .select('*')
+      .order('created_at', { ascending: false });
+    setTopics(data || []);
+    setTopicsLoading(false);
   };
 
   const handleMarkSuggestionRead = async (id: string) => {
@@ -260,6 +276,14 @@ ApeAcademy Team`
               {suggestions.filter(s => s.status === 'unread').length > 0 && (
                 <span className="absolute -top-1 -right-1 w-5 h-5 bg-emerald-500 text-white text-xs rounded-full flex items-center justify-center">
                   {suggestions.filter(s => s.status === 'unread').length}
+                </span>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="topics" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm relative">
+              Topics
+              {topics.filter(t => t.status === 'pending').length > 0 && (
+                <span className="absolute -top-1 -right-1 w-5 h-5 bg-blue-500 text-white text-xs rounded-full flex items-center justify-center">
+                  {topics.filter(t => t.status === 'pending').length}
                 </span>
               )}
             </TabsTrigger>
@@ -655,6 +679,70 @@ ApeAcademy Team`
               </CardContent>
             </Card>
           </TabsContent>
+          <TabsContent value="topics" className="space-y-4">
+            <Card className="backdrop-blur-xl bg-white/80 border-white/20 shadow-lg">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold flex items-center gap-2">
+                  <BookOpen className="h-5 w-5 text-blue-600" />
+                  Topic Requests
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {topicsLoading ? (
+                  <div className="text-center py-8 text-gray-400">Loading...</div>
+                ) : topics.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500">
+                    <BookOpen className="h-12 w-12 mx-auto mb-3 text-gray-300" />
+                    <p>No topic requests yet</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {topics.map((t, index) => (
+                      <motion.div
+                        key={t.id}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.05 }}
+                        className={`p-4 rounded-xl border ${
+                          t.status === 'pending'
+                            ? 'bg-blue-50/60 border-blue-200'
+                            : 'bg-gray-50/50 border-gray-100'
+                        }`}
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2 flex-wrap">
+                              <span className="font-semibold text-gray-900">{t.topic_name}</span>
+                              <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">{t.subject}</span>
+                              <span className="text-xs px-2 py-0.5 rounded-full bg-purple-100 text-purple-700">{t.level}</span>
+                              <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                                t.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+                                t.status === 'completed' ? 'bg-green-100 text-green-700' :
+                                'bg-gray-100 text-gray-600'
+                              }`}>{t.status}</span>
+                            </div>
+                            {t.specific_questions && (
+                              <p className="text-sm text-gray-700 mb-2"><span className="font-medium">Questions:</span> {t.specific_questions}</p>
+                            )}
+                            {t.additional_context && (
+                              <p className="text-sm text-gray-500 mb-2"><span className="font-medium">Context:</span> {t.additional_context}</p>
+                            )}
+                            <div className="flex items-center gap-3 text-xs text-gray-400 flex-wrap">
+                              <span>👤 {t.user_name || 'Anonymous'}</span>
+                              <span>📧 {t.user_email || '-'}</span>
+                              <span>📱 {t.platform}: {t.platform_contact}</span>
+                              <span>🕐 {new Date(t.created_at).toLocaleString()}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
           <TabsContent value="suggestions" className="space-y-4">
             <Card className="backdrop-blur-xl bg-white/80 border-white/20 shadow-lg">
               <CardHeader>
