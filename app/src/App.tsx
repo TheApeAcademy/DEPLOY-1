@@ -206,7 +206,7 @@ function AppInner() {
       <RegionSelectionModal isOpen={showRegionModal} onClose={() => setShowRegionModal(false)} onComplete={handleRegionComplete} />
       <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} onAuth={handleAuth} />
       {showProfile && <div className="fixed inset-0 z-30" onClick={() => setShowProfile(false)} />}
-      <HelpWidget />
+      <HelpWidget user={user} />
     </>
   );
 }
