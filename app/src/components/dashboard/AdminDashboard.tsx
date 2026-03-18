@@ -325,9 +325,9 @@ ApeAcademy Team`
               />
               <StatCard
                 title="Total Revenue"
-                value={`$${stats.totalRevenue.toFixed(2)}`}
+                value={`£${stats.totalRevenue.toFixed(2)}`}
                 icon={DollarSign}
-                trend={`+$${stats.revenueToday.toFixed(2)} today`}
+                trend={`+£${stats.revenueToday.toFixed(2)} today`}
                 color="bg-green-500"
               />
               <StatCard
@@ -490,7 +490,7 @@ ApeAcademy Team`
                               {ASSIGNMENT_STATUS_LABELS[assignment.status]?.label || assignment.status}
                             </Badge>
                           </TableCell>
-                          <TableCell>${assignment.paymentAmount?.toFixed(2) || '-'}</TableCell>
+                          <TableCell>£{assignment.paymentAmount?.toFixed(2) || '-'}</TableCell>
                           <TableCell className="text-sm text-gray-500">
                             {new Date(assignment.createdAt).toLocaleDateString()}
                           </TableCell>
@@ -891,7 +891,7 @@ ApeAcademy Team`
                 </div>
                 <div>
                   <label className="text-sm text-gray-500">Payment Amount</label>
-                  <p className="font-medium">${selectedAssignment.paymentAmount?.toFixed(2) || 'Not set'}</p>
+                  <p className="font-medium">£{selectedAssignment.paymentAmount?.toFixed(2) || 'Not set'}</p>
                 </div>
               </div>
               
