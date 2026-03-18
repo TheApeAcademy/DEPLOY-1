@@ -173,6 +173,18 @@ ApeAcademy Team`
     setSuggestions(prev => prev.map(s => s.id === id ? { ...s, status: 'read' } : s));
   };
 
+  const updateTopicStatus = async (id: string, status: string) => {
+    const { supabase } = await import('@/lib/supabase');
+    await supabase.from('topics').update({ status }).eq('id', id);
+    setTopics(prev => prev.map(t => t.id === id ? { ...t, status } : t));
+  };
+
+  const updateAssignmentStatusAdmin = async (id: string, status: string) => {
+    const { supabase } = await import('@/lib/supabase');
+    await supabase.from('assignments').update({ status }).eq('id', id);
+    refreshAssignments();
+  };
+
   const handleMarkAlertRead = (id: string) => {
     setAlerts(prev => prev.map(a => a.id === id ? { ...a, read: true } : a));
   };
@@ -733,6 +745,39 @@ ApeAcademy Team`
                               <span>📱 {t.platform}: {t.platform_contact}</span>
                               <span>🕐 {new Date(t.created_at).toLocaleString()}</span>
                             </div>
+                            <div className="flex gap-2 mt-3 flex-wrap">
+                              {t.status !== 'in_progress' && t.status !== 'completed' && (
+                                <Button size="sm" variant="outline"
+                                  onClick={() => updateTopicStatus(t.id, 'in_progress')}
+                                  className="text-xs rounded-lg border-blue-300 text-blue-600 hover:bg-blue-50">
+                                  🔄 Mark In Progress
+                                </Button>
+                              )}
+                              {t.status !== 'completed' && (
+                                <Button size="sm" variant="outline"
+                                  onClick={() => updateTopicStatus(t.id, 'completed')}
+                                  className="text-xs rounded-lg border-emerald-300 text-emerald-600 hover:bg-emerald-50">
+                                  ✅ Mark Completed
+                                </Button>
+                              )}
+                              {t.platform === 'WhatsApp' && t.platform_contact && (
+                                <a href={`https://wa.me/${t.platform_contact.replace(/[^0-9+]/g, '')}?text=${encodeURIComponent('Hi! Your topic request for "' + t.topic_name + '" is ready. We will send your learning document shortly. 🦍')}`}
+                                  target="_blank" rel="noopener noreferrer">
+                                  <Button size="sm" variant="outline"
+                                    className="text-xs rounded-lg border-green-300 text-green-600 hover:bg-green-50">
+                                    💬 WhatsApp Student
+                                  </Button>
+                                </a>
+                              )}
+                              {t.platform === 'Email' && t.platform_contact && (
+                                <a href={`mailto:${t.platform_contact}?subject=Your ApeAcademy Topic: ${t.topic_name}&body=Hi! Your learning document for "${t.topic_name}" is ready. We will send it to you shortly. 🦍`}>
+                                  <Button size="sm" variant="outline"
+                                    className="text-xs rounded-lg border-blue-300 text-blue-600 hover:bg-blue-50">
+                                    ✉️ Email Student
+                                  </Button>
+                                </a>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </motion.div>
@@ -929,6 +974,20 @@ ApeAcademy Team`
                       ✉️ Also email: {selectedAssignment.userEmail}
                     </a>
                   )}
+                </div>
+              </div>
+
+              {/* Update Assignment Status */}
+              <div className="p-4 rounded-xl bg-gray-50 border border-gray-200">
+                <h4 className="font-semibold text-gray-900 mb-3 text-sm">Update Status</h4>
+                <div className="flex flex-wrap gap-2">
+                  {['pending','analyzing','analyzed','submitted','completed','rejected'].map(s => (
+                    <Button key={s} size="sm" variant="outline"
+                      onClick={() => { updateAssignmentStatusAdmin(selectedAssignment!.id, s); setSelectedAssignment(prev => prev ? {...prev, status: s as any} : prev); }}
+                      className={`text-xs rounded-lg capitalize ${selectedAssignment?.status === s ? 'bg-emerald-50 border-emerald-400 text-emerald-700' : ''}`}>
+                      {s}
+                    </Button>
+                  ))}
                 </div>
               </div>
 
