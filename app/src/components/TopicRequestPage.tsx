@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'motion/react';
-import { ArrowLeft, Upload, X, FileText, Phone, Mail, AtSign, BookOpen, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Upload, X, FileText, Phone, Mail, AtSign, BookOpen, CheckCircle, Shield, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -40,6 +40,7 @@ export function TopicRequestPage({ user, onBack, onLogin }: TopicRequestPageProp
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [submitted, setSubmitted] = useState(false);
+  const [paid, setPaid] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -102,7 +103,7 @@ export function TopicRequestPage({ user, onBack, onLogin }: TopicRequestPageProp
     setSubmitted(true);
   };
 
-  if (submitted) {
+  if (paid) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 flex items-center justify-center px-6">
         <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
@@ -112,17 +113,81 @@ export function TopicRequestPage({ user, onBack, onLogin }: TopicRequestPageProp
             className="w-24 h-24 mx-auto mb-6 rounded-full bg-emerald-100 flex items-center justify-center">
             <CheckCircle className="h-12 w-12 text-emerald-600" />
           </motion.div>
-          <h2 className="text-3xl font-bold text-gray-900 mb-3">Topic Submitted! 🦍</h2>
-          <p className="text-gray-600 mb-2">We've received your topic request for</p>
+          <h2 className="text-3xl font-bold text-gray-900 mb-3">You're all set! 🦍</h2>
+          <p className="text-gray-600 mb-2">Payment confirmed for</p>
           <p className="text-xl font-semibold text-emerald-700 mb-6">"{topicName}"</p>
           <p className="text-gray-500 text-sm mb-8">
-            Our team will prepare a detailed learning document and deliver it to your {platform}. 
-            Expect it within 24 hours.
+            Our team will prepare your personalised learning document and deliver it to your {platform} within 24 hours.
           </p>
           <Button onClick={onBack}
             className="rounded-xl bg-gradient-to-r from-emerald-700 to-emerald-500 hover:from-emerald-800 hover:to-emerald-600 h-12 px-8">
             Back to Dashboard
           </Button>
+        </motion.div>
+      </div>
+    );
+  }
+
+  if (submitted && !paid) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 flex items-center justify-center px-6">
+        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
+          className="text-center max-w-md w-full">
+          <div className="text-5xl mb-4">📚</div>
+          <h2 className="text-3xl font-bold text-gray-900 mb-2">Almost there!</h2>
+          <p className="text-gray-600 mb-6">Your topic request for <span className="font-semibold text-emerald-700">"{topicName}"</span> has been received.</p>
+
+          <div className="backdrop-blur-xl bg-white/80 rounded-2xl border border-white/20 shadow-lg p-6 mb-6 text-left space-y-3">
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-500">Topic</span>
+              <span className="font-medium text-gray-900">{topicName}</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-500">Subject</span>
+              <span className="font-medium text-gray-900">{subject}</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-500">Level</span>
+              <span className="font-medium text-gray-900">{level}</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-500">Delivery</span>
+              <span className="font-medium text-gray-900">{platform}</span>
+            </div>
+            <div className="border-t border-gray-100 pt-3 flex justify-between">
+              <span className="font-semibold text-gray-900">Total</span>
+              <span className="text-2xl font-bold text-emerald-700">£20.00</span>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-center gap-2 text-sm text-gray-500 mb-6">
+            <Shield className="h-4 w-4 text-emerald-600" />
+            <span>Secured by Flutterwave — bank-level encryption</span>
+          </div>
+
+          <div className="space-y-3">
+            <Button
+              onClick={() => window.open('https://flutterwave.com/pay/ctiqneyy3cgv', '_blank')}
+              className="w-full h-12 rounded-xl text-white font-semibold"
+              style={{ background: 'linear-gradient(135deg,#047857,#10b981)' }}
+            >
+              Pay £20.00 to Confirm
+            </Button>
+            <Button
+              onClick={async () => {
+                const { supabase } = await import('@/lib/supabase');
+                await supabase.from('topics').update({ status: 'paid' }).eq('user_id', user?.id).order('created_at', { ascending: false }).limit(1);
+                setPaid(true);
+              }}
+              variant="outline"
+              className="w-full h-12 rounded-xl font-semibold border-emerald-300 text-emerald-700"
+            >
+              <CheckCircle className="h-4 w-4 mr-2" /> I've Paid
+            </Button>
+            <button onClick={onBack} className="text-sm text-gray-400 hover:text-gray-600 w-full">
+              Cancel and go back
+            </button>
+          </div>
         </motion.div>
       </div>
     );
