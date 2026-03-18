@@ -86,9 +86,12 @@ export function PaymentPanel({ assignment, user, onPaymentComplete, onPaymentFai
                 £{assignment.paymentAmount?.toFixed(2) || '0.00'}
               </div>
               <p className="text-xs text-gray-400 mb-6">British Pounds (GBP)</p>
-              <div className="flex items-center justify-center gap-2 text-sm text-gray-500 mb-6">
+              <div className="flex items-center justify-center gap-2 text-sm text-gray-500 mb-4">
                 <Shield className="h-4 w-4 text-emerald-600" />
                 <span>Secured by Flutterwave — bank-level encryption</span>
+              </div>
+              <div className="w-full p-3 rounded-xl bg-yellow-50 border border-yellow-300 mb-6 text-left">
+                <p className="text-yellow-800 text-xs font-semibold">⚠️ NOTE: When the payment page opens, enter exactly <span className="text-yellow-900 font-bold">£{assignment.paymentAmount?.toFixed(2)}</span> as the amount. Do not change this figure. Entering the wrong amount will delay your order.</p>
               </div>
               <Button onClick={handlePay} className="h-12 px-8 rounded-xl text-white font-semibold"
                 style={{ background: 'linear-gradient(135deg,#047857,#10b981)' }}>
