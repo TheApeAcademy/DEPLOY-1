@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { 
   User as UserIcon, 
@@ -17,7 +18,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import type { User, UserPreferences } from '@/types';
 import { ASSIGNMENT_STATUS_LABELS } from '@/data/constants';
-import { getUserAssignments } from '@/utils/storage';
+import { supabase } from '@/lib/supabase';
 
 interface HomePageProps {
   user: User | null;
@@ -44,7 +45,21 @@ export function HomePage({
   showProfile,
   setShowProfile,
 }: HomePageProps) {
-  const userAssignments = user ? getUserAssignments(user.id) : [];
+  const [userAssignments, setUserAssignments] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (!user) return;
+    const fetchAssignments = async () => {
+      const { data, error } = await supabase
+        .from('assignments')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+      if (!error && data) setUserAssignments(data);
+    };
+    fetchAssignments();
+  }, [user]);
+
   const recentAssignments = userAssignments.slice(0, 3);
 
   const stats = {
@@ -316,8 +331,8 @@ export function HomePage({
                       className="flex items-center justify-between p-3 rounded-xl bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                     >
                       <div>
-                        <p className="font-medium text-gray-900 dark:text-white">{assignment.courseName}</p>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">{assignment.assignmentType}</p>
+                        <p className="font-medium text-gray-900 dark:text-white">{assignment.course_name}</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">{assignment.assignment_type}</p>
                       </div>
                       <Badge className={`${ASSIGNMENT_STATUS_LABELS[assignment.status]?.bgColor} ${ASSIGNMENT_STATUS_LABELS[assignment.status]?.color} border-0`}>
                         {ASSIGNMENT_STATUS_LABELS[assignment.status]?.label || assignment.status}
