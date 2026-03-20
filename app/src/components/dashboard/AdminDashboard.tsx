@@ -45,6 +45,8 @@ import type { Assignment } from '@/types';
 import { ACTIVITY_TYPE_LABELS, ASSIGNMENT_STATUS_LABELS } from '@/data/constants';
 import { getAllUsers } from '@/services/database';
 import { fadeInUp, staggerContainer } from '@/data/constants';
+import { useTheme } from '@/contexts/ThemeContext';
+import { Sun, Moon } from 'lucide-react';
 
 interface AdminDashboardProps {
   onLogout: () => void;
@@ -52,6 +54,7 @@ interface AdminDashboardProps {
 
 export function AdminDashboard({ onLogout }: AdminDashboardProps) {
   // Your contact details — used for quick-contact buttons
+  const { resolvedTheme, toggleTheme } = useTheme();
   const OWNER_EMAIL = 'j0shbankole19@gmail.com';
   const OWNER_WHATSAPP = '+2349051717561'; // cleaned number
   const OWNER_SNAPCHAT = 'https://www.snapchat.com/add/j0shh.b?share_id=8ht5Xy9NMAA&locale=en-US';
@@ -203,7 +206,7 @@ ApeAcademy Team`
     color: string;
   }) => (
     <motion.div variants={fadeInUp}>
-      <Card className="backdrop-blur-xl bg-white/80 border-white/20 shadow-lg hover:shadow-xl transition-shadow">
+      <Card className="glass-card shadow-lg hover:shadow-xl transition-shadow">
         <CardHeader className="flex flex-row items-center justify-between pb-2">
           <CardTitle className="text-sm font-medium text-gray-600">{title}</CardTitle>
           <div className={`p-2 rounded-lg ${color}`}>
@@ -221,9 +224,9 @@ ApeAcademy Team`
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-purple-50 to-blue-50">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="backdrop-blur-xl bg-white/70 border-b border-white/20 sticky top-0 z-40">
+      <header className="glass border-b sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -254,6 +257,14 @@ ApeAcademy Team`
                 <LogOut className="h-4 w-4 mr-2" />
                 Logout
               </Button>
+              <button
+                onClick={toggleTheme}
+                className="glass w-9 h-9 rounded-xl flex items-center justify-center hover:scale-110 transition-all hover:shadow-[0_0_12px_rgba(34,197,94,0.4)]"
+              >
+                {resolvedTheme === 'dark'
+                  ? <Sun className="h-4 w-4 text-emerald-400" />
+                  : <Moon className="h-4 w-4 text-emerald-700" />}
+              </button>
             </div>
           </div>
         </div>
@@ -262,7 +273,7 @@ ApeAcademy Team`
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-6 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="backdrop-blur-xl bg-white/50 border border-white/20 p-1 rounded-xl">
+          <TabsList className="glass p-1 rounded-xl">
             <TabsTrigger value="overview" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">
               Overview
             </TabsTrigger>
@@ -342,7 +353,7 @@ ApeAcademy Team`
             {/* Charts Section */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <motion.div variants={fadeInUp} initial="initial" animate="animate">
-                <Card className="backdrop-blur-xl bg-white/80 border-white/20 shadow-lg">
+                <Card className="glass-card shadow-lg">
                   <CardHeader>
                     <CardTitle className="text-lg font-semibold flex items-center gap-2">
                       <Activity className="h-5 w-5 text-emerald-600" />
@@ -368,7 +379,7 @@ ApeAcademy Team`
               </motion.div>
 
               <motion.div variants={fadeInUp} initial="initial" animate="animate" transition={{ delay: 0.1 }}>
-                <Card className="backdrop-blur-xl bg-white/80 border-white/20 shadow-lg">
+                <Card className="glass-card shadow-lg">
                   <CardHeader>
                     <CardTitle className="text-lg font-semibold flex items-center gap-2">
                       <TrendingUp className="h-5 w-5 text-green-500" />
@@ -396,7 +407,7 @@ ApeAcademy Team`
 
             {/* Recent Activity */}
             <motion.div variants={fadeInUp} initial="initial" animate="animate" transition={{ delay: 0.2 }}>
-              <Card className="backdrop-blur-xl bg-white/80 border-white/20 shadow-lg">
+              <Card className="glass-card shadow-lg">
                 <CardHeader>
                   <CardTitle className="text-lg font-semibold">Recent Activity</CardTitle>
                 </CardHeader>
@@ -432,7 +443,7 @@ ApeAcademy Team`
 
           {/* Assignments Tab */}
           <TabsContent value="assignments" className="space-y-4">
-            <Card className="backdrop-blur-xl bg-white/80 border-white/20 shadow-lg">
+            <Card className="glass-card shadow-lg">
               <CardHeader>
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <CardTitle className="text-lg font-semibold">All Assignments</CardTitle>
@@ -517,7 +528,7 @@ ApeAcademy Team`
 
           {/* Users Tab */}
           <TabsContent value="users" className="space-y-4">
-            <Card className="backdrop-blur-xl bg-white/80 border-white/20 shadow-lg">
+            <Card className="glass-card shadow-lg">
               <CardHeader>
                 <CardTitle className="text-lg font-semibold">All Users</CardTitle>
               </CardHeader>
@@ -560,7 +571,7 @@ ApeAcademy Team`
 
           {/* Activity Log Tab */}
           <TabsContent value="activity" className="space-y-4">
-            <Card className="backdrop-blur-xl bg-white/80 border-white/20 shadow-lg">
+            <Card className="glass-card shadow-lg">
               <CardHeader>
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <CardTitle className="text-lg font-semibold">Activity Log</CardTitle>
@@ -618,7 +629,7 @@ ApeAcademy Team`
 
           {/* Alerts Tab */}
           <TabsContent value="alerts" className="space-y-4">
-            <Card className="backdrop-blur-xl bg-white/80 border-white/20 shadow-lg">
+            <Card className="glass-card shadow-lg">
               <CardHeader>
                 <CardTitle className="text-lg font-semibold flex items-center gap-2">
                   <AlertCircle className="h-5 w-5 text-orange-500" />
@@ -692,7 +703,7 @@ ApeAcademy Team`
             </Card>
           </TabsContent>
           <TabsContent value="topics" className="space-y-4">
-            <Card className="backdrop-blur-xl bg-white/80 border-white/20 shadow-lg">
+            <Card className="glass-card shadow-lg">
               <CardHeader>
                 <CardTitle className="text-lg font-semibold flex items-center gap-2">
                   <BookOpen className="h-5 w-5 text-blue-600" />
@@ -789,7 +800,7 @@ ApeAcademy Team`
           </TabsContent>
 
           <TabsContent value="suggestions" className="space-y-4">
-            <Card className="backdrop-blur-xl bg-white/80 border-white/20 shadow-lg">
+            <Card className="glass-card shadow-lg">
               <CardHeader>
                 <CardTitle className="text-lg font-semibold flex items-center gap-2">
                   <MessageSquare className="h-5 w-5 text-emerald-600" />
@@ -857,7 +868,7 @@ ApeAcademy Team`
 
       {/* Assignment Details Dialog */}
       <Dialog open={showAssignmentDetails} onOpenChange={setShowAssignmentDetails}>
-        <DialogContent className="max-w-2xl backdrop-blur-xl bg-white/95">
+        <DialogContent className="max-w-2xl glass">
           <DialogHeader>
             <DialogTitle>Assignment Details</DialogTitle>
             <DialogDescription>

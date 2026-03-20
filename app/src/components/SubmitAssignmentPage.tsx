@@ -234,7 +234,7 @@ setCurrentAssignment(prev => prev ? { ...prev, paymentAmount: completedAnalysis.
             <form onSubmit={handleFormSubmit} className="space-y-6">
               {/* User Info Section */}
               {user && (
-                <Card className="backdrop-blur-xl bg-white/80 border-white/20 shadow-lg">
+                <Card className="liquid-panel border-white/20 shadow-lg">
                   <CardContent className="p-6">
                     <h3 className="text-lg font-semibold text-gray-900 mb-4">Your Information</h3>
                     <div className="grid md:grid-cols-2 gap-4">
@@ -258,7 +258,7 @@ setCurrentAssignment(prev => prev ? { ...prev, paymentAmount: completedAnalysis.
               )}
 
               {/* Assignment Details */}
-              <Card className="backdrop-blur-xl bg-white/80 border-white/20 shadow-lg">
+              <Card className="liquid-panel border-white/20 shadow-lg">
                 <CardContent className="p-6">
                   <h3 className="text-lg font-semibold text-gray-900 mb-4">Assignment Details</h3>
                   
@@ -344,7 +344,7 @@ setCurrentAssignment(prev => prev ? { ...prev, paymentAmount: completedAnalysis.
               </Card>
 
               {/* Delivery Platform */}
-              <Card className="backdrop-blur-xl bg-white/80 border-white/20 shadow-lg">
+              <Card className="liquid-panel border-white/20 shadow-lg">
                 <CardContent className="p-6">
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">How should we deliver your completed assignment?</h3>
                   <p className="text-sm text-gray-500 mb-5">Choose a platform and provide your contact details</p>
@@ -437,7 +437,7 @@ setCurrentAssignment(prev => prev ? { ...prev, paymentAmount: completedAnalysis.
               </Card>
 
               {/* File Upload */}
-              <Card className="backdrop-blur-xl bg-white/80 border-white/20 shadow-lg">
+              <Card className="liquid-panel border-white/20 shadow-lg">
                 <CardContent className="p-6">
                   <h3 className="text-lg font-semibold text-gray-900 mb-4">Upload Files</h3>
                   

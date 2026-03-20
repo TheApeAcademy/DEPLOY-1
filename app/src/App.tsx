@@ -140,10 +140,14 @@ function AppInner() {
 
   return (
     <>
+      {/* Dark mode glow orbs */}
+      <div className="dark-orb-1" />
+      <div className="dark-orb-2" />
       <Toaster position="top-center" richColors toastOptions={{
         style: { background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(10px)', border: '1px solid rgba(0,0,0,0.1)' }
       }} />
 
+      <div className="page-content">
       <AnimatePresence mode="wait">
         {currentPage === 'landing' && (
           <motion.div key="landing" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
@@ -209,6 +213,7 @@ function AppInner() {
           </motion.div>
         )}
       </AnimatePresence>
+      </div>
 
       <RegionSelectionModal isOpen={showRegionModal} onClose={() => setShowRegionModal(false)} onComplete={handleRegionComplete} />
       <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} onAuth={handleAuth} />

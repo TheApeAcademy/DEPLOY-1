@@ -17,6 +17,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import type { User, UserPreferences } from '@/types';
+import { useTheme } from '@/contexts/ThemeContext';
+import { Sun, Moon } from 'lucide-react';
 import { ASSIGNMENT_STATUS_LABELS } from '@/data/constants';
 import { supabase } from '@/lib/supabase';
 
@@ -46,6 +48,7 @@ export function HomePage({
   setShowProfile,
 }: HomePageProps) {
   const [userAssignments, setUserAssignments] = useState<any[]>([]);
+  const { resolvedTheme, toggleTheme } = useTheme();
 
   useEffect(() => {
     if (!user) return;
@@ -70,7 +73,7 @@ export function HomePage({
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950">
-      <header className="backdrop-blur-xl bg-white/70 dark:bg-gray-900/70 border-b border-white/20 dark:border-gray-700/30 sticky top-0 z-40">
+      <header className="glass border-b sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -90,6 +93,15 @@ export function HomePage({
             >
               <UserIcon className="h-5 w-5 text-white" />
             </button>
+            <button
+              onClick={toggleTheme}
+              className="glass w-10 h-10 rounded-full flex items-center justify-center hover:scale-110 transition-all hover:shadow-[0_0_14px_rgba(34,197,94,0.4)]"
+              title="Toggle dark mode"
+            >
+              {resolvedTheme === 'dark'
+                ? <Sun className="h-4 w-4 text-emerald-400" />
+                : <Moon className="h-4 w-4 text-emerald-700" />}
+            </button>
           </div>
         </div>
       </header>
@@ -100,7 +112,7 @@ export function HomePage({
           animate={{ opacity: 1, y: 0 }}
           className="fixed top-20 right-6 z-50"
         >
-          <div className="backdrop-blur-2xl bg-white/95 dark:bg-gray-900/95 rounded-2xl border border-white/20 dark:border-gray-700/30 shadow-xl p-4 w-64">
+          <div className="glass rounded-2xl shadow-xl p-4 w-64">
             <div className="space-y-3">
               <div className="pb-3 border-b border-gray-200 dark:border-gray-700">
                 <div className="font-semibold text-gray-900 dark:text-white">{user.name}</div>
@@ -150,7 +162,7 @@ export function HomePage({
           transition={{ delay: 0.1 }}
           className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8"
         >
-          <Card className="backdrop-blur-xl bg-white/80 dark:bg-gray-900/80 border-white/20 dark:border-gray-700/30 shadow-lg">
+          <Card className="glass-card shadow-lg">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -164,7 +176,7 @@ export function HomePage({
             </CardContent>
           </Card>
 
-          <Card className="backdrop-blur-xl bg-white/80 dark:bg-gray-900/80 border-white/20 dark:border-gray-700/30 shadow-lg">
+          <Card className="glass-card shadow-lg">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -178,7 +190,7 @@ export function HomePage({
             </CardContent>
           </Card>
 
-          <Card className="backdrop-blur-xl bg-white/80 dark:bg-gray-900/80 border-white/20 dark:border-gray-700/30 shadow-lg">
+          <Card className="glass-card shadow-lg">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -200,7 +212,7 @@ export function HomePage({
             transition={{ delay: 0.2 }}
             className="mb-8"
           >
-            <Card className="backdrop-blur-xl bg-white/80 dark:bg-gray-900/80 border-white/20 dark:border-gray-700/30 shadow-lg">
+            <Card className="glass-card shadow-lg">
               <CardHeader>
                 <CardTitle className="text-lg font-semibold flex items-center gap-2 text-gray-900 dark:text-white">
                   <Settings className="h-5 w-5 text-gray-500" />
@@ -309,7 +321,7 @@ export function HomePage({
           transition={{ delay: 0.35 }}
           className="grid md:grid-cols-1 gap-6 mb-8"
         >
-          <Card className="backdrop-blur-xl bg-white/80 dark:bg-gray-900/80 border-white/20 dark:border-gray-700/30 shadow-lg">
+          <Card className="glass-card shadow-lg">
             <CardHeader>
               <CardTitle className="text-lg font-semibold flex items-center gap-2 text-gray-900 dark:text-white">
                 <History className="h-5 w-5 text-gray-500" />
@@ -351,7 +363,7 @@ export function HomePage({
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
           >
-            <Card className="backdrop-blur-xl bg-gradient-to-r from-emerald-500/10 to-green-500/10 rounded-2xl border border-emerald-200 dark:border-emerald-900">
+            <Card className="glass-card">
               <CardContent className="p-8 text-center">
                 <h3 className="text-2xl font-semibold text-gray-900 dark:text-white mb-3">
                   Get Started Today
