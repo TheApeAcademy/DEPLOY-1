@@ -1,5 +1,5 @@
 import { motion } from 'motion/react';
-import { CheckCircle, FileText, Calendar, DollarSign, ArrowLeft, Download, Sparkles } from 'lucide-react';
+import { CheckCircle, FileText, Calendar, ArrowLeft, Download, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import type { Assignment } from '@/types';
