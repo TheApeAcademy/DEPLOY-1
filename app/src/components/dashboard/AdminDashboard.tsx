@@ -926,6 +926,38 @@ ApeAcademy Team`
                 </div>
               )}
 
+              {selectedAssignment.files && selectedAssignment.files.length > 0 && (
+                <div className="p-4 rounded-xl bg-blue-50 border border-blue-200">
+                  <h4 className="font-semibold text-blue-900 mb-3 text-sm">📎 Attached Files ({selectedAssignment.files.length})</h4>
+                  <div className="space-y-2">
+                    {selectedAssignment.files.map((file: any, index: number) => (
+                      <div key={index} className="flex items-center justify-between p-2 bg-white rounded-lg border border-blue-100">
+                        <div className="flex items-center gap-2">
+                          <span className="text-blue-500">📄</span>
+                          <div>
+                            <p className="text-sm font-medium text-gray-900">{file.name}</p>
+                            <p className="text-xs text-gray-400">{file.size ? (file.size / 1024).toFixed(1) + ' KB' : ''}</p>
+                          </div>
+                        </div>
+                        {file.url && (
+                          <a href={file.url} target="_blank" rel="noopener noreferrer"
+                            className="text-xs font-semibold px-3 py-1.5 rounded-lg text-white"
+                            style={{ background: 'linear-gradient(135deg,#047857,#10b981)' }}>
+                            Open
+                          </a>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {(!selectedAssignment.files || selectedAssignment.files.length === 0) && (
+                <div className="p-3 rounded-xl bg-gray-50 border border-gray-200 text-sm text-gray-500">
+                  📎 No files attached to this assignment
+                </div>
+              )}
+
               {/* Contact Student Section */}
               <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200">
                 <h4 className="font-semibold text-emerald-900 mb-1">Contact Student</h4>
