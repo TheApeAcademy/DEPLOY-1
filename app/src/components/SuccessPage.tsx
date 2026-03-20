@@ -120,8 +120,7 @@ export function SuccessPage({ assignment, onBackToHome }: SuccessPageProps) {
                     <div>
                       <label className="text-sm text-green-600">Payment Amount</label>
                       <p className="text-2xl font-bold text-green-900 flex items-center gap-2">
-                        <DollarSign className="h-6 w-6" />
-                        {assignment.paymentAmount.toFixed(2)}
+                        £{assignment.paymentAmount.toFixed(2)}
                       </p>
                     </div>
                     <div className="text-right">
