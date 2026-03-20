@@ -244,20 +244,20 @@ export const getAllUsers = async (): Promise<User[]> => {
 export const getDashboardStats = async (): Promise<DashboardStats> => {
   const today = new Date().toISOString().split('T')[0];
 
-  const [usersRes, assignmentsRes, paymentsRes, todayUsersRes, todayAssignmentsRes, todayRevenueRes] =
+  const [usersRes, assignmentsRes, paidAssignmentsRes, todayUsersRes, todayAssignmentsRes, todayPaidRes] =
     await Promise.all([
       supabase.from('profiles').select('id', { count: 'exact', head: true }),
       supabase.from('assignments').select('id, status', { count: 'exact' }),
-      supabase.from('payments').select('amount, status'),
+      supabase.from('assignments').select('payment_amount').in('status', ['paid', 'completed']),
       supabase.from('profiles').select('id', { count: 'exact', head: true }).gte('created_at', today),
       supabase.from('assignments').select('id', { count: 'exact', head: true }).gte('created_at', today),
-      supabase.from('payments').select('amount').eq('status', 'completed').gte('created_at', today),
+      supabase.from('assignments').select('payment_amount').in('status', ['paid', 'completed']).gte('created_at', today),
     ]);
 
   const assignments = assignmentsRes.data || [];
-  const payments = paymentsRes.data || [];
-  const totalRevenue = payments.filter(p => p.status === 'completed').reduce((s, p) => s + p.amount, 0);
-  const revenueToday = (todayRevenueRes.data || []).reduce((s: number, p: any) => s + p.amount, 0);
+  const paidAssignments = paidAssignmentsRes.data || [];
+  const totalRevenue = paidAssignments.reduce((s: number, a: any) => s + (a.payment_amount || 0), 0);
+  const revenueToday = (todayPaidRes.data || []).reduce((s: number, a: any) => s + (a.payment_amount || 0), 0);
 
   return {
     totalUsers: usersRes.count || 0,
@@ -266,7 +266,7 @@ export const getDashboardStats = async (): Promise<DashboardStats> => {
     pendingAssignments: assignments.filter(a => a.status === 'pending').length,
     analyzingAssignments: assignments.filter(a => a.status === 'analyzing').length,
     completedAssignments: assignments.filter(a => a.status === 'completed').length,
-    failedPayments: payments.filter(p => p.status === 'failed').length,
+    failedPayments: 0,
     newUsersToday: todayUsersRes.count || 0,
     assignmentsToday: todayAssignmentsRes.count || 0,
     revenueToday,
