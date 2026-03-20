@@ -18,7 +18,7 @@ interface PaymentPanelProps {
   onPaymentFailed: (error: string) => void;
 }
 
-export function PaymentPanel({ assignment, user, onPaymentComplete, onPaymentFailed }: PaymentPanelProps) {
+export function PaymentPanel({ assignment, user, onPaymentComplete, onPaymentFailed: _onPaymentFailed }: PaymentPanelProps) {
   const [step, setStep] = useState<'ready' | 'confirming' | 'success' | 'error'>('ready');
   const [error, setError] = useState<string | null>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
