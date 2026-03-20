@@ -194,8 +194,8 @@ export function TopicRequestPage({ user, onBack, onLogin }: TopicRequestPageProp
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50">
-      <header className="backdrop-blur-xl bg-white/70 border-b border-white/20 sticky top-0 z-40">
+    <div className="min-h-screen bg-background">
+      <header className="glass border-b sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center gap-4">
           <Button onClick={onBack} variant="ghost" size="icon" className="rounded-full hover:bg-gray-100">
             <ArrowLeft className="h-5 w-5" />
