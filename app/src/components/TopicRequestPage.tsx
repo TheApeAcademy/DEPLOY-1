@@ -173,7 +173,7 @@ export function TopicRequestPage({ user, onBack, onLogin }: TopicRequestPageProp
           <div style={{ width: '72px', height: '72px', borderRadius: '50%', background: 'rgba(34,197,94,0.15)', border: '1px solid rgba(34,197,94,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', fontSize: '32px' }}>
             📚
           </div>
-          <h2 style={{ fontFamily: 'inherit', fontSize: '24px', fontWeight: '800', color: '#e8f5ec', marginBottom: '8px' }}>Almost there!</h2>
+          <h2 style={{ fontFamily: 'inherit', fontSize: '24px', fontWeight: '800', color: resolvedTheme === 'dark' ? '#e8f5ec' : '#052e16', marginBottom: '8px' }}>Almost there!</h2>
           <p style={{ color: resolvedTheme === 'dark' ? 'rgba(134,239,172,0.7)' : '#15803d', fontSize: '14px', marginBottom: '24px', lineHeight: '1.6' }}>
             Your topic request has been saved. Complete the £20 payment to confirm your order.
           </p>
@@ -288,7 +288,7 @@ export function TopicRequestPage({ user, onBack, onLogin }: TopicRequestPageProp
                 onMouseOut={e => (e.currentTarget.style.borderColor = 'rgba(34,197,94,0.3)')}
               >
                 <Upload className="h-9 w-9 mx-auto mb-2 text-emerald-400" />
-                <p style={{ color: '#e8f5ec', fontWeight: '600', marginBottom: '4px' }}>Click to upload files</p>
+                <p style={{ color: resolvedTheme === 'dark' ? '#e8f5ec' : '#052e16', fontWeight: '600', marginBottom: '4px' }}>Click to upload files</p>
                 <p style={{ fontSize: '12px', color: resolvedTheme === 'dark' ? 'rgba(134,239,172,0.4)' : '#6b7280' }}>PDF, DOCX, or images up to 10MB</p>
               </div>
               {files.length > 0 && (

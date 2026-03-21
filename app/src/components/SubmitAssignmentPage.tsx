@@ -279,7 +279,7 @@ export function SubmitAssignmentPage({ user, onBack, onSubmit, onLogin }: Submit
                       <Mail className="h-5 w-5 text-emerald-400 shrink-0" />
                       <div>
                         <div style={{ fontSize: '11px', color: resolvedTheme === 'dark' ? 'rgba(134,239,172,0.6)' : '#374151', marginBottom: '2px' }}>Email</div>
-                        <div style={{ fontWeight: '600', color: '#e8f5ec', fontSize: '13px' }}>{user.email}</div>
+                        <div style={{ fontWeight: '600', color: resolvedTheme === 'dark' ? '#e8f5ec' : '#052e16', fontSize: '13px' }}>{user.email}</div>
                       </div>
                     </div>
                   </div>
@@ -424,7 +424,7 @@ export function SubmitAssignmentPage({ user, onBack, onSubmit, onLogin }: Submit
                   onMouseOut={e => (e.currentTarget.style.borderColor = 'rgba(34,197,94,0.3)')}
                 >
                   <Upload className="h-10 w-10 mx-auto mb-3 text-emerald-400" />
-                  <div style={{ color: '#e8f5ec', fontWeight: '600', marginBottom: '4px' }}>Click to upload files</div>
+                  <div style={{ color: resolvedTheme === 'dark' ? '#e8f5ec' : '#052e16', fontWeight: '600', marginBottom: '4px' }}>Click to upload files</div>
                   <div style={{ fontSize: '12px', color: resolvedTheme === 'dark' ? 'rgba(134,239,172,0.5)' : '#6b7280', marginBottom: '16px' }}>PDF, DOCX, or images up to 10MB</div>
                   <span style={{
                     display: 'inline-flex', alignItems: 'center', gap: '8px',
@@ -442,7 +442,7 @@ export function SubmitAssignmentPage({ user, onBack, onSubmit, onLogin }: Submit
                       <div key={index} style={infoRowStyle}>
                         <FileText className="h-5 w-5 text-emerald-400 shrink-0" />
                         <div className="flex-1">
-                          <div style={{ fontWeight: '600', color: '#e8f5ec', fontSize: '13px' }}>{file.name}</div>
+                          <div style={{ fontWeight: '600', color: resolvedTheme === 'dark' ? '#e8f5ec' : '#052e16', fontSize: '13px' }}>{file.name}</div>
                           <div style={{ fontSize: '11px', color: resolvedTheme === 'dark' ? 'rgba(134,239,172,0.5)' : '#6b7280' }}>{(file.size / 1024).toFixed(2)} KB</div>
                         </div>
                         <button type="button" onClick={() => removeFile(index)} style={{ color: '#f87171', background: 'none', border: 'none', cursor: 'pointer' }}>
