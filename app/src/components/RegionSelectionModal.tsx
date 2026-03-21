@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTheme } from '@/contexts/ThemeContext';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, MapPin, GraduationCap, BookOpen, ChevronRight, Check } from 'lucide-react';
 import type { UserPreferences } from '@/types';
@@ -11,10 +12,10 @@ interface RegionSelectionModalProps {
 }
 
 const modalStyle: React.CSSProperties = {
-  background: 'rgba(10,15,11,0.85)',
+  background: resolvedTheme === 'dark' ? 'rgba(10,15,11,0.85)' : 'rgba(255,255,255,0.92)',
   backdropFilter: 'blur(32px) saturate(180%)',
   WebkitBackdropFilter: 'blur(32px) saturate(180%)',
-  border: '1px solid rgba(34,197,94,0.15)',
+  border: resolvedTheme === 'dark' ? '1px solid rgba(34,197,94,0.15)' : '1px solid rgba(255,255,255,0.6)',
   borderRadius: '24px',
   overflow: 'hidden',
   width: '100%',
@@ -23,13 +24,13 @@ const modalStyle: React.CSSProperties = {
 };
 
 const btnBase: React.CSSProperties = {
-  background: 'rgba(255,255,255,0.05)',
-  border: '1px solid rgba(34,197,94,0.1)',
+  background: resolvedTheme === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.6)',
+  border: resolvedTheme === 'dark' ? '1px solid rgba(34,197,94,0.1)' : '1px solid rgba(0,0,0,0.08)',
   borderRadius: '14px',
   padding: '16px',
   cursor: 'pointer',
   transition: 'all 0.2s',
-  color: '#e8f5ec',
+  color: resolvedTheme === 'dark' ? '#e8f5ec' : '#052e16',
   fontFamily: 'inherit',
   textAlign: 'left' as const,
   display: 'flex',
@@ -38,6 +39,7 @@ const btnBase: React.CSSProperties = {
 };
 
 export function RegionSelectionModal({ isOpen, onClose, onComplete }: RegionSelectionModalProps) {
+  const { resolvedTheme } = useTheme();
   const [step, setStep] = useState<'region' | 'country' | 'school' | 'department'>('region');
   const [selectedRegion, setSelectedRegion] = useState('');
   const [selectedCountry, setSelectedCountry] = useState('');
@@ -84,7 +86,7 @@ export function RegionSelectionModal({ isOpen, onClose, onComplete }: RegionSele
               style={modalStyle}
             >
               {/* Header */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 24px', borderBottom: '1px solid rgba(34,197,94,0.1)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 24px', borderBottom: resolvedTheme === 'dark' ? '1px solid rgba(34,197,94,0.1)' : '1px solid rgba(0,0,0,0.08)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   {step !== 'region' && (
                     <button onClick={handleBack} style={{ width: '32px', height: '32px', borderRadius: '50%', border: '1px solid rgba(34,197,94,0.2)', background: 'rgba(34,197,94,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#22c55e' }}>
@@ -92,9 +94,9 @@ export function RegionSelectionModal({ isOpen, onClose, onComplete }: RegionSele
                     </button>
                   )}
                   <span style={{ fontSize: '22px' }}>{stepIcons[step]}</span>
-                  <h2 style={{ fontFamily: 'inherit', fontSize: '18px', fontWeight: '800', color: '#e8f5ec', margin: 0 }}>{stepTitles[step]}</h2>
+                  <h2 style={{ fontFamily: 'inherit', fontSize: '18px', fontWeight: '800', color: resolvedTheme === 'dark' ? '#e8f5ec' : '#052e16', margin: 0 }}>{stepTitles[step]}</h2>
                 </div>
-                <button onClick={resetAndClose} style={{ width: '32px', height: '32px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'rgba(134,239,172,0.6)' }}>
+                <button onClick={resetAndClose} style={{ width: '32px', height: '32px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: resolvedTheme === 'dark' ? 'rgba(134,239,172,0.6)' : '#374151' }}>
                   <X className="h-4 w-4" />
                 </button>
               </div>
@@ -109,13 +111,13 @@ export function RegionSelectionModal({ isOpen, onClose, onComplete }: RegionSele
                       {REGIONS.map((r) => (
                         <button key={r.region} onClick={() => handleRegionSelect(r.region)}
                           style={{ ...btnBase, flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '20px', textAlign: 'center' }}
-                          onMouseOver={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(34,197,94,0.1)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(34,197,94,0.3)'; }}
-                          onMouseOut={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.05)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(34,197,94,0.1)'; }}>
+                          onMouseOver={e => { (e.currentTarget as HTMLElement).style.background = resolvedTheme === 'dark' ? 'rgba(34,197,94,0.1)' : 'rgba(34,197,94,0.08)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(34,197,94,0.3)'; }}
+                          onMouseOut={e => { (e.currentTarget as HTMLElement).style.background = resolvedTheme === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.6)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(34,197,94,0.1)'; }}>
                           <span style={{ fontSize: '28px', marginBottom: '8px' }}>
                             {r.region === 'Europe' ? '🇪🇺' : r.region === 'America' ? '🌎' : r.region === 'Gulf' ? '🏜️' : r.region === 'Africa' ? '🌍' : r.region === 'Asia' ? '🌏' : '🦘'}
                           </span>
-                          <span style={{ fontWeight: '700', fontSize: '14px', color: '#e8f5ec' }}>{r.region}</span>
-                          <span style={{ fontSize: '11px', color: 'rgba(134,239,172,0.5)', marginTop: '2px' }}>{r.countries.length} countries</span>
+                          <span style={{ fontWeight: '700', fontSize: '14px', color: resolvedTheme === 'dark' ? '#e8f5ec' : '#052e16' }}>{r.region}</span>
+                          <span style={{ fontSize: '11px', color: resolvedTheme === 'dark' ? 'rgba(134,239,172,0.5)' : '#6b7280', marginTop: '2px' }}>{r.countries.length} countries</span>
                         </button>
                       ))}
                     </motion.div>
@@ -123,15 +125,15 @@ export function RegionSelectionModal({ isOpen, onClose, onComplete }: RegionSele
 
                   {step === 'country' && (
                     <motion.div key="country" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
-                      <p style={{ fontSize: '13px', color: 'rgba(134,239,172,0.6)', marginBottom: '14px' }}>
+                      <p style={{ fontSize: '13px', color: resolvedTheme === 'dark' ? 'rgba(134,239,172,0.6)' : '#374151', marginBottom: '14px' }}>
                         Region: <span style={{ color: '#22c55e', fontWeight: '700' }}>{selectedRegion}</span>
                       </p>
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
                         {REGIONS.find(r => r.region === selectedRegion)?.countries.map(country => (
                           <button key={country} onClick={() => handleCountrySelect(country)}
                             style={btnBase}
-                            onMouseOver={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(34,197,94,0.1)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(34,197,94,0.3)'; }}
-                            onMouseOut={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.05)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(34,197,94,0.1)'; }}>
+                            onMouseOver={e => { (e.currentTarget as HTMLElement).style.background = resolvedTheme === 'dark' ? 'rgba(34,197,94,0.1)' : 'rgba(34,197,94,0.08)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(34,197,94,0.3)'; }}
+                            onMouseOut={e => { (e.currentTarget as HTMLElement).style.background = resolvedTheme === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.6)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(34,197,94,0.1)'; }}>
                             <span style={{ fontSize: '13px', fontWeight: '600' }}>{country}</span>
                             <ChevronRight className="h-4 w-4 text-emerald-500" style={{ flexShrink: 0 }} />
                           </button>
@@ -142,20 +144,20 @@ export function RegionSelectionModal({ isOpen, onClose, onComplete }: RegionSele
 
                   {step === 'school' && (
                     <motion.div key="school" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
-                      <p style={{ fontSize: '13px', color: 'rgba(134,239,172,0.6)', marginBottom: '14px' }}>
+                      <p style={{ fontSize: '13px', color: resolvedTheme === 'dark' ? 'rgba(134,239,172,0.6)' : '#374151', marginBottom: '14px' }}>
                         Country: <span style={{ color: '#22c55e', fontWeight: '700' }}>{selectedCountry}</span>
                       </p>
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
                         {SCHOOL_LEVELS.map(level => (
                           <button key={level} onClick={() => handleSchoolSelect(level)}
                             style={{ ...btnBase, flexDirection: 'column', alignItems: 'center', padding: '20px', textAlign: 'center' }}
-                            onMouseOver={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(34,197,94,0.1)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(34,197,94,0.3)'; }}
-                            onMouseOut={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.05)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(34,197,94,0.1)'; }}>
+                            onMouseOver={e => { (e.currentTarget as HTMLElement).style.background = resolvedTheme === 'dark' ? 'rgba(34,197,94,0.1)' : 'rgba(34,197,94,0.08)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(34,197,94,0.3)'; }}
+                            onMouseOut={e => { (e.currentTarget as HTMLElement).style.background = resolvedTheme === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.6)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(34,197,94,0.1)'; }}>
                             <span style={{ fontSize: '26px', marginBottom: '8px' }}>
                               {level === 'Primary' ? '🎒' : level === 'Middle' ? '📚' : level === 'High' ? '🎓' : '🏛️'}
                             </span>
-                            <span style={{ fontWeight: '700', fontSize: '14px', color: '#e8f5ec' }}>{level}</span>
-                            <span style={{ fontSize: '11px', color: 'rgba(134,239,172,0.5)', marginTop: '2px' }}>{DEPARTMENTS[level]?.length || 0} depts</span>
+                            <span style={{ fontWeight: '700', fontSize: '14px', color: resolvedTheme === 'dark' ? '#e8f5ec' : '#052e16' }}>{level}</span>
+                            <span style={{ fontSize: '11px', color: resolvedTheme === 'dark' ? 'rgba(134,239,172,0.5)' : '#6b7280', marginTop: '2px' }}>{DEPARTMENTS[level]?.length || 0} depts</span>
                           </button>
                         ))}
                       </div>
@@ -164,15 +166,15 @@ export function RegionSelectionModal({ isOpen, onClose, onComplete }: RegionSele
 
                   {step === 'department' && (
                     <motion.div key="department" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
-                      <p style={{ fontSize: '13px', color: 'rgba(134,239,172,0.6)', marginBottom: '14px' }}>
+                      <p style={{ fontSize: '13px', color: resolvedTheme === 'dark' ? 'rgba(134,239,172,0.6)' : '#374151', marginBottom: '14px' }}>
                         Level: <span style={{ color: '#22c55e', fontWeight: '700' }}>{selectedSchoolLevel}</span>
                       </p>
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(1, 1fr)', gap: '8px' }}>
                         {DEPARTMENTS[selectedSchoolLevel]?.map(dept => (
                           <button key={dept} onClick={() => handleDepartmentSelect(dept)}
                             style={btnBase}
-                            onMouseOver={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(34,197,94,0.1)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(34,197,94,0.3)'; }}
-                            onMouseOut={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.05)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(34,197,94,0.1)'; }}>
+                            onMouseOver={e => { (e.currentTarget as HTMLElement).style.background = resolvedTheme === 'dark' ? 'rgba(34,197,94,0.1)' : 'rgba(34,197,94,0.08)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(34,197,94,0.3)'; }}
+                            onMouseOut={e => { (e.currentTarget as HTMLElement).style.background = resolvedTheme === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.6)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(34,197,94,0.1)'; }}>
                             <span style={{ fontSize: '13px', fontWeight: '600' }}>{dept}</span>
                             <Check className="h-4 w-4 text-emerald-400" style={{ flexShrink: 0 }} />
                           </button>
@@ -185,11 +187,11 @@ export function RegionSelectionModal({ isOpen, onClose, onComplete }: RegionSele
               </div>
 
               {/* Progress dots */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '16px 24px', borderTop: '1px solid rgba(34,197,94,0.08)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '16px 24px', borderTop: resolvedTheme === 'dark' ? '1px solid rgba(34,197,94,0.08)' : '1px solid rgba(0,0,0,0.06)' }}>
                 {steps.map((s, i) => (
                   <div key={s} style={{ display: 'flex', alignItems: 'center' }}>
-                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: step === s ? '#22c55e' : steps.indexOf(step) > i ? '#16a34a' : 'rgba(255,255,255,0.15)', transition: 'all 0.3s', boxShadow: step === s ? '0 0 8px rgba(34,197,94,0.5)' : 'none' }} />
-                    {i < 3 && <div style={{ width: '24px', height: '1px', background: steps.indexOf(step) > i ? '#16a34a' : 'rgba(255,255,255,0.1)', marginLeft: '4px', marginRight: '4px' }} />}
+                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: step === s ? '#22c55e' : steps.indexOf(step) > i ? '#16a34a' : resolvedTheme === 'dark' ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)', transition: 'all 0.3s', boxShadow: step === s ? '0 0 8px rgba(34,197,94,0.5)' : 'none' }} />
+                    {i < 3 && <div style={{ width: '24px', height: '1px', background: steps.indexOf(step) > i ? '#16a34a' : resolvedTheme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)', marginLeft: '4px', marginRight: '4px' }} />}
                   </div>
                 ))}
               </div>
