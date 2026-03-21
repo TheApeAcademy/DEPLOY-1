@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'motion/react';
+import { useTheme } from '@/contexts/ThemeContext';
 import { ArrowLeft, Upload, X, FileText, Phone, Mail, AtSign, BookOpen, CheckCircle, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -22,21 +23,21 @@ interface TopicRequestPageProps {
 }
 
 const panel: React.CSSProperties = {
-  background: 'rgba(255,255,255,0.06)',
+  background: resolvedTheme === 'dark' ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.78)',
   backdropFilter: 'blur(24px) saturate(180%)',
   WebkitBackdropFilter: 'blur(24px) saturate(180%)',
-  border: '1px solid rgba(34,197,94,0.12)',
+  border: resolvedTheme === 'dark' ? '1px solid rgba(34,197,94,0.12)' : '1px solid rgba(255,255,255,0.5)',
   borderRadius: '18px',
   padding: '22px',
   marginBottom: '12px',
 };
 
 const inputStyle: React.CSSProperties = {
-  background: 'rgba(255,255,255,0.06)',
+  background: resolvedTheme === 'dark' ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.78)',
   border: '1px solid rgba(34,197,94,0.15)',
   borderRadius: '12px',
   padding: '12px 14px',
-  color: '#e8f5ec',
+  color: resolvedTheme === 'dark' ? '#e8f5ec' : '#052e16',
   width: '100%',
   outline: 'none',
   fontSize: '14px',
@@ -66,7 +67,7 @@ const labelStyle: React.CSSProperties = {
   fontWeight: '700',
   letterSpacing: '1.2px',
   textTransform: 'uppercase' as const,
-  color: 'rgba(134,239,172,0.7)',
+  color: resolvedTheme === 'dark' ? resolvedTheme === 'dark' ? 'rgba(134,239,172,0.7)' : '#15803d' : '#15803d',
   marginBottom: '6px',
   display: 'block',
 };
@@ -88,8 +89,8 @@ const infoRowStyle: React.CSSProperties = {
   alignItems: 'center',
   gap: '12px',
   padding: '12px 14px',
-  background: 'rgba(255,255,255,0.05)',
-  border: '1px solid rgba(34,197,94,0.1)',
+  background: resolvedTheme === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.6)',
+  border: resolvedTheme === 'dark' ? '1px solid rgba(34,197,94,0.1)' : '1px solid rgba(0,0,0,0.08)',
   borderRadius: '12px',
 };
 
@@ -98,6 +99,7 @@ const greenBar = (
 );
 
 export function TopicRequestPage({ user, onBack, onLogin }: TopicRequestPageProps) {
+  const { resolvedTheme } = useTheme();
   const [topicName, setTopicName] = useState('');
   const [subject, setSubject] = useState('');
   const [level, setLevel] = useState('');
@@ -172,7 +174,7 @@ export function TopicRequestPage({ user, onBack, onLogin }: TopicRequestPageProp
             📚
           </div>
           <h2 style={{ fontFamily: 'inherit', fontSize: '24px', fontWeight: '800', color: '#e8f5ec', marginBottom: '8px' }}>Almost there!</h2>
-          <p style={{ color: 'rgba(134,239,172,0.7)', fontSize: '14px', marginBottom: '24px', lineHeight: '1.6' }}>
+          <p style={{ color: resolvedTheme === 'dark' ? 'rgba(134,239,172,0.7)' : '#15803d', fontSize: '14px', marginBottom: '24px', lineHeight: '1.6' }}>
             Your topic request has been saved. Complete the £20 payment to confirm your order.
           </p>
           <a
@@ -191,10 +193,10 @@ export function TopicRequestPage({ user, onBack, onLogin }: TopicRequestPageProp
             <ExternalLink className="h-4 w-4" />
             Pay £20 — Complete Order
           </a>
-          <p style={{ fontSize: '11px', color: 'rgba(134,239,172,0.4)', marginBottom: '20px' }}>
+          <p style={{ fontSize: '11px', color: resolvedTheme === 'dark' ? 'rgba(134,239,172,0.4)' : '#6b7280', marginBottom: '20px' }}>
             ⚠️ Enter exactly £20 on the payment page
           </p>
-          <button onClick={onBack} style={{ background: 'none', border: 'none', color: 'rgba(134,239,172,0.5)', cursor: 'pointer', fontSize: '13px', fontFamily: 'inherit' }}>
+          <button onClick={onBack} style={{ background: 'none', border: 'none', color: resolvedTheme === 'dark' ? 'rgba(134,239,172,0.5)' : '#6b7280', cursor: 'pointer', fontSize: '13px', fontFamily: 'inherit' }}>
             Cancel and go back
           </button>
         </div>
@@ -240,21 +242,21 @@ export function TopicRequestPage({ user, onBack, onLogin }: TopicRequestPageProp
                   <label style={labelStyle}>Topic Name</label>
                   <input style={inputStyle} placeholder="e.g. Photosynthesis, Integration by Parts, The French Revolution"
                     value={topicName} onChange={e => setTopicName(e.target.value)} required />
-                  <p style={{ fontSize: '11px', color: 'rgba(134,239,172,0.4)', marginTop: '4px' }}>Be specific — "Newton's Second Law" is better than "Physics"</p>
+                  <p style={{ fontSize: '11px', color: resolvedTheme === 'dark' ? 'rgba(134,239,172,0.4)' : '#6b7280', marginTop: '4px' }}>Be specific — "Newton's Second Law" is better than "Physics"</p>
                 </div>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <label style={labelStyle}>Subject</label>
                     <select style={selectStyle} value={subject} onChange={e => setSubject(e.target.value)} required>
-                      <option value="" style={{ background: '#0a0f0b' }}>Select subject</option>
-                      {SUBJECTS.map(s => <option key={s} value={s} style={{ background: '#0a0f0b' }}>{s}</option>)}
+                      <option value="" style={{ background: resolvedTheme === 'dark' ? '#0a0f0b' : '#ffffff' }}>Select subject</option>
+                      {SUBJECTS.map(s => <option key={s} value={s} style={{ background: resolvedTheme === 'dark' ? '#0a0f0b' : '#ffffff' }}>{s}</option>)}
                     </select>
                   </div>
                   <div>
                     <label style={labelStyle}>Level of Study</label>
                     <select style={selectStyle} value={level} onChange={e => setLevel(e.target.value)} required>
-                      <option value="" style={{ background: '#0a0f0b' }}>Select level</option>
-                      {LEVELS.map(l => <option key={l} value={l} style={{ background: '#0a0f0b' }}>{l}</option>)}
+                      <option value="" style={{ background: resolvedTheme === 'dark' ? '#0a0f0b' : '#ffffff' }}>Select level</option>
+                      {LEVELS.map(l => <option key={l} value={l} style={{ background: resolvedTheme === 'dark' ? '#0a0f0b' : '#ffffff' }}>{l}</option>)}
                     </select>
                   </div>
                 </div>
@@ -263,7 +265,7 @@ export function TopicRequestPage({ user, onBack, onLogin }: TopicRequestPageProp
                   <textarea style={textareaStyle}
                     placeholder="What exactly don't you understand? e.g. 'I understand what photosynthesis is but I don't understand the light-dependent reactions'"
                     value={specificQuestions} onChange={e => setSpecificQuestions(e.target.value)} required />
-                  <p style={{ fontSize: '11px', color: 'rgba(134,239,172,0.4)', marginTop: '4px' }}>The more specific, the better your learning document</p>
+                  <p style={{ fontSize: '11px', color: resolvedTheme === 'dark' ? 'rgba(134,239,172,0.4)' : '#6b7280', marginTop: '4px' }}>The more specific, the better your learning document</p>
                 </div>
                 <div>
                   <label style={labelStyle}>Additional Context (Optional)</label>
@@ -277,7 +279,7 @@ export function TopicRequestPage({ user, onBack, onLogin }: TopicRequestPageProp
             {/* File Upload */}
             <div style={panel}>
               <div style={panelTitleStyle}>{greenBar} Upload Reference Files (Optional)</div>
-              <p style={{ fontSize: '13px', color: 'rgba(134,239,172,0.5)', marginBottom: '16px' }}>Textbook pages, past papers, notes — anything that helps us understand what you need</p>
+              <p style={{ fontSize: '13px', color: resolvedTheme === 'dark' ? 'rgba(134,239,172,0.5)' : '#6b7280', marginBottom: '16px' }}>Textbook pages, past papers, notes — anything that helps us understand what you need</p>
               <input type="file" id="fileUpload" multiple onChange={handleFileUpload} className="hidden" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg" />
               <div
                 onClick={() => document.getElementById('fileUpload')?.click()}
@@ -287,7 +289,7 @@ export function TopicRequestPage({ user, onBack, onLogin }: TopicRequestPageProp
               >
                 <Upload className="h-9 w-9 mx-auto mb-2 text-emerald-400" />
                 <p style={{ color: '#e8f5ec', fontWeight: '600', marginBottom: '4px' }}>Click to upload files</p>
-                <p style={{ fontSize: '12px', color: 'rgba(134,239,172,0.4)' }}>PDF, DOCX, or images up to 10MB</p>
+                <p style={{ fontSize: '12px', color: resolvedTheme === 'dark' ? 'rgba(134,239,172,0.4)' : '#6b7280' }}>PDF, DOCX, or images up to 10MB</p>
               </div>
               {files.length > 0 && (
                 <div className="mt-3 space-y-2">
@@ -296,7 +298,7 @@ export function TopicRequestPage({ user, onBack, onLogin }: TopicRequestPageProp
                       <FileText className="h-4 w-4 text-emerald-400 shrink-0" />
                       <div className="flex-1">
                         <div style={{ fontSize: '13px', fontWeight: '600', color: '#e8f5ec' }}>{file.name}</div>
-                        <div style={{ fontSize: '11px', color: 'rgba(134,239,172,0.4)' }}>{(file.size / 1024).toFixed(1)} KB</div>
+                        <div style={{ fontSize: '11px', color: resolvedTheme === 'dark' ? 'rgba(134,239,172,0.4)' : '#6b7280' }}>{(file.size / 1024).toFixed(1)} KB</div>
                       </div>
                       <button type="button" onClick={() => removeFile(i)} style={{ background: 'none', border: 'none', color: '#f87171', cursor: 'pointer' }}>
                         <X className="h-4 w-4" />
@@ -310,7 +312,7 @@ export function TopicRequestPage({ user, onBack, onLogin }: TopicRequestPageProp
             {/* Delivery Platform */}
             <div style={panel}>
               <div style={panelTitleStyle}>{greenBar} Delivery Preference</div>
-              <p style={{ fontSize: '13px', color: 'rgba(134,239,172,0.5)', marginBottom: '16px' }}>Choose a platform and provide your contact details</p>
+              <p style={{ fontSize: '13px', color: resolvedTheme === 'dark' ? 'rgba(134,239,172,0.5)' : '#6b7280', marginBottom: '16px' }}>Choose a platform and provide your contact details</p>
               <div className="grid grid-cols-3 gap-3 mb-4">
                 {[
                   { id: 'WhatsApp', emoji: '💬', color: 'rgba(37,211,102,0.15)', borderActive: 'rgba(37,211,102,0.5)' },
@@ -323,7 +325,7 @@ export function TopicRequestPage({ user, onBack, onLogin }: TopicRequestPageProp
                       padding: '16px 8px', borderRadius: '14px',
                       background: platform === p.id ? p.color : 'rgba(255,255,255,0.04)',
                       border: `1px solid ${platform === p.id ? p.borderActive : 'rgba(255,255,255,0.08)'}`,
-                      color: '#e8f5ec', cursor: 'pointer', transition: 'all 0.2s',
+                      color: resolvedTheme === 'dark' ? '#e8f5ec' : '#052e16', cursor: 'pointer', transition: 'all 0.2s',
                       fontFamily: 'inherit', fontSize: '13px', fontWeight: '600',
                       transform: platform === p.id ? 'scale(1.03)' : 'scale(1)',
                     }}>
@@ -359,7 +361,7 @@ export function TopicRequestPage({ user, onBack, onLogin }: TopicRequestPageProp
                   </div>
                 </div>
               )}
-              {!platform && <p style={{ textAlign: 'center', fontSize: '13px', color: 'rgba(134,239,172,0.4)', padding: '8px 0' }}>👆 Select a platform above to continue</p>}
+              {!platform && <p style={{ textAlign: 'center', fontSize: '13px', color: resolvedTheme === 'dark' ? 'rgba(134,239,172,0.4)' : '#6b7280', padding: '8px 0' }}>👆 Select a platform above to continue</p>}
             </div>
 
             {isUploading && (

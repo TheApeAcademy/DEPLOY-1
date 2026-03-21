@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'motion/react';
+import { useTheme } from '@/contexts/ThemeContext';
 import { ArrowLeft, Upload, X, FileText, User as UserIcon, Mail, CheckCircle, MessageCircle, Phone, AtSign } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -20,10 +21,10 @@ interface SubmitAssignmentPageProps {
 
 // Glass panel styles — matches preview exactly
 const panel: React.CSSProperties = {
-  background: 'rgba(255,255,255,0.06)',
+  background: resolvedTheme === 'dark' ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.78)',
   backdropFilter: 'blur(24px) saturate(180%)',
   WebkitBackdropFilter: 'blur(24px) saturate(180%)',
-  border: '1px solid rgba(34,197,94,0.12)',
+  border: resolvedTheme === 'dark' ? '1px solid rgba(34,197,94,0.12)' : '1px solid rgba(255,255,255,0.5)',
   borderRadius: '18px',
   padding: '22px',
   marginBottom: '12px',
@@ -40,11 +41,11 @@ const panelLight: React.CSSProperties = {
 };
 
 const inputStyle: React.CSSProperties = {
-  background: 'rgba(255,255,255,0.06)',
+  background: resolvedTheme === 'dark' ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.78)',
   border: '1px solid rgba(34,197,94,0.15)',
   borderRadius: '12px',
   padding: '12px 14px',
-  color: '#e8f5ec',
+  color: resolvedTheme === 'dark' ? '#e8f5ec' : '#052e16',
   width: '100%',
   outline: 'none',
   fontSize: '14px',
@@ -74,7 +75,7 @@ const labelStyle: React.CSSProperties = {
   fontWeight: '700',
   letterSpacing: '1.2px',
   textTransform: 'uppercase' as const,
-  color: 'rgba(134,239,172,0.7)',
+  color: resolvedTheme === 'dark' ? resolvedTheme === 'dark' ? 'rgba(134,239,172,0.7)' : '#15803d' : '#15803d',
   marginBottom: '6px',
   display: 'block',
 };
@@ -96,13 +97,14 @@ const infoRowStyle: React.CSSProperties = {
   alignItems: 'center',
   gap: '12px',
   padding: '12px 14px',
-  background: 'rgba(255,255,255,0.05)',
-  border: '1px solid rgba(34,197,94,0.1)',
+  background: resolvedTheme === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.6)',
+  border: resolvedTheme === 'dark' ? '1px solid rgba(34,197,94,0.1)' : '1px solid rgba(0,0,0,0.08)',
   borderRadius: '12px',
 };
 
 export function SubmitAssignmentPage({ user, onBack, onSubmit, onLogin }: SubmitAssignmentPageProps) {
   const [step, setStep] = useState<'form' | 'analysis' | 'payment' | 'success'>('form');
+  const { resolvedTheme } = useTheme();
   const [assignmentType, setAssignmentType] = useState('');
   const [courseName, setCourseName] = useState('');
   const [className, setClassName] = useState('');
@@ -269,14 +271,14 @@ export function SubmitAssignmentPage({ user, onBack, onSubmit, onLogin }: Submit
                     <div style={infoRowStyle}>
                       <UserIcon className="h-5 w-5 text-emerald-400 shrink-0" />
                       <div>
-                        <div style={{ fontSize: '11px', color: 'rgba(134,239,172,0.6)', marginBottom: '2px' }}>Name</div>
+                        <div style={{ fontSize: '11px', color: resolvedTheme === 'dark' ? 'rgba(134,239,172,0.6)' : '#374151', marginBottom: '2px' }}>Name</div>
                         <div style={{ fontWeight: '600', color: '#e8f5ec' }}>{user.name}</div>
                       </div>
                     </div>
                     <div style={infoRowStyle}>
                       <Mail className="h-5 w-5 text-emerald-400 shrink-0" />
                       <div>
-                        <div style={{ fontSize: '11px', color: 'rgba(134,239,172,0.6)', marginBottom: '2px' }}>Email</div>
+                        <div style={{ fontSize: '11px', color: resolvedTheme === 'dark' ? 'rgba(134,239,172,0.6)' : '#374151', marginBottom: '2px' }}>Email</div>
                         <div style={{ fontWeight: '600', color: '#e8f5ec', fontSize: '13px' }}>{user.email}</div>
                       </div>
                     </div>
@@ -300,8 +302,8 @@ export function SubmitAssignmentPage({ user, onBack, onSubmit, onLogin }: Submit
                         onChange={e => setAssignmentType(e.target.value)}
                         required
                       >
-                        <option value="" style={{ background: '#0a0f0b' }}>Select type</option>
-                        {ASSIGNMENT_TYPES.map(t => <option key={t} value={t} style={{ background: '#0a0f0b' }}>{t}</option>)}
+                        <option value="" style={{ background: resolvedTheme === 'dark' ? '#0a0f0b' : '#ffffff' }}>Select type</option>
+                        {ASSIGNMENT_TYPES.map(t => <option key={t} value={t} style={{ background: resolvedTheme === 'dark' ? '#0a0f0b' : '#ffffff' }}>{t}</option>)}
                       </select>
                     </div>
                     <div>
@@ -345,7 +347,7 @@ export function SubmitAssignmentPage({ user, onBack, onSubmit, onLogin }: Submit
                   <span style={{ width: '3px', height: '14px', borderRadius: '2px', background: 'linear-gradient(180deg,#22c55e,#15803d)', display: 'block', flexShrink: 0 }}></span>
                   Delivery Preference
                 </div>
-                <p style={{ fontSize: '13px', color: 'rgba(134,239,172,0.6)', marginBottom: '16px' }}>Choose a platform and provide your contact details</p>
+                <p style={{ fontSize: '13px', color: resolvedTheme === 'dark' ? 'rgba(134,239,172,0.6)' : '#374151', marginBottom: '16px' }}>Choose a platform and provide your contact details</p>
 
                 <div className="grid grid-cols-3 gap-3 mb-5">
                   {[
@@ -362,7 +364,7 @@ export function SubmitAssignmentPage({ user, onBack, onSubmit, onLogin }: Submit
                         padding: '16px 8px', borderRadius: '14px',
                         background: platform === p.id ? p.color : 'rgba(255,255,255,0.04)',
                         border: `1px solid ${platform === p.id ? p.borderActive : 'rgba(255,255,255,0.08)'}`,
-                        color: '#e8f5ec', cursor: 'pointer', transition: 'all 0.2s',
+                        color: resolvedTheme === 'dark' ? '#e8f5ec' : '#052e16', cursor: 'pointer', transition: 'all 0.2s',
                         fontFamily: 'inherit', fontSize: '13px', fontWeight: '600',
                         transform: platform === p.id ? 'scale(1.03)' : 'scale(1)',
                       }}
@@ -401,7 +403,7 @@ export function SubmitAssignmentPage({ user, onBack, onSubmit, onLogin }: Submit
                   </div>
                 )}
                 {!platform && (
-                  <p style={{ textAlign: 'center', fontSize: '13px', color: 'rgba(134,239,172,0.4)', padding: '8px 0' }}>👆 Select a platform above to continue</p>
+                  <p style={{ textAlign: 'center', fontSize: '13px', color: resolvedTheme === 'dark' ? 'rgba(134,239,172,0.4)' : '#6b7280', padding: '8px 0' }}>👆 Select a platform above to continue</p>
                 )}
               </div>
 
@@ -423,7 +425,7 @@ export function SubmitAssignmentPage({ user, onBack, onSubmit, onLogin }: Submit
                 >
                   <Upload className="h-10 w-10 mx-auto mb-3 text-emerald-400" />
                   <div style={{ color: '#e8f5ec', fontWeight: '600', marginBottom: '4px' }}>Click to upload files</div>
-                  <div style={{ fontSize: '12px', color: 'rgba(134,239,172,0.5)', marginBottom: '16px' }}>PDF, DOCX, or images up to 10MB</div>
+                  <div style={{ fontSize: '12px', color: resolvedTheme === 'dark' ? 'rgba(134,239,172,0.5)' : '#6b7280', marginBottom: '16px' }}>PDF, DOCX, or images up to 10MB</div>
                   <span style={{
                     display: 'inline-flex', alignItems: 'center', gap: '8px',
                     padding: '10px 20px', borderRadius: '10px', color: 'white',
@@ -441,7 +443,7 @@ export function SubmitAssignmentPage({ user, onBack, onSubmit, onLogin }: Submit
                         <FileText className="h-5 w-5 text-emerald-400 shrink-0" />
                         <div className="flex-1">
                           <div style={{ fontWeight: '600', color: '#e8f5ec', fontSize: '13px' }}>{file.name}</div>
-                          <div style={{ fontSize: '11px', color: 'rgba(134,239,172,0.5)' }}>{(file.size / 1024).toFixed(2)} KB</div>
+                          <div style={{ fontSize: '11px', color: resolvedTheme === 'dark' ? 'rgba(134,239,172,0.5)' : '#6b7280' }}>{(file.size / 1024).toFixed(2)} KB</div>
                         </div>
                         <button type="button" onClick={() => removeFile(index)} style={{ color: '#f87171', background: 'none', border: 'none', cursor: 'pointer' }}>
                           <X className="h-5 w-5" />
