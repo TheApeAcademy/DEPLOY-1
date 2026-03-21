@@ -2,11 +2,7 @@ import { useState } from 'react';
 import { motion } from 'motion/react';
 import { ArrowLeft, Upload, X, FileText, User as UserIcon, Mail, CheckCircle, MessageCircle, Phone, AtSign } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Card, CardContent } from '@/components/ui/card';
 import { toast } from 'sonner';
 import type { User, Assignment, FileInfo, AIAnalysis, Payment } from '@/types';
 import { PLATFORMS, ASSIGNMENT_TYPES } from '@/data/constants';
@@ -21,6 +17,89 @@ interface SubmitAssignmentPageProps {
   onSubmit: (assignment: Assignment) => void;
   onLogin: () => void;
 }
+
+// Glass panel styles — matches preview exactly
+const panel: React.CSSProperties = {
+  background: 'rgba(255,255,255,0.06)',
+  backdropFilter: 'blur(24px) saturate(180%)',
+  WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+  border: '1px solid rgba(34,197,94,0.12)',
+  borderRadius: '18px',
+  padding: '22px',
+  marginBottom: '12px',
+};
+
+const panelLight: React.CSSProperties = {
+  background: 'rgba(255,255,255,0.75)',
+  backdropFilter: 'blur(24px) saturate(180%)',
+  WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+  border: '1px solid rgba(255,255,255,0.5)',
+  borderRadius: '18px',
+  padding: '22px',
+  marginBottom: '12px',
+};
+
+const inputStyle: React.CSSProperties = {
+  background: 'rgba(255,255,255,0.06)',
+  border: '1px solid rgba(34,197,94,0.15)',
+  borderRadius: '12px',
+  padding: '12px 14px',
+  color: '#e8f5ec',
+  width: '100%',
+  outline: 'none',
+  fontSize: '14px',
+  transition: 'border-color 0.2s',
+  fontFamily: 'inherit',
+};
+
+const selectStyle: React.CSSProperties = {
+  ...inputStyle,
+  appearance: 'none',
+  WebkitAppearance: 'none',
+  cursor: 'pointer',
+  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2322c55e' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E")`,
+  backgroundRepeat: 'no-repeat',
+  backgroundPosition: 'right 14px center',
+  paddingRight: '40px',
+};
+
+const textareaStyle: React.CSSProperties = {
+  ...inputStyle,
+  minHeight: '80px',
+  resize: 'none' as const,
+};
+
+const labelStyle: React.CSSProperties = {
+  fontSize: '11px',
+  fontWeight: '700',
+  letterSpacing: '1.2px',
+  textTransform: 'uppercase' as const,
+  color: 'rgba(134,239,172,0.7)',
+  marginBottom: '6px',
+  display: 'block',
+};
+
+const panelTitleStyle: React.CSSProperties = {
+  fontSize: '11px',
+  fontWeight: '700',
+  letterSpacing: '2px',
+  textTransform: 'uppercase' as const,
+  color: '#22c55e',
+  marginBottom: '18px',
+  display: 'flex',
+  alignItems: 'center',
+  gap: '8px',
+};
+
+const infoRowStyle: React.CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: '12px',
+  padding: '12px 14px',
+  background: 'rgba(255,255,255,0.05)',
+  border: '1px solid rgba(34,197,94,0.1)',
+  borderRadius: '12px',
+};
 
 export function SubmitAssignmentPage({ user, onBack, onSubmit, onLogin }: SubmitAssignmentPageProps) {
   const [step, setStep] = useState<'form' | 'analysis' | 'payment' | 'success'>('form');
@@ -47,7 +126,7 @@ export function SubmitAssignmentPage({ user, onBack, onSubmit, onLogin }: Submit
         name: file.name,
         size: file.size,
         type: file.type,
-        url: URL.createObjectURL(file), // temporary preview URL
+        url: URL.createObjectURL(file),
       }));
       setFiles(prev => [...prev, ...newFiles]);
       setRawFiles(prev => [...prev, ...newRaw]);
@@ -61,30 +140,17 @@ export function SubmitAssignmentPage({ user, onBack, onSubmit, onLogin }: Submit
 
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!user) {
-      onLogin();
-      toast.info('Please log in to submit an assignment');
-      return;
-    }
-
-    if (!platform) {
-      toast.error('Please select a delivery platform');
-      return;
-    }
+    if (!user) { onLogin(); toast.info('Please log in to submit an assignment'); return; }
+    if (!platform) { toast.error('Please select a delivery platform'); return; }
 
     setIsUploading(true);
     toast.info('Uploading files...');
-
-    // Generate a temp ID for the Cloudinary folder — will be replaced by DB id
     const tempId = `tmp_${Date.now()}`;
     let uploadedFiles = files;
-
     if (rawFiles.length > 0) {
       uploadedFiles = await uploadFiles(rawFiles, tempId, setUploadProgress);
       setFiles(uploadedFiles);
     }
-
     setIsUploading(false);
 
     const assignmentData = {
@@ -104,14 +170,9 @@ export function SubmitAssignmentPage({ user, onBack, onSubmit, onLogin }: Submit
     };
 
     const { data: saved, error } = await createAssignment(assignmentData);
-
-    if (error || !saved) {
-      toast.error('Failed to save assignment: ' + (error || 'Unknown error'));
-      return;
-    }
+    if (error || !saved) { toast.error('Failed to save assignment: ' + (error || 'Unknown error')); return; }
 
     setCurrentAssignment(saved);
-
     await logActivity({
       type: 'assignment_created',
       userId: user.id,
@@ -120,15 +181,13 @@ export function SubmitAssignmentPage({ user, onBack, onSubmit, onLogin }: Submit
       assignmentId: saved.id,
       description: `Assignment created: ${courseName} - ${assignmentType}`,
     });
-
     toast.success('Assignment saved! Starting review...');
     setStep('analysis');
   };
 
   const handleAnalysisComplete = (completedAnalysis: AIAnalysis) => {
     setAnalysis(completedAnalysis);
-setCurrentAssignment(prev => prev ? { ...prev, paymentAmount: completedAnalysis.estimatedCost } : prev);
-    
+    setCurrentAssignment(prev => prev ? { ...prev, paymentAmount: completedAnalysis.estimatedCost } : prev);
     if (completedAnalysis.inScope) {
       toast.success('Analysis complete! Proceed to payment.');
       setStep('payment');
@@ -137,18 +196,12 @@ setCurrentAssignment(prev => prev ? { ...prev, paymentAmount: completedAnalysis.
     }
   };
 
-  const handleAnalysisFailed = (error: string) => {
-    toast.error(`Analysis failed: ${error}`);
-  };
+  const handleAnalysisFailed = (error: string) => { toast.error(`Analysis failed: ${error}`); };
 
   const handlePaymentComplete = async (payment: Payment) => {
     toast.success('Payment successful! Your assignment has been submitted.');
-
     if (currentAssignment) {
-      await updateAssignmentStatus(currentAssignment.id, {
-        status: 'submitted',
-        payment_id: payment.id,
-      });
+      await updateAssignmentStatus(currentAssignment.id, { status: 'submitted', payment_id: payment.id });
       await logActivity({
         type: 'assignment_submitted',
         userId: currentAssignment.userId,
@@ -157,409 +210,299 @@ setCurrentAssignment(prev => prev ? { ...prev, paymentAmount: completedAnalysis.
         paymentId: payment.id,
         description: `Assignment submitted after payment. Course: ${currentAssignment.courseName}`,
       });
-      const updatedAssignment = { ...currentAssignment, status: 'submitted' as const, paymentId: payment.id };
-      onSubmit(updatedAssignment);
+      onSubmit({ ...currentAssignment, status: 'submitted' as const, paymentId: payment.id });
     }
   };
 
-  const handlePaymentFailed = (error: string) => {
-    toast.error(`Payment failed: ${error}`);
-  };
+  const handlePaymentFailed = (error: string) => { toast.error(`Payment failed: ${error}`); };
 
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="glass border-b sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center gap-4">
-          <Button
-            onClick={onBack}
-            variant="ghost"
-            size="icon"
-            className="rounded-full hover:bg-gray-100"
-          >
+          <Button onClick={onBack} variant="ghost" size="icon" className="rounded-full text-foreground hover:bg-white/10">
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div className="flex items-center gap-3">
-            <motion.div
-              animate={{ rotate: [0, 10, -10, 0] }}
-              transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
-              className="text-3xl"
-            >
+            <motion.div animate={{ rotate: [0, 10, -10, 0] }} transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }} className="text-3xl">
               🦍
             </motion.div>
-            <span className="text-2xl font-bold text-gray-900">ApeAcademy</span>
+            <span className="text-2xl font-bold text-foreground">ApeAcademy</span>
           </div>
-          
           {/* Progress Steps */}
           <div className="ml-auto hidden md:flex items-center gap-2">
-            {[
-              { key: 'form', label: 'Details' },
-              { key: 'analysis', label: 'AI Analysis' },
-              { key: 'payment', label: 'Payment' },
-            ].map((s, index) => (
+            {[{ key: 'form', label: 'Details' }, { key: 'analysis', label: 'AI Analysis' }, { key: 'payment', label: 'Payment' }].map((s, index) => (
               <div key={s.key} className="flex items-center">
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                  step === s.key 
-                    ? 'bg-emerald-600 text-white' 
-                    : step === 'success' || (step === 'payment' && s.key !== 'payment') || (step === 'analysis' && s.key === 'form')
-                    ? 'bg-green-500 text-white'
-                    : 'bg-gray-200 text-gray-500'
+                  step === s.key ? 'bg-emerald-600 text-white'
+                  : step === 'success' || (step === 'payment' && s.key !== 'payment') || (step === 'analysis' && s.key === 'form')
+                  ? 'bg-green-500 text-white' : 'bg-white/10 text-muted-foreground'
                 }`}>
-                  {step === 'success' || (step === 'payment' && s.key !== 'payment') || (step === 'analysis' && s.key === 'form') ? (
-                    <CheckCircle className="h-4 w-4" />
-                  ) : (
-                    index + 1
-                  )}
+                  {step === 'success' || (step === 'payment' && s.key !== 'payment') || (step === 'analysis' && s.key === 'form')
+                    ? <CheckCircle className="h-4 w-4" /> : index + 1}
                 </div>
-                <span className={`ml-2 text-sm ${step === s.key ? 'text-emerald-700 font-medium' : 'text-gray-500'}`}>
-                  {s.label}
-                </span>
-                {index < 2 && <div className="w-8 h-px bg-gray-300 mx-2" />}
+                <span className={`ml-2 text-sm ${step === s.key ? 'text-emerald-400 font-medium' : 'text-muted-foreground'}`}>{s.label}</span>
+                {index < 2 && <div className="w-8 h-px bg-white/20 mx-2" />}
               </div>
             ))}
           </div>
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="max-w-4xl mx-auto px-6 py-12">
+      <main className="max-w-4xl mx-auto px-6 py-12 page-content">
         {step === 'form' && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
-            <h1 className="text-4xl font-bold text-gray-900 mb-2">Submit Assignment</h1>
-            <p className="text-gray-600 mb-8">Fill in the details to submit your assignment for review</p>
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <h1 className="text-4xl font-bold text-foreground mb-2">Submit Assignment</h1>
+            <p className="text-muted-foreground mb-8">Fill in the details to submit your assignment for review</p>
 
-            <form onSubmit={handleFormSubmit} className="space-y-6">
-              {/* User Info Section */}
+            <form onSubmit={handleFormSubmit} className="space-y-3">
+
+              {/* Your Information */}
               {user && (
-                <Card className="backdrop-blur-xl bg-white/80 border-white/20 shadow-lg">
-                  <CardContent className="p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Your Information</h3>
-                    <div className="grid md:grid-cols-2 gap-4">
-                      <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
-                        <UserIcon className="h-5 w-5 text-gray-600" />
-                        <div>
-                          <div className="text-sm text-gray-600">Name</div>
-                          <div className="font-medium text-gray-900">{user.name}</div>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
-                        <Mail className="h-5 w-5 text-gray-600" />
-                        <div>
-                          <div className="text-sm text-gray-600">Email</div>
-                          <div className="font-medium text-gray-900">{user.email}</div>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Assignment Details */}
-              <Card className="backdrop-blur-xl bg-white/80 border-white/20 shadow-lg">
-                <CardContent className="p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Assignment Details</h3>
-                  
-                  <div className="space-y-4">
-                    <div>
-                      <Label htmlFor="assignmentType">Assignment Type</Label>
-                      <Select value={assignmentType} onValueChange={setAssignmentType}>
-                        <SelectTrigger className="h-12 rounded-xl bg-gray-50">
-                          <SelectValue placeholder="Select type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {ASSIGNMENT_TYPES.map((type) => (
-                            <SelectItem key={type} value={type}>
-                              {type}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="grid md:grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="courseName">Course Name</Label>
-                        <Input
-                          id="courseName"
-                          placeholder="e.g., Mathematics 101"
-                          value={courseName}
-                          onChange={(e) => setCourseName(e.target.value)}
-                          required
-                          className="h-12 rounded-xl bg-gray-50"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="className">Class</Label>
-                        <Input
-                          id="className"
-                          placeholder="e.g., Grade 10A"
-                          value={className}
-                          onChange={(e) => setClassName(e.target.value)}
-                          required
-                          className="h-12 rounded-xl bg-gray-50"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid md:grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="teacherName">Teacher Name</Label>
-                        <Input
-                          id="teacherName"
-                          placeholder="e.g., Prof. Smith"
-                          value={teacherName}
-                          onChange={(e) => setTeacherName(e.target.value)}
-                          required
-                          className="h-12 rounded-xl bg-gray-50"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="dueDate">Due Date</Label>
-                        <Input
-                          id="dueDate"
-                          type="date"
-                          value={dueDate}
-                          onChange={(e) => setDueDate(e.target.value)}
-                          required
-                          className="h-12 rounded-xl bg-gray-50"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <Label htmlFor="description">Description (Optional)</Label>
-                      <Textarea
-                        id="description"
-                        placeholder="Additional details about your assignment..."
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                        className="rounded-xl bg-gray-50 min-h-24"
-                      />
-                    </div>
+                <div style={panel}>
+                  <div style={panelTitleStyle}>
+                    <span style={{ width: '3px', height: '14px', borderRadius: '2px', background: 'linear-gradient(180deg,#22c55e,#15803d)', display: 'block', flexShrink: 0 }}></span>
+                    Your Information
                   </div>
-                </CardContent>
-              </Card>
-
-              {/* Delivery Platform */}
-              <Card className="backdrop-blur-xl bg-white/80 border-white/20 shadow-lg">
-                <CardContent className="p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">How should we deliver your completed assignment?</h3>
-                  <p className="text-sm text-gray-500 mb-5">Choose a platform and provide your contact details</p>
-
-                  {/* Platform Selector Cards */}
-                  <div className="grid grid-cols-3 gap-3 mb-5">
-                    {[
-                      { id: 'WhatsApp', label: 'WhatsApp', emoji: '💬', color: 'border-green-400 bg-green-50', activeColor: 'border-green-500 bg-green-100', textColor: 'text-green-700' },
-                      { id: 'Email', label: 'Email', emoji: '✉️', color: 'border-blue-400 bg-blue-50', activeColor: 'border-blue-500 bg-blue-100', textColor: 'text-blue-700' },
-                      { id: 'Snapchat', label: 'Snapchat', emoji: '👻', color: 'border-yellow-400 bg-yellow-50', activeColor: 'border-yellow-500 bg-yellow-100', textColor: 'text-yellow-700' },
-                    ].map((p) => (
-                      <button
-                        key={p.id}
-                        type="button"
-                        onClick={() => { setPlatform(p.id); setPlatformContact(''); }}
-                        className={`flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition-all duration-200 hover:scale-105 font-medium text-sm ${
-                          platform === p.id
-                            ? `${p.activeColor} ${p.textColor} shadow-md scale-105`
-                            : 'border-gray-200 bg-gray-50 text-gray-500 hover:border-gray-300'
-                        }`}
-                      >
-                        <span className="text-2xl">{p.emoji}</span>
-                        <span>{p.label}</span>
-                      </button>
-                    ))}
-                  </div>
-
-                  {/* Dynamic Contact Input based on selected platform */}
-                  {platform === 'WhatsApp' && (
-                    <div>
-                      <Label htmlFor="platformContact">Your WhatsApp Number</Label>
-                      <div className="relative mt-1">
-                        <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-green-500" />
-                        <Input
-                          id="platformContact"
-                          type="tel"
-                          placeholder="+1 234 567 8900 (include country code)"
-                          value={platformContact}
-                          onChange={(e) => setPlatformContact(e.target.value)}
-                          required
-                          className="h-12 rounded-xl bg-gray-50 pl-10"
-                        />
+                  <div className="grid md:grid-cols-2 gap-3">
+                    <div style={infoRowStyle}>
+                      <UserIcon className="h-5 w-5 text-emerald-400 shrink-0" />
+                      <div>
+                        <div style={{ fontSize: '11px', color: 'rgba(134,239,172,0.6)', marginBottom: '2px' }}>Name</div>
+                        <div style={{ fontWeight: '600', color: '#e8f5ec' }}>{user.name}</div>
                       </div>
-                      <p className="text-xs text-gray-400 mt-1.5">We'll send your completed assignment directly to this number</p>
                     </div>
-                  )}
-
-                  {platform === 'Email' && (
-                    <div>
-                      <Label htmlFor="platformContact">Your Email Address</Label>
-                      <div className="relative mt-1">
-                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-blue-500" />
-                        <Input
-                          id="platformContact"
-                          type="email"
-                          placeholder="yourname@example.com"
-                          value={platformContact}
-                          onChange={(e) => setPlatformContact(e.target.value)}
-                          required
-                          className="h-12 rounded-xl bg-gray-50 pl-10"
-                        />
+                    <div style={infoRowStyle}>
+                      <Mail className="h-5 w-5 text-emerald-400 shrink-0" />
+                      <div>
+                        <div style={{ fontSize: '11px', color: 'rgba(134,239,172,0.6)', marginBottom: '2px' }}>Email</div>
+                        <div style={{ fontWeight: '600', color: '#e8f5ec', fontSize: '13px' }}>{user.email}</div>
                       </div>
-                      <p className="text-xs text-gray-400 mt-1.5">Your completed assignment will be emailed to this address</p>
                     </div>
-                  )}
-
-                  {platform === 'Snapchat' && (
-                    <div>
-                      <Label htmlFor="platformContact">Your Snapchat Username</Label>
-                      <div className="relative mt-1">
-                        <AtSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-yellow-500" />
-                        <Input
-                          id="platformContact"
-                          type="text"
-                          placeholder="your.snapchat.username"
-                          value={platformContact}
-                          onChange={(e) => setPlatformContact(e.target.value)}
-                          required
-                          className="h-12 rounded-xl bg-gray-50 pl-10"
-                        />
-                      </div>
-                      <p className="text-xs text-gray-400 mt-1.5">We'll add you on Snapchat and send your assignment there</p>
-                    </div>
-                  )}
-
-                  {!platform && (
-                    <p className="text-center text-sm text-gray-400 py-3">👆 Select a platform above to continue</p>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* File Upload */}
-              <Card className="backdrop-blur-xl bg-white/80 border-white/20 shadow-lg">
-                <CardContent className="p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Upload Files</h3>
-                  
-                  <input
-                    type="file"
-                    id="fileUpload"
-                    multiple
-                    onChange={handleFileUpload}
-                    className="hidden"
-                    accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
-                  />
-                  <div
-                    onClick={() => document.getElementById('fileUpload')?.click()}
-                    className="border-2 border-dashed border-emerald-300 rounded-xl p-8 text-center cursor-pointer transition-all duration-200 hover:border-emerald-500 hover:bg-emerald-50/50"
-                  >
-                    <Upload className="h-12 w-12 mx-auto mb-3" style={{ color: '#059669' }} />
-                    <div className="text-gray-900 font-semibold mb-1">Click to upload files</div>
-                    <div className="text-sm text-gray-500 mb-4">PDF, DOCX, or images up to 10MB</div>
-                    <span
-                      className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-white font-semibold text-sm"
-                      style={{ background: 'linear-gradient(135deg, #047857, #10b981)', boxShadow: '0 4px 12px rgba(5,150,105,0.35)' }}
-                    >
-                      <Upload className="h-4 w-4" />
-                      Browse Files
-                    </span>
-                  </div>
-
-                  {files.length > 0 && (
-                    <div className="mt-4 space-y-2">
-                      {files.map((file, index) => (
-                        <div
-                          key={index}
-                          className="flex items-center justify-between p-3 bg-gray-50 rounded-xl"
-                        >
-                          <div className="flex items-center gap-3">
-                            <FileText className="h-5 w-5 text-gray-600" />
-                            <div>
-                              <div className="font-medium text-gray-900">{file.name}</div>
-                              <div className="text-sm text-gray-500">
-                                {(file.size / 1024).toFixed(2)} KB
-                              </div>
-                            </div>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => removeFile(index)}
-                            className="text-red-600 hover:text-red-700"
-                          >
-                            <X className="h-5 w-5" />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Submit Button */}
-              {isUploading && (
-                <div className="w-full p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-center">
-                  <div className="text-sm font-medium text-emerald-800 mb-2">Uploading files... {uploadProgress}%</div>
-                  <div className="h-2 bg-emerald-100 rounded-full overflow-hidden">
-                    <div className="h-full bg-emerald-500 rounded-full transition-all duration-300" style={{ width: `${uploadProgress}%` }} />
                   </div>
                 </div>
               )}
-              <Button
+
+              {/* Assignment Details */}
+              <div style={panel}>
+                <div style={panelTitleStyle}>
+                  <span style={{ width: '3px', height: '14px', borderRadius: '2px', background: 'linear-gradient(180deg,#22c55e,#15803d)', display: 'block', flexShrink: 0 }}></span>
+                  Assignment Details
+                </div>
+                <div className="space-y-4">
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <label style={labelStyle}>Assignment Type</label>
+                      <select
+                        style={selectStyle}
+                        value={assignmentType}
+                        onChange={e => setAssignmentType(e.target.value)}
+                        required
+                      >
+                        <option value="" style={{ background: '#0a0f0b' }}>Select type</option>
+                        {ASSIGNMENT_TYPES.map(t => <option key={t} value={t} style={{ background: '#0a0f0b' }}>{t}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label style={labelStyle}>Due Date</label>
+                      <input
+                        type="date"
+                        style={inputStyle}
+                        value={dueDate}
+                        onChange={e => setDueDate(e.target.value)}
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label style={labelStyle}>Course Name</label>
+                    <input style={inputStyle} placeholder="e.g., Mathematics 101" value={courseName} onChange={e => setCourseName(e.target.value)} required />
+                  </div>
+
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <label style={labelStyle}>Class / Module</label>
+                      <input style={inputStyle} placeholder="e.g., Grade 10A" value={className} onChange={e => setClassName(e.target.value)} required />
+                    </div>
+                    <div>
+                      <label style={labelStyle}>Teacher / Professor</label>
+                      <input style={inputStyle} placeholder="e.g., Prof. Smith" value={teacherName} onChange={e => setTeacherName(e.target.value)} required />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label style={labelStyle}>Description (Optional)</label>
+                    <textarea style={textareaStyle} placeholder="Additional details about your assignment..." value={description} onChange={e => setDescription(e.target.value)} />
+                  </div>
+                </div>
+              </div>
+
+              {/* Delivery Platform */}
+              <div style={panel}>
+                <div style={panelTitleStyle}>
+                  <span style={{ width: '3px', height: '14px', borderRadius: '2px', background: 'linear-gradient(180deg,#22c55e,#15803d)', display: 'block', flexShrink: 0 }}></span>
+                  Delivery Preference
+                </div>
+                <p style={{ fontSize: '13px', color: 'rgba(134,239,172,0.6)', marginBottom: '16px' }}>Choose a platform and provide your contact details</p>
+
+                <div className="grid grid-cols-3 gap-3 mb-5">
+                  {[
+                    { id: 'WhatsApp', emoji: '💬', color: 'rgba(37,211,102,0.15)', borderActive: 'rgba(37,211,102,0.5)' },
+                    { id: 'Email', emoji: '✉️', color: 'rgba(96,165,250,0.15)', borderActive: 'rgba(96,165,250,0.5)' },
+                    { id: 'Snapchat', emoji: '👻', color: 'rgba(250,204,21,0.15)', borderActive: 'rgba(250,204,21,0.5)' },
+                  ].map(p => (
+                    <button
+                      key={p.id}
+                      type="button"
+                      onClick={() => { setPlatform(p.id); setPlatformContact(''); }}
+                      style={{
+                        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px',
+                        padding: '16px 8px', borderRadius: '14px',
+                        background: platform === p.id ? p.color : 'rgba(255,255,255,0.04)',
+                        border: `1px solid ${platform === p.id ? p.borderActive : 'rgba(255,255,255,0.08)'}`,
+                        color: '#e8f5ec', cursor: 'pointer', transition: 'all 0.2s',
+                        fontFamily: 'inherit', fontSize: '13px', fontWeight: '600',
+                        transform: platform === p.id ? 'scale(1.03)' : 'scale(1)',
+                      }}
+                    >
+                      <span style={{ fontSize: '24px' }}>{p.emoji}</span>
+                      {p.id}
+                    </button>
+                  ))}
+                </div>
+
+                {platform === 'WhatsApp' && (
+                  <div>
+                    <label style={labelStyle}>Your WhatsApp Number</label>
+                    <div style={{ position: 'relative' }}>
+                      <Phone className="h-4 w-4 text-emerald-400" style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)' }} />
+                      <input style={{ ...inputStyle, paddingLeft: '40px' }} type="tel" placeholder="+1 234 567 8900" value={platformContact} onChange={e => setPlatformContact(e.target.value)} required />
+                    </div>
+                  </div>
+                )}
+                {platform === 'Email' && (
+                  <div>
+                    <label style={labelStyle}>Your Email Address</label>
+                    <div style={{ position: 'relative' }}>
+                      <Mail className="h-4 w-4 text-blue-400" style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)' }} />
+                      <input style={{ ...inputStyle, paddingLeft: '40px' }} type="email" placeholder="yourname@example.com" value={platformContact} onChange={e => setPlatformContact(e.target.value)} required />
+                    </div>
+                  </div>
+                )}
+                {platform === 'Snapchat' && (
+                  <div>
+                    <label style={labelStyle}>Your Snapchat Username</label>
+                    <div style={{ position: 'relative' }}>
+                      <AtSign className="h-4 w-4 text-yellow-400" style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)' }} />
+                      <input style={{ ...inputStyle, paddingLeft: '40px' }} placeholder="your.snapchat.username" value={platformContact} onChange={e => setPlatformContact(e.target.value)} required />
+                    </div>
+                  </div>
+                )}
+                {!platform && (
+                  <p style={{ textAlign: 'center', fontSize: '13px', color: 'rgba(134,239,172,0.4)', padding: '8px 0' }}>👆 Select a platform above to continue</p>
+                )}
+              </div>
+
+              {/* File Upload */}
+              <div style={panel}>
+                <div style={panelTitleStyle}>
+                  <span style={{ width: '3px', height: '14px', borderRadius: '2px', background: 'linear-gradient(180deg,#22c55e,#15803d)', display: 'block', flexShrink: 0 }}></span>
+                  Upload Files
+                </div>
+                <input type="file" id="fileUpload" multiple onChange={handleFileUpload} className="hidden" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg" />
+                <div
+                  onClick={() => document.getElementById('fileUpload')?.click()}
+                  style={{
+                    border: '2px dashed rgba(34,197,94,0.3)', borderRadius: '14px', padding: '32px',
+                    textAlign: 'center', cursor: 'pointer', transition: 'all 0.2s',
+                  }}
+                  onMouseOver={e => (e.currentTarget.style.borderColor = 'rgba(34,197,94,0.6)')}
+                  onMouseOut={e => (e.currentTarget.style.borderColor = 'rgba(34,197,94,0.3)')}
+                >
+                  <Upload className="h-10 w-10 mx-auto mb-3 text-emerald-400" />
+                  <div style={{ color: '#e8f5ec', fontWeight: '600', marginBottom: '4px' }}>Click to upload files</div>
+                  <div style={{ fontSize: '12px', color: 'rgba(134,239,172,0.5)', marginBottom: '16px' }}>PDF, DOCX, or images up to 10MB</div>
+                  <span style={{
+                    display: 'inline-flex', alignItems: 'center', gap: '8px',
+                    padding: '10px 20px', borderRadius: '10px', color: 'white',
+                    background: 'linear-gradient(135deg,#047857,#10b981)',
+                    boxShadow: '0 4px 12px rgba(5,150,105,0.35)', fontWeight: '600', fontSize: '13px',
+                  }}>
+                    <Upload className="h-4 w-4" /> Browse Files
+                  </span>
+                </div>
+
+                {files.length > 0 && (
+                  <div className="mt-4 space-y-2">
+                    {files.map((file, index) => (
+                      <div key={index} style={infoRowStyle}>
+                        <FileText className="h-5 w-5 text-emerald-400 shrink-0" />
+                        <div className="flex-1">
+                          <div style={{ fontWeight: '600', color: '#e8f5ec', fontSize: '13px' }}>{file.name}</div>
+                          <div style={{ fontSize: '11px', color: 'rgba(134,239,172,0.5)' }}>{(file.size / 1024).toFixed(2)} KB</div>
+                        </div>
+                        <button type="button" onClick={() => removeFile(index)} style={{ color: '#f87171', background: 'none', border: 'none', cursor: 'pointer' }}>
+                          <X className="h-5 w-5" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Upload progress */}
+              {isUploading && (
+                <div style={{ ...panel, textAlign: 'center' }}>
+                  <div style={{ fontSize: '13px', color: '#4ade80', marginBottom: '8px', fontWeight: '600' }}>Uploading files... {uploadProgress}%</div>
+                  <div style={{ height: '6px', background: 'rgba(34,197,94,0.15)', borderRadius: '3px', overflow: 'hidden' }}>
+                    <div style={{ height: '100%', background: '#22c55e', borderRadius: '3px', width: `${uploadProgress}%`, transition: 'width 0.3s' }} />
+                  </div>
+                </div>
+              )}
+
+              {/* Submit Button */}
+              <button
                 type="submit"
                 disabled={!courseName || !className || !platform || !assignmentType || isUploading}
-                className="w-full h-14 rounded-xl bg-gradient-to-r from-emerald-700 to-emerald-500 hover:from-emerald-800 hover:to-emerald-600 text-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{
+                  width: '100%', padding: '16px',
+                  background: (!courseName || !className || !platform || !assignmentType || isUploading)
+                    ? 'rgba(34,197,94,0.3)' : 'linear-gradient(135deg,#14532d,#15803d 40%,#22c55e)',
+                  color: 'white', border: 'none', borderRadius: '14px',
+                  fontSize: '15px', fontWeight: '700', cursor: (!courseName || !className || !platform || !assignmentType || isUploading) ? 'not-allowed' : 'pointer',
+                  fontFamily: 'inherit',
+                  boxShadow: '0 4px 16px rgba(34,197,94,0.3)',
+                  transition: 'all 0.2s',
+                }}
               >
-                {isUploading ? 'Uploading...' : 'Continue to Expert Review'}
-              </Button>
+                {isUploading ? 'Uploading...' : 'Continue to Expert Review →'}
+              </button>
             </form>
           </motion.div>
         )}
 
         {step === 'analysis' && currentAssignment && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
-            <AIAnalysisPanel
-              assignment={currentAssignment}
-              onAnalysisComplete={handleAnalysisComplete}
-              onAnalysisFailed={handleAnalysisFailed}
-            />
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <AIAnalysisPanel assignment={currentAssignment} onAnalysisComplete={handleAnalysisComplete} onAnalysisFailed={handleAnalysisFailed} />
           </motion.div>
         )}
 
         {step === 'payment' && currentAssignment && analysis?.inScope && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
-            <PaymentPanel
-              assignment={currentAssignment}
-              user={user!}
-              onPaymentComplete={handlePaymentComplete}
-              onPaymentFailed={handlePaymentFailed}
-            />
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <PaymentPanel assignment={currentAssignment} user={user!} onPaymentComplete={handlePaymentComplete} onPaymentFailed={handlePaymentFailed} />
           </motion.div>
         )}
 
         {step === 'payment' && analysis && !analysis.inScope && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center py-12"
-          >
-            <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-red-100 flex items-center justify-center">
-              <X className="h-10 w-10 text-red-500" />
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center py-12">
+            <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-red-500/20 flex items-center justify-center">
+              <X className="h-10 w-10 text-red-400" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
-              Assignment Out of Scope
-            </h2>
-            <p className="text-gray-600 mb-6">
-              {analysis.outOfScopeReason || 'This assignment cannot be completed by our service.'}
-            </p>
-            <Button onClick={onBack} variant="outline" className="rounded-xl">
-              Go Back
-            </Button>
+            <h2 className="text-2xl font-bold text-foreground mb-2">Assignment Out of Scope</h2>
+            <p className="text-muted-foreground mb-6">{analysis.outOfScopeReason || 'This assignment cannot be completed by our service.'}</p>
+            <Button onClick={onBack} variant="outline" className="rounded-xl">Go Back</Button>
           </motion.div>
         )}
       </main>
