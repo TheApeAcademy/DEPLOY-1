@@ -228,24 +228,24 @@ setCurrentAssignment(prev => prev ? { ...prev, paymentAmount: completedAnalysis.
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
           >
-            <h1 className="text-4xl font-bold text-foreground mb-2">Submit Assignment</h1>
-            <p className="text-muted-foreground mb-8">Fill in the details to submit your assignment for review</p>
+            <h1 className="text-4xl font-bold text-gray-900 mb-2">Submit Assignment</h1>
+            <p className="text-gray-600 mb-8">Fill in the details to submit your assignment for review</p>
 
             <form onSubmit={handleFormSubmit} className="space-y-6">
               {/* User Info Section */}
               {user && (
-                <Card className="liquid-panel border-white/20 shadow-lg">
+                <Card className="backdrop-blur-xl bg-white/80 border-white/20 shadow-lg">
                   <CardContent className="p-6">
-                    <div className="liquid-panel-title mb-4">Your Information</div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Your Information</h3>
                     <div className="grid md:grid-cols-2 gap-4">
-                      <div className="flex items-center gap-3 p-3 rounded-xl" style={{background: "var(--input-bg)", border: "1px solid var(--glass-border2)"}}>
+                      <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
                         <UserIcon className="h-5 w-5 text-gray-600" />
                         <div>
                           <div className="text-sm text-gray-600">Name</div>
                           <div className="font-medium text-gray-900">{user.name}</div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-3 p-3 rounded-xl" style={{background: "var(--input-bg)", border: "1px solid var(--glass-border2)"}}>
+                      <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
                         <Mail className="h-5 w-5 text-gray-600" />
                         <div>
                           <div className="text-sm text-gray-600">Email</div>
@@ -258,15 +258,15 @@ setCurrentAssignment(prev => prev ? { ...prev, paymentAmount: completedAnalysis.
               )}
 
               {/* Assignment Details */}
-              <Card className="liquid-panel border-white/20 shadow-lg">
+              <Card className="backdrop-blur-xl bg-white/80 border-white/20 shadow-lg">
                 <CardContent className="p-6">
-                  <div className="liquid-panel-title mb-4">Assignment Details</div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Assignment Details</h3>
                   
                   <div className="space-y-4">
                     <div>
                       <Label htmlFor="assignmentType">Assignment Type</Label>
                       <Select value={assignmentType} onValueChange={setAssignmentType}>
-                        <SelectTrigger className="h-12 rounded-xl">
+                        <SelectTrigger className="h-12 rounded-xl bg-gray-50">
                           <SelectValue placeholder="Select type" />
                         </SelectTrigger>
                         <SelectContent>
@@ -288,7 +288,7 @@ setCurrentAssignment(prev => prev ? { ...prev, paymentAmount: completedAnalysis.
                           value={courseName}
                           onChange={(e) => setCourseName(e.target.value)}
                           required
-                          className="h-12 rounded-xl"
+                          className="h-12 rounded-xl bg-gray-50"
                         />
                       </div>
                       <div>
@@ -299,7 +299,7 @@ setCurrentAssignment(prev => prev ? { ...prev, paymentAmount: completedAnalysis.
                           value={className}
                           onChange={(e) => setClassName(e.target.value)}
                           required
-                          className="h-12 rounded-xl"
+                          className="h-12 rounded-xl bg-gray-50"
                         />
                       </div>
                     </div>
@@ -313,7 +313,7 @@ setCurrentAssignment(prev => prev ? { ...prev, paymentAmount: completedAnalysis.
                           value={teacherName}
                           onChange={(e) => setTeacherName(e.target.value)}
                           required
-                          className="h-12 rounded-xl"
+                          className="h-12 rounded-xl bg-gray-50"
                         />
                       </div>
                       <div>
@@ -324,7 +324,7 @@ setCurrentAssignment(prev => prev ? { ...prev, paymentAmount: completedAnalysis.
                           value={dueDate}
                           onChange={(e) => setDueDate(e.target.value)}
                           required
-                          className="h-12 rounded-xl"
+                          className="h-12 rounded-xl bg-gray-50"
                         />
                       </div>
                     </div>
@@ -336,7 +336,7 @@ setCurrentAssignment(prev => prev ? { ...prev, paymentAmount: completedAnalysis.
                         placeholder="Additional details about your assignment..."
                         value={description}
                         onChange={(e) => setDescription(e.target.value)}
-                        className="rounded-xl min-h-24"
+                        className="rounded-xl bg-gray-50 min-h-24"
                       />
                     </div>
                   </div>
@@ -344,9 +344,9 @@ setCurrentAssignment(prev => prev ? { ...prev, paymentAmount: completedAnalysis.
               </Card>
 
               {/* Delivery Platform */}
-              <Card className="liquid-panel border-white/20 shadow-lg">
+              <Card className="backdrop-blur-xl bg-white/80 border-white/20 shadow-lg">
                 <CardContent className="p-6">
-                  <div className="liquid-panel-title mb-2">Delivery Preference</div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">How should we deliver your completed assignment?</h3>
                   <p className="text-sm text-gray-500 mb-5">Choose a platform and provide your contact details</p>
 
                   {/* Platform Selector Cards */}
@@ -385,7 +385,7 @@ setCurrentAssignment(prev => prev ? { ...prev, paymentAmount: completedAnalysis.
                           value={platformContact}
                           onChange={(e) => setPlatformContact(e.target.value)}
                           required
-                          className="h-12 rounded-xl pl-10"
+                          className="h-12 rounded-xl bg-gray-50 pl-10"
                         />
                       </div>
                       <p className="text-xs text-gray-400 mt-1.5">We'll send your completed assignment directly to this number</p>
@@ -404,7 +404,7 @@ setCurrentAssignment(prev => prev ? { ...prev, paymentAmount: completedAnalysis.
                           value={platformContact}
                           onChange={(e) => setPlatformContact(e.target.value)}
                           required
-                          className="h-12 rounded-xl pl-10"
+                          className="h-12 rounded-xl bg-gray-50 pl-10"
                         />
                       </div>
                       <p className="text-xs text-gray-400 mt-1.5">Your completed assignment will be emailed to this address</p>
@@ -423,7 +423,7 @@ setCurrentAssignment(prev => prev ? { ...prev, paymentAmount: completedAnalysis.
                           value={platformContact}
                           onChange={(e) => setPlatformContact(e.target.value)}
                           required
-                          className="h-12 rounded-xl pl-10"
+                          className="h-12 rounded-xl bg-gray-50 pl-10"
                         />
                       </div>
                       <p className="text-xs text-gray-400 mt-1.5">We'll add you on Snapchat and send your assignment there</p>
@@ -437,9 +437,9 @@ setCurrentAssignment(prev => prev ? { ...prev, paymentAmount: completedAnalysis.
               </Card>
 
               {/* File Upload */}
-              <Card className="liquid-panel border-white/20 shadow-lg">
+              <Card className="backdrop-blur-xl bg-white/80 border-white/20 shadow-lg">
                 <CardContent className="p-6">
-                  <div className="liquid-panel-title mb-4">Upload Files</div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Upload Files</h3>
                   
                   <input
                     type="file"
@@ -470,7 +470,7 @@ setCurrentAssignment(prev => prev ? { ...prev, paymentAmount: completedAnalysis.
                       {files.map((file, index) => (
                         <div
                           key={index}
-                          className="flex items-center justify-between p-3 rounded-xl" style={{background: "var(--input-bg)", border: "1px solid var(--glass-border2)"}}
+                          className="flex items-center justify-between p-3 bg-gray-50 rounded-xl"
                         >
                           <div className="flex items-center gap-3">
                             <FileText className="h-5 w-5 text-gray-600" />

@@ -11,16 +11,17 @@ import {
   History,
   ChevronRight,
   Sparkles,
-  BookOpen
+  BookOpen,
+  Sun,
+  Moon
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import type { User, UserPreferences } from '@/types';
-import { useTheme } from '@/contexts/ThemeContext';
-import { Sun, Moon } from 'lucide-react';
 import { ASSIGNMENT_STATUS_LABELS } from '@/data/constants';
 import { supabase } from '@/lib/supabase';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface HomePageProps {
   user: User | null;
@@ -84,24 +85,26 @@ export function HomePage({
               >
                 🦍
               </motion.div>
-              <span className="text-2xl font-bold text-gray-900 dark:text-white">ApeAcademy</span>
+              <span className="text-2xl font-bold text-foreground">ApeAcademy</span>
             </div>
 
-            <button
-              onClick={() => (user ? setShowProfile(!showProfile) : onLogin())}
-              className="w-10 h-10 rounded-full bg-gradient-to-r from-emerald-700 to-emerald-500 flex items-center justify-center hover:scale-110 transition-transform"
-            >
-              <UserIcon className="h-5 w-5 text-white" />
-            </button>
-            <button
-              onClick={toggleTheme}
-              className="glass w-10 h-10 rounded-full flex items-center justify-center hover:scale-110 transition-all hover:shadow-[0_0_14px_rgba(34,197,94,0.4)]"
-              title="Toggle dark mode"
-            >
-              {resolvedTheme === 'dark'
-                ? <Sun className="h-4 w-4 text-emerald-400" />
-                : <Moon className="h-4 w-4 text-emerald-700" />}
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={toggleTheme}
+                className="glass w-9 h-9 rounded-full flex items-center justify-center hover:scale-110 transition-all"
+                title="Toggle dark mode"
+              >
+                {resolvedTheme === 'dark'
+                  ? <Sun className="h-4 w-4 text-emerald-400" />
+                  : <Moon className="h-4 w-4 text-emerald-700" />}
+              </button>
+              <button
+                onClick={() => (user ? setShowProfile(!showProfile) : onLogin())}
+                className="w-9 h-9 rounded-full bg-gradient-to-r from-emerald-700 to-emerald-500 flex items-center justify-center hover:scale-110 transition-transform"
+              >
+                <UserIcon className="h-4 w-4 text-white" />
+              </button>
+            </div>
           </div>
         </div>
       </header>
@@ -114,9 +117,9 @@ export function HomePage({
         >
           <div className="glass rounded-2xl shadow-xl p-4 w-64">
             <div className="space-y-3">
-              <div className="pb-3 border-b border-gray-200 dark:border-gray-700">
-                <div className="font-semibold text-gray-900 dark:text-white">{user.name}</div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">{user.email}</div>
+              <div className="pb-3 border-b border-border/30">
+                <div className="font-semibold text-foreground">{user.name}</div>
+                <div className="text-sm text-muted-foreground">{user.email}</div>
                 {user.role === 'admin' && (
                   <Badge className="mt-2 bg-red-500 text-white">Admin</Badge>
                 )}
@@ -124,7 +127,7 @@ export function HomePage({
               <Button
                 onClick={() => { setShowProfile(false); onOpenSettings(); }}
                 variant="ghost"
-                className="w-full justify-start text-gray-700 dark:text-gray-300 hover:text-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800"
+                className="w-full justify-start text-foreground hover:bg-white/20"
               >
                 <Settings className="h-4 w-4 mr-2" />
                 Settings
@@ -132,7 +135,7 @@ export function HomePage({
               <Button
                 onClick={onLogout}
                 variant="ghost"
-                className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
+                className="w-full justify-start text-red-500 hover:bg-red-500/10"
               >
                 <LogOut className="h-4 w-4 mr-2" />
                 Log Out
@@ -142,137 +145,46 @@ export function HomePage({
         </motion.div>
       )}
 
-      <main className="max-w-6xl mx-auto px-6 py-12">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
-        >
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">
+      <main className="max-w-6xl mx-auto px-6 py-12 page-content">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
+          <h1 className="text-4xl font-bold text-foreground mb-2">
             Welcome back, {user?.name?.split(' ')[0] || 'Student'}! 👋
           </h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            Ready to ace your assignments? Let's get started.
-          </p>
+          <p className="text-muted-foreground">Ready to ace your assignments? Let's get started.</p>
         </motion.div>
 
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
           className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8"
         >
-          <Card className="glass-card shadow-lg">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Total Assignments</p>
-                  <p className="text-3xl font-bold text-gray-900 dark:text-white">{stats.total}</p>
-                </div>
-                <div className="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center">
-                  <FileText className="h-6 w-6 text-emerald-700" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="glass-card shadow-lg">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Pending</p>
-                  <p className="text-3xl font-bold text-gray-900 dark:text-white">{stats.pending}</p>
-                </div>
-                <div className="w-12 h-12 rounded-xl bg-yellow-100 flex items-center justify-center">
-                  <History className="h-6 w-6 text-yellow-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="glass-card shadow-lg">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Completed</p>
-                  <p className="text-3xl font-bold text-gray-900 dark:text-white">{stats.completed}</p>
-                </div>
-                <div className="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center">
-                  <Sparkles className="h-6 w-6 text-green-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        {preferences && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="mb-8"
-          >
-            <Card className="glass-card shadow-lg">
-              <CardHeader>
-                <CardTitle className="text-lg font-semibold flex items-center gap-2 text-gray-900 dark:text-white">
-                  <Settings className="h-5 w-5 text-gray-500" />
-                  Your Preferences
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid md:grid-cols-3 gap-6">
-                  <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center">
-                      <MapPin className="h-5 w-5 text-emerald-700" />
-                    </div>
-                    <div>
-                      <div className="text-sm text-gray-600 dark:text-gray-400">Location</div>
-                      <div className="font-semibold text-gray-900 dark:text-white">{preferences.country}</div>
-                      <div className="text-xs text-gray-500 dark:text-gray-500">{preferences.region}</div>
-                    </div>
+          {[
+            { label: 'Total Assignments', value: stats.total, icon: FileText, color: 'bg-emerald-100 dark:bg-emerald-900/30', iconColor: 'text-emerald-700 dark:text-emerald-400' },
+            { label: 'Pending', value: stats.pending, icon: History, color: 'bg-yellow-100 dark:bg-yellow-900/30', iconColor: 'text-yellow-600 dark:text-yellow-400' },
+            { label: 'Completed', value: stats.completed, icon: Sparkles, color: 'bg-green-100 dark:bg-green-900/30', iconColor: 'text-green-600 dark:text-green-400' },
+          ].map((stat, i) => (
+            <Card key={i} className="glass-card">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">{stat.label}</p>
+                    <p className="text-3xl font-bold text-foreground">{stat.value}</p>
                   </div>
-
-                  <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center">
-                      <GraduationCap className="h-5 w-5 text-blue-600" />
-                    </div>
-                    <div>
-                      <div className="text-sm text-gray-600 dark:text-gray-400">School Level</div>
-                      <div className="font-semibold text-gray-900 dark:text-white">{preferences.schoolLevel}</div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center">
-                      <FileText className="h-5 w-5 text-green-600" />
-                    </div>
-                    <div>
-                      <div className="text-sm text-gray-600 dark:text-gray-400">Department</div>
-                      <div className="font-semibold text-gray-900 dark:text-white">{preferences.department}</div>
-                    </div>
+                  <div className={`w-12 h-12 rounded-xl ${stat.color} flex items-center justify-center`}>
+                    <stat.icon className={`h-6 w-6 ${stat.iconColor}`} />
                   </div>
                 </div>
-
-                <Button
-                  onClick={onSelectRegion}
-                  variant="outline"
-                  className="mt-6 rounded-xl"
-                >
-                  <Settings className="h-4 w-4 mr-2" />
-                  Update Preferences
-                </Button>
               </CardContent>
             </Card>
-          </motion.div>
-        )}
+          ))}
+        </motion.div>
 
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
+          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
           className="grid md:grid-cols-2 gap-6 mb-8"
         >
-          <Card className="backdrop-blur-xl bg-gradient-to-br from-emerald-700 to-emerald-500 border-0 shadow-lg hover:shadow-xl transition-shadow cursor-pointer group"
+          <Card className="bg-gradient-to-br from-emerald-700 to-emerald-500 border-0 shadow-lg hover:shadow-xl transition-all cursor-pointer group hover:-translate-y-1"
             onClick={onSubmitAssignment}
           >
             <CardContent className="p-8">
@@ -281,19 +193,15 @@ export function HomePage({
                   <div className="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                     <Plus className="h-7 w-7 text-white" />
                   </div>
-                  <h3 className="text-2xl font-bold text-white mb-2">
-                    Submit Assignment
-                  </h3>
-                  <p className="text-white/80">
-                    Get AI-powered analysis and pricing for your assignment
-                  </p>
+                  <h3 className="text-2xl font-bold text-white mb-2">Submit Assignment</h3>
+                  <p className="text-white/80">Get AI-powered analysis and pricing instantly</p>
                 </div>
                 <ChevronRight className="h-8 w-8 text-white/60 group-hover:translate-x-2 transition-transform" />
               </div>
             </CardContent>
           </Card>
 
-          <Card className="backdrop-blur-xl bg-gradient-to-br from-blue-600 to-indigo-500 border-0 shadow-lg hover:shadow-xl transition-shadow cursor-pointer group"
+          <Card className="bg-gradient-to-br from-blue-600 to-indigo-500 border-0 shadow-lg hover:shadow-xl transition-all cursor-pointer group hover:-translate-y-1"
             onClick={onRequestTopic}
           >
             <CardContent className="p-8">
@@ -302,12 +210,8 @@ export function HomePage({
                   <div className="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                     <BookOpen className="h-7 w-7 text-white" />
                   </div>
-                  <h3 className="text-2xl font-bold text-white mb-2">
-                    Learn a Topic
-                  </h3>
-                  <p className="text-white/80">
-                    Get a personalised learning document on any topic you're struggling with
-                  </p>
+                  <h3 className="text-2xl font-bold text-white mb-2">Learn a Topic</h3>
+                  <p className="text-white/80">Get a personalised learning document — £20 flat</p>
                 </div>
                 <ChevronRight className="h-8 w-8 text-white/60 group-hover:translate-x-2 transition-transform" />
               </div>
@@ -315,23 +219,18 @@ export function HomePage({
           </Card>
         </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.35 }}
-          className="grid md:grid-cols-1 gap-6 mb-8"
-        >
-          <Card className="glass-card shadow-lg">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+          <Card className="glass-card">
             <CardHeader>
-              <CardTitle className="text-lg font-semibold flex items-center gap-2 text-gray-900 dark:text-white">
-                <History className="h-5 w-5 text-gray-500" />
+              <CardTitle className="text-lg font-semibold flex items-center gap-2 text-foreground">
+                <History className="h-5 w-5 text-muted-foreground" />
                 Recent Assignments
               </CardTitle>
             </CardHeader>
             <CardContent>
               {recentAssignments.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
-                  <FileText className="h-12 w-12 mx-auto mb-3 text-gray-300" />
+                <div className="text-center py-8 text-muted-foreground">
+                  <FileText className="h-12 w-12 mx-auto mb-3 opacity-30" />
                   <p>No assignments yet</p>
                   <p className="text-sm">Submit your first assignment above</p>
                 </div>
@@ -340,11 +239,11 @@ export function HomePage({
                   {recentAssignments.map((assignment) => (
                     <div
                       key={assignment.id}
-                      className="flex items-center justify-between p-3 rounded-xl bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                      className="flex items-center justify-between p-3 rounded-xl bg-white/40 dark:bg-white/5 border border-white/30 dark:border-white/10 hover:bg-white/60 dark:hover:bg-white/8 transition-colors"
                     >
                       <div>
-                        <p className="font-medium text-gray-900 dark:text-white">{assignment.course_name}</p>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">{assignment.assignment_type}</p>
+                        <p className="font-medium text-foreground">{assignment.course_name}</p>
+                        <p className="text-sm text-muted-foreground">{assignment.assignment_type}</p>
                       </div>
                       <Badge className={`${ASSIGNMENT_STATUS_LABELS[assignment.status]?.bgColor} ${ASSIGNMENT_STATUS_LABELS[assignment.status]?.color} border-0`}>
                         {ASSIGNMENT_STATUS_LABELS[assignment.status]?.label || assignment.status}
@@ -357,20 +256,61 @@ export function HomePage({
           </Card>
         </motion.div>
 
-        {!preferences && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-          >
+        {preferences && (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }} className="mt-6">
             <Card className="glass-card">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold flex items-center gap-2 text-foreground">
+                  <Settings className="h-5 w-5 text-muted-foreground" />
+                  Your Preferences
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid md:grid-cols-3 gap-6">
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
+                      <MapPin className="h-5 w-5 text-emerald-700 dark:text-emerald-400" />
+                    </div>
+                    <div>
+                      <div className="text-sm text-muted-foreground">Location</div>
+                      <div className="font-semibold text-foreground">{preferences.country}</div>
+                      <div className="text-xs text-muted-foreground">{preferences.region}</div>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                      <GraduationCap className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <div>
+                      <div className="text-sm text-muted-foreground">School Level</div>
+                      <div className="font-semibold text-foreground">{preferences.schoolLevel}</div>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                      <FileText className="h-5 w-5 text-green-600 dark:text-green-400" />
+                    </div>
+                    <div>
+                      <div className="text-sm text-muted-foreground">Department</div>
+                      <div className="font-semibold text-foreground">{preferences.department}</div>
+                    </div>
+                  </div>
+                </div>
+                <Button onClick={onSelectRegion} variant="outline" className="mt-6 rounded-xl">
+                  <Settings className="h-4 w-4 mr-2" />
+                  Update Preferences
+                </Button>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+
+        {!preferences && (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="mt-6">
+            <Card className="glass-card border border-emerald-200 dark:border-emerald-900/50">
               <CardContent className="p-8 text-center">
-                <h3 className="text-2xl font-semibold text-gray-900 dark:text-white mb-3">
-                  Get Started Today
-                </h3>
-                <p className="text-gray-600 dark:text-gray-400 mb-6">
-                  Select your region and preferences to personalise your experience
-                </p>
+                <h3 className="text-2xl font-semibold text-foreground mb-3">Get Started Today</h3>
+                <p className="text-muted-foreground mb-6">Select your region and preferences to personalise your experience</p>
                 <Button
                   onClick={onSelectRegion}
                   className="rounded-xl bg-gradient-to-r from-emerald-700 to-emerald-500 hover:from-emerald-800 hover:to-emerald-600"
