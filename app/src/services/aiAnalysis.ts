@@ -3,37 +3,33 @@ import { updateAssignmentStatus, logActivity } from '@/services/database';
 
 const calculatePriceLocally = (assignment: Assignment) => {
   const type = assignment.assignmentType || 'Other';
-  const desc = (assignment.description || '').toLowerCase();
-  const dueDate = assignment.dueDate;
 
-  const highTypes = ['Thesis', 'Dissertation', 'Research Paper'];
-  const medTypes = ['Project', 'Case Study', 'Lab Report', 'Presentation'];
-  const highWords = ['research', 'analysis', 'comprehensive', 'detailed', 'complex', 'advanced'];
-  const lowWords = ['simple', 'basic', 'short', 'brief', 'summary'];
-
-  let complexity: 'low' | 'medium' | 'high' = 'medium';
-  if (highTypes.includes(type)) complexity = 'high';
-  else if (medTypes.includes(type)) complexity = 'medium';
-  else if (lowWords.some(w => desc.includes(w))) complexity = 'low';
-  else if (highWords.some(w => desc.includes(w))) complexity = 'high';
-
-  const daysUntilDue = dueDate
-    ? Math.ceil((new Date(dueDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
-    : 7;
-  const urgency = daysUntilDue <= 1 ? 'express' : daysUntilDue <= 3 ? 'urgent' : 'normal';
-
-  const basePrices: Record<string, number> = {
-    Homework: 15,
-    Essay: 30,
+  const flatPrices: Record<string, number> = {
+    'Homework': 15,
+    'Essay': 30,
     'Lab Report': 35,
-    Presentation: 30,
-    'Case Study': 45,
-    Project: 50,
-    'Research Paper': 60,
-    Thesis: 100,
-    Dissertation: 150,
-    Other: 25,
+    'Presentation': 30,
+    'Case Study': 40,
+    'Project': 45,
+    'Research Paper': 50,
+    'Thesis': 90,
+    'Dissertation': 130,
+    'Other': 25,
   };
+
+  const price = flatPrices[type] ?? 25;
+
+  const complexity =
+    price <= 20 ? 'low' :
+    price <= 40 ? 'medium' : 'high';
+
+  const estimatedHours =
+    price <= 20 ? 1 :
+    price <= 40 ? 3 :
+    price <= 60 ? 5 : 10;
+
+  return { price, complexity, estimatedHours, inScope: true, currency: 'GBP' };
+};
 
   const estimatedHours = complexity === 'low' ? 2 : complexity === 'medium' ? 4 : 8;
   const urgencyAdd: Record<string, number> = { normal: 0, urgent: 10, express: 20 };
