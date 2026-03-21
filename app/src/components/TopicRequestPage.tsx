@@ -1,19 +1,13 @@
 import { useState } from 'react';
 import { motion } from 'motion/react';
-import { ArrowLeft, Upload, X, FileText, Phone, Mail, AtSign, BookOpen, CheckCircle, Shield, ExternalLink } from 'lucide-react';
+import { ArrowLeft, Upload, X, FileText, Phone, Mail, AtSign, BookOpen, CheckCircle, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent } from '@/components/ui/card';
 import { toast } from 'sonner';
 import type { User, FileInfo } from '@/types';
-import { PLATFORMS } from '@/data/constants';
 import { uploadFiles } from '@/services/upload';
 import { supabase } from '@/lib/supabase';
 
 const LEVELS = ['Primary School', 'Middle School', 'High School', 'Undergraduate', 'Masters', 'PhD', 'Professional'];
-
 const SUBJECTS = [
   'Mathematics', 'Physics', 'Chemistry', 'Biology', 'Computer Science',
   'English Literature', 'History', 'Geography', 'Economics', 'Business Studies',
@@ -26,6 +20,82 @@ interface TopicRequestPageProps {
   onBack: () => void;
   onLogin: () => void;
 }
+
+const panel: React.CSSProperties = {
+  background: 'rgba(255,255,255,0.06)',
+  backdropFilter: 'blur(24px) saturate(180%)',
+  WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+  border: '1px solid rgba(34,197,94,0.12)',
+  borderRadius: '18px',
+  padding: '22px',
+  marginBottom: '12px',
+};
+
+const inputStyle: React.CSSProperties = {
+  background: 'rgba(255,255,255,0.06)',
+  border: '1px solid rgba(34,197,94,0.15)',
+  borderRadius: '12px',
+  padding: '12px 14px',
+  color: '#e8f5ec',
+  width: '100%',
+  outline: 'none',
+  fontSize: '14px',
+  transition: 'border-color 0.2s',
+  fontFamily: 'inherit',
+};
+
+const selectStyle: React.CSSProperties = {
+  ...inputStyle,
+  appearance: 'none',
+  WebkitAppearance: 'none',
+  cursor: 'pointer',
+  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2322c55e' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E")`,
+  backgroundRepeat: 'no-repeat',
+  backgroundPosition: 'right 14px center',
+  paddingRight: '40px',
+};
+
+const textareaStyle: React.CSSProperties = {
+  ...inputStyle,
+  minHeight: '90px',
+  resize: 'none' as const,
+};
+
+const labelStyle: React.CSSProperties = {
+  fontSize: '11px',
+  fontWeight: '700',
+  letterSpacing: '1.2px',
+  textTransform: 'uppercase' as const,
+  color: 'rgba(134,239,172,0.7)',
+  marginBottom: '6px',
+  display: 'block',
+};
+
+const panelTitleStyle: React.CSSProperties = {
+  fontSize: '11px',
+  fontWeight: '700',
+  letterSpacing: '2px',
+  textTransform: 'uppercase' as const,
+  color: '#22c55e',
+  marginBottom: '18px',
+  display: 'flex',
+  alignItems: 'center',
+  gap: '8px',
+};
+
+const infoRowStyle: React.CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: '12px',
+  padding: '12px 14px',
+  background: 'rgba(255,255,255,0.05)',
+  border: '1px solid rgba(34,197,94,0.1)',
+  borderRadius: '12px',
+};
+
+const greenBar = (
+  <span style={{ width: '3px', height: '14px', borderRadius: '2px', background: 'linear-gradient(180deg,#22c55e,#15803d)', display: 'block', flexShrink: 0 }} />
+);
 
 export function TopicRequestPage({ user, onBack, onLogin }: TopicRequestPageProps) {
   const [topicName, setTopicName] = useState('');
@@ -40,17 +110,13 @@ export function TopicRequestPage({ user, onBack, onLogin }: TopicRequestPageProp
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [submitted, setSubmitted] = useState(false);
-  const [paid, setPaid] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const uploaded = e.target.files;
     if (uploaded) {
       const newRaw = Array.from(uploaded);
-      const newFiles: FileInfo[] = newRaw.map(f => ({
-        name: f.name, size: f.size, type: f.type,
-        url: URL.createObjectURL(f),
-      }));
+      const newFiles: FileInfo[] = newRaw.map(f => ({ name: f.name, size: f.size, type: f.type, url: URL.createObjectURL(f) }));
       setFiles(prev => [...prev, ...newFiles]);
       setRawFiles(prev => [...prev, ...newRaw]);
     }
@@ -70,7 +136,6 @@ export function TopicRequestPage({ user, onBack, onLogin }: TopicRequestPageProp
 
     setIsSubmitting(true);
     let uploadedFiles = files;
-
     if (rawFiles.length > 0) {
       setIsUploading(true);
       uploadedFiles = await uploadFiles(rawFiles, `topic_${Date.now()}`, setUploadProgress);
@@ -87,108 +152,52 @@ export function TopicRequestPage({ user, onBack, onLogin }: TopicRequestPageProp
       level,
       specific_questions: specificQuestions,
       additional_context: additionalContext,
-      files: uploadedFiles,
       platform,
       platform_contact: platformContact,
+      files: uploadedFiles,
       status: 'pending',
     });
 
     setIsSubmitting(false);
-
-    if (error) {
-      toast.error('Failed to submit. Please try again.');
-      return;
-    }
-
+    if (error) { toast.error('Failed to submit: ' + error.message); return; }
+    toast.success('Topic request submitted! Proceed to payment.');
     setSubmitted(true);
   };
 
-  if (paid) {
+  if (submitted) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 flex items-center justify-center px-6">
-        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
-          className="text-center max-w-md">
-          <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}
-            transition={{ type: 'spring', duration: 0.6, delay: 0.2 }}
-            className="w-24 h-24 mx-auto mb-6 rounded-full bg-emerald-100 flex items-center justify-center">
-            <CheckCircle className="h-12 w-12 text-emerald-600" />
-          </motion.div>
-          <h2 className="text-3xl font-bold text-gray-900 mb-3">You're all set! 🦍</h2>
-          <p className="text-gray-600 mb-2">Payment confirmed for</p>
-          <p className="text-xl font-semibold text-emerald-700 mb-6">"{topicName}"</p>
-          <p className="text-gray-500 text-sm mb-8">
-            Our team will prepare your personalised learning document and deliver it to your {platform} within 24 hours.
+      <div className="min-h-screen bg-background flex items-center justify-center p-6 page-content">
+        <div style={{ ...panel, maxWidth: '480px', width: '100%', textAlign: 'center', padding: '40px 32px' }}>
+          <div style={{ width: '72px', height: '72px', borderRadius: '50%', background: 'rgba(34,197,94,0.15)', border: '1px solid rgba(34,197,94,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', fontSize: '32px' }}>
+            📚
+          </div>
+          <h2 style={{ fontFamily: 'inherit', fontSize: '24px', fontWeight: '800', color: '#e8f5ec', marginBottom: '8px' }}>Almost there!</h2>
+          <p style={{ color: 'rgba(134,239,172,0.7)', fontSize: '14px', marginBottom: '24px', lineHeight: '1.6' }}>
+            Your topic request has been saved. Complete the £20 payment to confirm your order.
           </p>
-          <Button onClick={onBack}
-            className="rounded-xl bg-gradient-to-r from-emerald-700 to-emerald-500 hover:from-emerald-800 hover:to-emerald-600 h-12 px-8">
-            Back to Dashboard
-          </Button>
-        </motion.div>
-      </div>
-    );
-  }
-
-  if (submitted && !paid) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 flex items-center justify-center px-6">
-        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
-          className="text-center max-w-md w-full">
-          <div className="text-5xl mb-4">📚</div>
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">Almost there!</h2>
-          <p className="text-gray-600 mb-6">Your topic request for <span className="font-semibold text-emerald-700">"{topicName}"</span> has been received.</p>
-
-          <div className="backdrop-blur-xl bg-white/80 rounded-2xl border border-white/20 shadow-lg p-6 mb-6 text-left space-y-3">
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-500">Topic</span>
-              <span className="font-medium text-gray-900">{topicName}</span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-500">Subject</span>
-              <span className="font-medium text-gray-900">{subject}</span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-500">Level</span>
-              <span className="font-medium text-gray-900">{level}</span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-500">Delivery</span>
-              <span className="font-medium text-gray-900">{platform}</span>
-            </div>
-            <div className="border-t border-gray-100 pt-3 flex justify-between">
-              <span className="font-semibold text-gray-900">Total</span>
-              <span className="text-2xl font-bold text-emerald-700">£20.00</span>
-            </div>
-          </div>
-
-          <div className="flex items-center justify-center gap-2 text-sm text-gray-500 mb-6">
-            <Shield className="h-4 w-4 text-emerald-600" />
-            <span>Secured by Flutterwave — bank-level encryption</span>
-          </div>
-
-          <div className="space-y-3">
-            <Button
-              onClick={() => window.open('https://flutterwave.com/pay/ctiqneyy3cgv', '_blank')}
-              className="w-full h-12 rounded-xl text-white font-semibold"
-              style={{ background: 'linear-gradient(135deg,#047857,#10b981)' }}
-            >
-              Pay £20.00 to Confirm
-            </Button>
-            <Button
-              onClick={async () => {
-                const { supabase } = await import('@/lib/supabase');
-                await supabase.from('topics').update({ status: 'paid' }).eq('user_id', user?.id).order('created_at', { ascending: false }).limit(1);
-                setPaid(true);
-              }}
-              variant="outline"
-              className="w-full h-12 rounded-xl font-semibold border-emerald-300 text-emerald-700"
-            >
-              <CheckCircle className="h-4 w-4 mr-2" /> I've Paid
-            </Button>
-            <button onClick={onBack} className="text-sm text-gray-400 hover:text-gray-600 w-full">
-              Cancel and go back
-            </button>
-          </div>
-        </motion.div>
+          <a
+            href="https://flutterwave.com/pay/ctiqneyy3cgv"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: '8px',
+              padding: '14px 28px', borderRadius: '14px', color: 'white',
+              background: 'linear-gradient(135deg,#14532d,#15803d 40%,#22c55e)',
+              boxShadow: '0 4px 16px rgba(34,197,94,0.35)',
+              fontWeight: '700', fontSize: '15px', textDecoration: 'none',
+              marginBottom: '16px', width: '100%', justifyContent: 'center',
+            }}
+          >
+            <ExternalLink className="h-4 w-4" />
+            Pay £20 — Complete Order
+          </a>
+          <p style={{ fontSize: '11px', color: 'rgba(134,239,172,0.4)', marginBottom: '20px' }}>
+            ⚠️ Enter exactly £20 on the payment page
+          </p>
+          <button onClick={onBack} style={{ background: 'none', border: 'none', color: 'rgba(134,239,172,0.5)', cursor: 'pointer', fontSize: '13px', fontFamily: 'inherit' }}>
+            Cancel and go back
+          </button>
+        </div>
       </div>
     );
   }
@@ -197,182 +206,185 @@ export function TopicRequestPage({ user, onBack, onLogin }: TopicRequestPageProp
     <div className="min-h-screen bg-background">
       <header className="glass border-b sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center gap-4">
-          <Button onClick={onBack} variant="ghost" size="icon" className="rounded-full hover:bg-gray-100">
+          <Button onClick={onBack} variant="ghost" size="icon" className="rounded-full text-foreground hover:bg-white/10">
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div className="flex items-center gap-3">
-            <motion.div animate={{ rotate: [0, 10, -10, 0] }}
-              transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }} className="text-3xl">
+            <motion.div animate={{ rotate: [0, 10, -10, 0] }} transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }} className="text-3xl">
               🦍
             </motion.div>
-            <span className="text-2xl font-bold text-gray-900">ApeAcademy</span>
+            <span className="text-2xl font-bold text-foreground">ApeAcademy</span>
           </div>
           <div className="ml-auto">
-            <span className="text-sm font-medium text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-200">
+            <span style={{ fontSize: '12px', fontWeight: '700', color: '#22c55e', background: 'rgba(34,197,94,0.1)', padding: '6px 14px', borderRadius: '100px', border: '1px solid rgba(34,197,94,0.2)' }}>
               📚 Topic Request
             </span>
           </div>
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-6 py-12">
+      <main className="max-w-4xl mx-auto px-6 py-12 page-content">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Request a Topic Explanation</h1>
-          <p className="text-gray-600 mb-8">
-            Struggling with a topic? Tell us exactly what you need and we'll deliver a 
-            personalised learning document straight to you.
+          <h1 className="text-4xl font-bold text-foreground mb-2">Request a Topic Explanation</h1>
+          <p className="text-muted-foreground mb-8">
+            Struggling with a topic? Tell us exactly what you need and we'll deliver a personalised learning document straight to you.
           </p>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-3">
 
             {/* Topic Details */}
-            <Card className="backdrop-blur-xl bg-white/80 border-white/20 shadow-lg">
-              <CardContent className="p-6 space-y-4">
-                <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                  <BookOpen className="h-5 w-5 text-emerald-600" />
-                  Topic Details
-                </h3>
-
+            <div style={panel}>
+              <div style={panelTitleStyle}>{greenBar} Topic Details</div>
+              <div className="space-y-4">
                 <div>
-                  <Label htmlFor="topicName">Topic Name</Label>
-                  <Input id="topicName" placeholder="e.g. Photosynthesis, Integration by Parts, The French Revolution"
-                    value={topicName} onChange={e => setTopicName(e.target.value)}
-                    required className="h-12 rounded-xl bg-gray-50 mt-1" />
-                  <p className="text-xs text-gray-400 mt-1">Be specific — "Newton's Second Law" is better than "Physics"</p>
+                  <label style={labelStyle}>Topic Name</label>
+                  <input style={inputStyle} placeholder="e.g. Photosynthesis, Integration by Parts, The French Revolution"
+                    value={topicName} onChange={e => setTopicName(e.target.value)} required />
+                  <p style={{ fontSize: '11px', color: 'rgba(134,239,172,0.4)', marginTop: '4px' }}>Be specific — "Newton's Second Law" is better than "Physics"</p>
                 </div>
-
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
-                    <Label>Subject</Label>
-                    <select value={subject} onChange={e => setSubject(e.target.value)} required
-                      className="w-full h-12 rounded-xl bg-gray-50 border border-gray-200 px-3 text-sm mt-1">
-                      <option value="">Select subject</option>
-                      {SUBJECTS.map(s => <option key={s} value={s}>{s}</option>)}
+                    <label style={labelStyle}>Subject</label>
+                    <select style={selectStyle} value={subject} onChange={e => setSubject(e.target.value)} required>
+                      <option value="" style={{ background: '#0a0f0b' }}>Select subject</option>
+                      {SUBJECTS.map(s => <option key={s} value={s} style={{ background: '#0a0f0b' }}>{s}</option>)}
                     </select>
                   </div>
                   <div>
-                    <Label>Level of Study</Label>
-                    <select value={level} onChange={e => setLevel(e.target.value)} required
-                      className="w-full h-12 rounded-xl bg-gray-50 border border-gray-200 px-3 text-sm mt-1">
-                      <option value="">Select level</option>
-                      {LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
+                    <label style={labelStyle}>Level of Study</label>
+                    <select style={selectStyle} value={level} onChange={e => setLevel(e.target.value)} required>
+                      <option value="" style={{ background: '#0a0f0b' }}>Select level</option>
+                      {LEVELS.map(l => <option key={l} value={l} style={{ background: '#0a0f0b' }}>{l}</option>)}
                     </select>
                   </div>
                 </div>
-
                 <div>
-                  <Label htmlFor="specificQuestions">Specific Questions or Confusion Points</Label>
-                  <Textarea id="specificQuestions"
-                    placeholder="What exactly don't you understand? e.g. 'I understand what photosynthesis is but I don't understand the light-dependent reactions or why chlorophyll absorbs specific wavelengths'"
-                    value={specificQuestions} onChange={e => setSpecificQuestions(e.target.value)}
-                    required className="rounded-xl bg-gray-50 min-h-28 mt-1" />
-                  <p className="text-xs text-gray-400 mt-1">The more specific, the better your learning document will be</p>
+                  <label style={labelStyle}>Specific Questions or Confusion Points</label>
+                  <textarea style={textareaStyle}
+                    placeholder="What exactly don't you understand? e.g. 'I understand what photosynthesis is but I don't understand the light-dependent reactions'"
+                    value={specificQuestions} onChange={e => setSpecificQuestions(e.target.value)} required />
+                  <p style={{ fontSize: '11px', color: 'rgba(134,239,172,0.4)', marginTop: '4px' }}>The more specific, the better your learning document</p>
                 </div>
-
                 <div>
-                  <Label htmlFor="additionalContext">Additional Context (Optional)</Label>
-                  <Textarea id="additionalContext"
-                    placeholder="e.g. This is for my Year 2 Biology exam next week. My teacher uses the AQA syllabus. I've already read the textbook but the diagrams confuse me."
-                    value={additionalContext} onChange={e => setAdditionalContext(e.target.value)}
-                    className="rounded-xl bg-gray-50 min-h-20 mt-1" />
+                  <label style={labelStyle}>Additional Context (Optional)</label>
+                  <textarea style={{ ...textareaStyle, minHeight: '70px' }}
+                    placeholder="e.g. This is for my Year 2 Biology exam next week. My teacher uses the AQA syllabus."
+                    value={additionalContext} onChange={e => setAdditionalContext(e.target.value)} />
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
 
             {/* File Upload */}
-            <Card className="backdrop-blur-xl bg-white/80 border-white/20 shadow-lg">
-              <CardContent className="p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-1">Upload Reference Files (Optional)</h3>
-                <p className="text-sm text-gray-500 mb-4">Textbook pages, past papers, notes, diagrams — anything that helps us understand exactly what you need</p>
-                <input type="file" id="fileUpload" multiple onChange={handleFileUpload}
-                  className="hidden" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg" />
-                <div onClick={() => document.getElementById('fileUpload')?.click()}
-                  className="border-2 border-dashed border-emerald-300 rounded-xl p-6 text-center cursor-pointer hover:border-emerald-500 hover:bg-emerald-50/50 transition-all">
-                  <Upload className="h-10 w-10 mx-auto mb-2 text-emerald-500" />
-                  <p className="text-gray-700 font-medium">Click to upload files</p>
-                  <p className="text-sm text-gray-400">PDF, DOCX, or images up to 10MB</p>
-                </div>
-                {files.length > 0 && (
-                  <div className="mt-3 space-y-2">
-                    {files.map((file, i) => (
-                      <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
-                        <div className="flex items-center gap-2">
-                          <FileText className="h-4 w-4 text-gray-500" />
-                          <span className="text-sm font-medium text-gray-800">{file.name}</span>
-                          <span className="text-xs text-gray-400">{(file.size / 1024).toFixed(1)} KB</span>
-                        </div>
-                        <button type="button" onClick={() => removeFile(i)} className="text-red-400 hover:text-red-600">
-                          <X className="h-4 w-4" />
-                        </button>
+            <div style={panel}>
+              <div style={panelTitleStyle}>{greenBar} Upload Reference Files (Optional)</div>
+              <p style={{ fontSize: '13px', color: 'rgba(134,239,172,0.5)', marginBottom: '16px' }}>Textbook pages, past papers, notes — anything that helps us understand what you need</p>
+              <input type="file" id="fileUpload" multiple onChange={handleFileUpload} className="hidden" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg" />
+              <div
+                onClick={() => document.getElementById('fileUpload')?.click()}
+                style={{ border: '2px dashed rgba(34,197,94,0.3)', borderRadius: '14px', padding: '28px', textAlign: 'center', cursor: 'pointer', transition: 'all 0.2s' }}
+                onMouseOver={e => (e.currentTarget.style.borderColor = 'rgba(34,197,94,0.6)')}
+                onMouseOut={e => (e.currentTarget.style.borderColor = 'rgba(34,197,94,0.3)')}
+              >
+                <Upload className="h-9 w-9 mx-auto mb-2 text-emerald-400" />
+                <p style={{ color: '#e8f5ec', fontWeight: '600', marginBottom: '4px' }}>Click to upload files</p>
+                <p style={{ fontSize: '12px', color: 'rgba(134,239,172,0.4)' }}>PDF, DOCX, or images up to 10MB</p>
+              </div>
+              {files.length > 0 && (
+                <div className="mt-3 space-y-2">
+                  {files.map((file, i) => (
+                    <div key={i} style={infoRowStyle}>
+                      <FileText className="h-4 w-4 text-emerald-400 shrink-0" />
+                      <div className="flex-1">
+                        <div style={{ fontSize: '13px', fontWeight: '600', color: '#e8f5ec' }}>{file.name}</div>
+                        <div style={{ fontSize: '11px', color: 'rgba(134,239,172,0.4)' }}>{(file.size / 1024).toFixed(1)} KB</div>
                       </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Delivery Platform */}
-            <Card className="backdrop-blur-xl bg-white/80 border-white/20 shadow-lg">
-              <CardContent className="p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-1">How should we deliver your learning document?</h3>
-                <p className="text-sm text-gray-500 mb-4">Choose a platform and provide your contact details</p>
-                <div className="grid grid-cols-3 gap-3 mb-4">
-                  {[
-                    { id: 'WhatsApp', emoji: '💬', color: 'border-green-400 bg-green-50', activeColor: 'border-green-500 bg-green-100', textColor: 'text-green-700' },
-                    { id: 'Email', emoji: '✉️', color: 'border-blue-400 bg-blue-50', activeColor: 'border-blue-500 bg-blue-100', textColor: 'text-blue-700' },
-                    { id: 'Snapchat', emoji: '👻', color: 'border-yellow-400 bg-yellow-50', activeColor: 'border-yellow-500 bg-yellow-100', textColor: 'text-yellow-700' },
-                  ].map(p => (
-                    <button key={p.id} type="button" onClick={() => { setPlatform(p.id); setPlatformContact(''); }}
-                      className={`flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition-all hover:scale-105 font-medium text-sm ${
-                        platform === p.id ? `${p.activeColor} ${p.textColor} shadow-md scale-105` : 'border-gray-200 bg-gray-50 text-gray-500'
-                      }`}>
-                      <span className="text-2xl">{p.emoji}</span>
-                      <span>{p.id}</span>
-                    </button>
+                      <button type="button" onClick={() => removeFile(i)} style={{ background: 'none', border: 'none', color: '#f87171', cursor: 'pointer' }}>
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
                   ))}
                 </div>
-                {platform === 'WhatsApp' && (
-                  <div className="relative">
-                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-green-500" />
-                    <Input type="tel" placeholder="+1 234 567 8900 (include country code)"
-                      value={platformContact} onChange={e => setPlatformContact(e.target.value)}
-                      required className="h-12 rounded-xl bg-gray-50 pl-10" />
+              )}
+            </div>
+
+            {/* Delivery Platform */}
+            <div style={panel}>
+              <div style={panelTitleStyle}>{greenBar} Delivery Preference</div>
+              <p style={{ fontSize: '13px', color: 'rgba(134,239,172,0.5)', marginBottom: '16px' }}>Choose a platform and provide your contact details</p>
+              <div className="grid grid-cols-3 gap-3 mb-4">
+                {[
+                  { id: 'WhatsApp', emoji: '💬', color: 'rgba(37,211,102,0.15)', borderActive: 'rgba(37,211,102,0.5)' },
+                  { id: 'Email', emoji: '✉️', color: 'rgba(96,165,250,0.15)', borderActive: 'rgba(96,165,250,0.5)' },
+                  { id: 'Snapchat', emoji: '👻', color: 'rgba(250,204,21,0.15)', borderActive: 'rgba(250,204,21,0.5)' },
+                ].map(p => (
+                  <button key={p.id} type="button" onClick={() => { setPlatform(p.id); setPlatformContact(''); }}
+                    style={{
+                      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px',
+                      padding: '16px 8px', borderRadius: '14px',
+                      background: platform === p.id ? p.color : 'rgba(255,255,255,0.04)',
+                      border: `1px solid ${platform === p.id ? p.borderActive : 'rgba(255,255,255,0.08)'}`,
+                      color: '#e8f5ec', cursor: 'pointer', transition: 'all 0.2s',
+                      fontFamily: 'inherit', fontSize: '13px', fontWeight: '600',
+                      transform: platform === p.id ? 'scale(1.03)' : 'scale(1)',
+                    }}>
+                    <span style={{ fontSize: '22px' }}>{p.emoji}</span>
+                    {p.id}
+                  </button>
+                ))}
+              </div>
+              {platform === 'WhatsApp' && (
+                <div>
+                  <label style={labelStyle}>Your WhatsApp Number</label>
+                  <div style={{ position: 'relative' }}>
+                    <Phone className="h-4 w-4 text-emerald-400" style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)' }} />
+                    <input style={{ ...inputStyle, paddingLeft: '40px' }} type="tel" placeholder="+1 234 567 8900" value={platformContact} onChange={e => setPlatformContact(e.target.value)} required />
                   </div>
-                )}
-                {platform === 'Email' && (
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-blue-500" />
-                    <Input type="email" placeholder="yourname@example.com"
-                      value={platformContact} onChange={e => setPlatformContact(e.target.value)}
-                      required className="h-12 rounded-xl bg-gray-50 pl-10" />
+                </div>
+              )}
+              {platform === 'Email' && (
+                <div>
+                  <label style={labelStyle}>Your Email Address</label>
+                  <div style={{ position: 'relative' }}>
+                    <Mail className="h-4 w-4 text-blue-400" style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)' }} />
+                    <input style={{ ...inputStyle, paddingLeft: '40px' }} type="email" placeholder="yourname@example.com" value={platformContact} onChange={e => setPlatformContact(e.target.value)} required />
                   </div>
-                )}
-                {platform === 'Snapchat' && (
-                  <div className="relative">
-                    <AtSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-yellow-500" />
-                    <Input type="text" placeholder="your.snapchat.username"
-                      value={platformContact} onChange={e => setPlatformContact(e.target.value)}
-                      required className="h-12 rounded-xl bg-gray-50 pl-10" />
+                </div>
+              )}
+              {platform === 'Snapchat' && (
+                <div>
+                  <label style={labelStyle}>Your Snapchat Username</label>
+                  <div style={{ position: 'relative' }}>
+                    <AtSign className="h-4 w-4 text-yellow-400" style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)' }} />
+                    <input style={{ ...inputStyle, paddingLeft: '40px' }} placeholder="your.snapchat.username" value={platformContact} onChange={e => setPlatformContact(e.target.value)} required />
                   </div>
-                )}
-                {!platform && <p className="text-center text-sm text-gray-400 py-2">👆 Select a platform above</p>}
-              </CardContent>
-            </Card>
+                </div>
+              )}
+              {!platform && <p style={{ textAlign: 'center', fontSize: '13px', color: 'rgba(134,239,172,0.4)', padding: '8px 0' }}>👆 Select a platform above to continue</p>}
+            </div>
 
             {isUploading && (
-              <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200">
-                <div className="text-sm font-medium text-emerald-800 mb-2">Uploading files... {uploadProgress}%</div>
-                <div className="h-2 bg-emerald-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-emerald-500 rounded-full transition-all" style={{ width: `${uploadProgress}%` }} />
+              <div style={{ ...panel, textAlign: 'center' }}>
+                <div style={{ fontSize: '13px', color: '#4ade80', marginBottom: '8px', fontWeight: '600' }}>Uploading files... {uploadProgress}%</div>
+                <div style={{ height: '6px', background: 'rgba(34,197,94,0.15)', borderRadius: '3px', overflow: 'hidden' }}>
+                  <div style={{ height: '100%', background: '#22c55e', borderRadius: '3px', width: `${uploadProgress}%`, transition: 'width 0.3s' }} />
                 </div>
               </div>
             )}
 
-            <Button type="submit"
+            <button type="submit"
               disabled={!topicName || !subject || !level || !specificQuestions || !platform || !platformContact || isSubmitting || isUploading}
-              className="w-full h-14 rounded-xl bg-gradient-to-r from-emerald-700 to-emerald-500 hover:from-emerald-800 hover:to-emerald-600 text-lg font-semibold disabled:opacity-50">
-              {isSubmitting ? 'Submitting...' : '📚 Request Topic Explanation'}
-            </Button>
+              style={{
+                width: '100%', padding: '16px',
+                background: (!topicName || !subject || !level || !specificQuestions || !platform || !platformContact || isSubmitting || isUploading)
+                  ? 'rgba(34,197,94,0.3)' : 'linear-gradient(135deg,#14532d,#15803d 40%,#22c55e)',
+                color: 'white', border: 'none', borderRadius: '14px',
+                fontSize: '15px', fontWeight: '700',
+                cursor: (!topicName || !subject || !level || !specificQuestions || !platform || !platformContact || isSubmitting || isUploading) ? 'not-allowed' : 'pointer',
+                fontFamily: 'inherit', boxShadow: '0 4px 16px rgba(34,197,94,0.3)', transition: 'all 0.2s',
+              }}>
+              {isSubmitting ? 'Submitting...' : '📚 Request Topic Explanation — £20'}
+            </button>
+
           </form>
         </motion.div>
       </main>

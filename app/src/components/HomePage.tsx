@@ -11,9 +11,7 @@ import {
   History,
   ChevronRight,
   Sparkles,
-  BookOpen,
-  Sun,
-  Moon
+  BookOpen
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -91,12 +89,10 @@ export function HomePage({
             <div className="flex items-center gap-2">
               <button
                 onClick={toggleTheme}
-                className="glass w-9 h-9 rounded-full flex items-center justify-center hover:scale-110 transition-all"
+                className="glass w-9 h-9 rounded-full flex items-center justify-center hover:scale-110 transition-all text-base"
                 title="Toggle dark mode"
               >
-                {resolvedTheme === 'dark'
-                  ? <Sun className="h-4 w-4 text-emerald-400" />
-                  : <Moon className="h-4 w-4 text-emerald-700" />}
+                {resolvedTheme === 'dark' ? '☀️' : '🌙'}
               </button>
               <button
                 onClick={() => (user ? setShowProfile(!showProfile) : onLogin())}
