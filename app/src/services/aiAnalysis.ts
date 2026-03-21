@@ -19,9 +19,9 @@ const calculatePriceLocally = (assignment: Assignment) => {
 
   const price = flatPrices[type] ?? 25;
 
-  const complexity =
+  const complexity: 'low' | 'medium' | 'high' =
     price <= 20 ? 'low' :
-    price <= 40 ? 'medium' : 'high';
+    price <= 45 ? 'medium' : 'high';
 
   const estimatedHours =
     price <= 20 ? 1 :
@@ -29,14 +29,6 @@ const calculatePriceLocally = (assignment: Assignment) => {
     price <= 60 ? 5 : 10;
 
   return { price, complexity, estimatedHours, inScope: true, currency: 'GBP' };
-};
-
-  const estimatedHours = complexity === 'low' ? 2 : complexity === 'medium' ? 4 : 8;
-  const urgencyAdd: Record<string, number> = { normal: 0, urgent: 10, express: 20 };
-  const basePrice = basePrices[type] || 25;
-  const price = Math.round((basePrice + urgencyAdd[urgency]) * 100) / 100;
-
-  return { price, complexity, estimatedHours, urgency, inScope: true, currency: 'GBP' };
 };
 
 export const analyzeAssignment = async (
@@ -73,7 +65,7 @@ export const analyzeAssignment = async (
       progress: 100,
       estimatedCost: priceResult.price,
       currency: 'GBP',
-      complexity: priceResult.complexity as 'low' | 'medium' | 'high',
+      complexity: priceResult.complexity,
       estimatedHours: priceResult.estimatedHours,
       subjectArea: assignment.courseName,
       requirements,
