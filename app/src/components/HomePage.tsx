@@ -224,7 +224,8 @@ export function HomePage({
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {recentAssignments.length === 0 ? (
+              <style>{`.dp{animation:dp 1.5s ease-in-out infinite} .sp{animation:sp 1s linear infinite} @keyframes dp{0%,100%{opacity:1}50%{opacity:0.3}} @keyframes sp{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
+              {userAssignments.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
                   <FileText className="h-12 w-12 mx-auto mb-3 opacity-30" />
                   <p>No assignments yet</p>
@@ -232,20 +233,48 @@ export function HomePage({
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {recentAssignments.map((assignment) => (
-                    <div
-                      key={assignment.id}
-                      className="flex items-center justify-between p-3 rounded-xl bg-white/40 dark:bg-white/5 border border-white/30 dark:border-white/10 hover:bg-white/60 dark:hover:bg-white/8 transition-colors"
-                    >
-                      <div>
-                        <p className="font-medium text-foreground">{assignment.course_name}</p>
-                        <p className="text-sm text-muted-foreground">{assignment.assignment_type}</p>
+                  {userAssignments.map((assignment) => {
+                    const statusMap: Record<string, any> = {
+                      pending:    { label: 'Submitted',    bg: 'rgba(234,179,8,0.08)',  border: 'rgba(234,179,8,0.3)',  text: '#fbbf24', dot: '#f59e0b', pulse: false },
+                      submitted:  { label: 'Submitted',    bg: 'rgba(234,179,8,0.08)',  border: 'rgba(234,179,8,0.3)',  text: '#fbbf24', dot: '#f59e0b', pulse: false },
+                      paid:       { label: 'Paid ✓',       bg: 'rgba(59,130,246,0.08)', border: 'rgba(59,130,246,0.3)', text: '#60a5fa', dot: '#3b82f6', pulse: true  },
+                      generating: { label: '⚡ Generating',bg: 'rgba(168,85,247,0.08)', border: 'rgba(168,85,247,0.3)', text: '#c084fc', dot: '#a855f7', pulse: true  },
+                      completed:  { label: '✓ Completed',  bg: 'rgba(34,197,94,0.08)',  border: 'rgba(34,197,94,0.3)',  text: '#4ade80', dot: '#22c55e', pulse: false },
+                    };
+                    const cfg = statusMap[assignment.status] || statusMap.pending;
+                    return (
+                      <div key={assignment.id} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px', padding: '16px' }}>
+                        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px', marginBottom: '8px' }}>
+                          <div style={{ flex: 1 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px', flexWrap: 'wrap' as const }}>
+                              <span style={{ background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: '6px', padding: '2px 8px', fontSize: '10px', fontWeight: 700, color: '#4ade80', textTransform: 'uppercase' as const }}>{assignment.assignment_type}</span>
+                              {assignment.course_name && <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>{assignment.course_name}</span>}
+                            </div>
+                            <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.65)', lineHeight: 1.5, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' as const }}>{assignment.description || 'No description'}</p>
+                          </div>
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: cfg.bg, border: `1px solid ${cfg.border}`, borderRadius: '100px', padding: '4px 12px', fontSize: '11px', fontWeight: 700, color: cfg.text, whiteSpace: 'nowrap' as const, flexShrink: 0 }}>
+                            <span className={cfg.pulse ? 'dp' : ''} style={{ width: '6px', height: '6px', borderRadius: '50%', background: cfg.dot, display: 'inline-block' }}/>
+                            {cfg.label}
+                          </span>
+                        </div>
+                        <div style={{ display: 'flex', gap: '16px', fontSize: '11px', color: 'rgba(255,255,255,0.3)', marginBottom: assignment.delivery_url || assignment.status === 'generating' ? '10px' : '0' }}>
+                          {assignment.due_date && <span>⏰ Due {assignment.due_date}</span>}
+                          {assignment.payment_amount && <span style={{ color: 'rgba(74,222,128,0.6)' }}>£{Number(assignment.payment_amount).toFixed(2)} paid</span>}
+                        </div>
+                        {assignment.delivery_url && (
+                          <div style={{ background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: '10px', padding: '10px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+                            <span style={{ fontSize: '12px', color: '#86efac' }}>📄 Your document is ready</span>
+                            <a href={assignment.delivery_url} target="_blank" rel="noreferrer" style={{ background: '#22c55e', color: '#052e16', borderRadius: '8px', padding: '5px 14px', fontSize: '12px', fontWeight: 800, textDecoration: 'none' }}>Open 🔗</a>
+                          </div>
+                        )}
+                        {assignment.status === 'generating' && (
+                          <div style={{ background: 'rgba(168,85,247,0.06)', border: '1px solid rgba(168,85,247,0.2)', borderRadius: '10px', padding: '8px 14px', fontSize: '11px', color: '#c084fc', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span className="sp">⚡</span> Claude is generating your document — check back in a minute
+                          </div>
+                        )}
                       </div>
-                      <Badge className={`${ASSIGNMENT_STATUS_LABELS[assignment.status]?.bgColor} ${ASSIGNMENT_STATUS_LABELS[assignment.status]?.color} border-0`}>
-                        {ASSIGNMENT_STATUS_LABELS[assignment.status]?.label || assignment.status}
-                      </Badge>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </CardContent>
