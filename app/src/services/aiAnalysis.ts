@@ -4,7 +4,8 @@ import { updateAssignmentStatus, logActivity } from '@/services/database';
 const calculatePriceLocally = (assignment: Assignment) => {
   const type = assignment.assignmentType || 'Other';
 
-  const flatPrices: Record<string, number> = {
+  const universityPrices: Record<string, number> = {
+    'Short Assignment': 8,
     'Homework': 15,
     'Essay': 30,
     'Lab Report': 35,
@@ -17,15 +18,18 @@ const calculatePriceLocally = (assignment: Assignment) => {
     'Other': 25,
   };
 
-  const price = flatPrices[type] ?? 25;
+  const schoolLevel = (assignment as any).schoolLevel || 'University';
+  const isSecondary = ['Primary', 'Middle', 'High'].includes(schoolLevel);
+  const basePrice = universityPrices[type] ?? 25;
+  const price = isSecondary ? Math.round(basePrice * 0.67) : basePrice;
 
   const complexity: 'low' | 'medium' | 'high' =
-    price <= 20 ? 'low' :
-    price <= 45 ? 'medium' : 'high';
+    price <= 15 ? 'low' :
+    price <= 35 ? 'medium' : 'high';
 
   const estimatedHours =
-    price <= 20 ? 1 :
-    price <= 40 ? 3 :
+    price <= 15 ? 1 :
+    price <= 35 ? 3 :
     price <= 60 ? 5 : 10;
 
   return { price, complexity, estimatedHours, inScope: true, currency: 'GBP' };

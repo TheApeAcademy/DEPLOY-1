@@ -9,19 +9,19 @@ const steps = [
     body: 'The premium academic assistance platform. Submit any assignment and our expert team handles the rest.',
   },
   {
-    title: 'Step 1 — Submit Your Assignment',
+    title: 'Step 1: Submit Your Assignment',
     body: 'Click "Submit Assignment" from your dashboard. Fill in the assignment type, course, teacher, due date, and upload any files.',
   },
   {
-    title: 'Step 2 — AI Analysis',
+    title: 'Step 2: AI Analysis',
     body: 'Our system analyses your assignment instantly — assessing complexity, estimated hours, and calculates a fair price.',
   },
   {
-    title: 'Step 3 — Review & Pay',
+    title: 'Step 3: Review and Pay',
     body: 'You will see a clear breakdown of the price before paying. No hidden fees. Pay securely and your assignment is submitted to our team.',
   },
   {
-    title: 'Step 4 — Track Progress',
+    title: 'Step 4: Track Progress',
     body: 'Monitor your assignment status on your dashboard — from submitted to in progress to completed.',
   },
   {

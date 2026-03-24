@@ -47,7 +47,7 @@ export const DEPARTMENTS: { [key: string]: string[] } = {
 
 export const PLATFORMS = ['WhatsApp', 'Email', 'Snapchat', 'Telegram', 'Instagram', 'Discord'];
 
-export const ASSIGNMENT_TYPES = ['Essay', 'Research Paper', 'Project', 'Homework', 'Lab Report', 'Presentation', 'Case Study', 'Thesis', 'Dissertation', 'Other'];
+export const ASSIGNMENT_TYPES = ['Short Assignment', 'Homework', 'Essay', 'Lab Report', 'Presentation', 'Case Study', 'Project', 'Research Paper', 'Thesis', 'Dissertation', 'Other'];
 
 export const CURRENCIES = [
   { code: 'USD', name: 'US Dollar', symbol: '$' },

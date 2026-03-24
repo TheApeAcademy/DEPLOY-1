@@ -103,7 +103,7 @@ export function PaymentPanel({ assignment, user, onPaymentComplete, onPaymentFai
               </div>
               <div className="flex items-center justify-center gap-2 text-sm text-gray-500 mb-6">
                 <Shield className="h-4 w-4 text-emerald-600" />
-                <span>Secured by Flutterwave — bank-level encryption</span>
+                <span>Secured by Flutterwave · bank-level encryption</span>
               </div>
               <Button onClick={handlePay} className="h-12 px-8 rounded-xl text-white font-semibold"
                 style={{ background: 'linear-gradient(135deg,#047857,#10b981)' }}>

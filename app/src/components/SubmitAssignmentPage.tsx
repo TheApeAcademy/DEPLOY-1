@@ -159,7 +159,7 @@ export function SubmitAssignmentPage({ user, onBack, onSubmit, onLogin }: Submit
       userId: user.id, userName: user.name, userEmail: user.email,
       assignmentType, courseName, className, teacherName,
       dueDate, platform, platformContact, description,
-      files: uploadedFiles, status: 'pending' as const,
+      files: uploadedFiles, status: 'pending' as const, schoolLevel: user.schoolLevel || 'University',
     };
 
     const { data: saved, error } = await createAssignment(assignmentData);

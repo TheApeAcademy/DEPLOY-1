@@ -207,7 +207,7 @@ export function HomePage({
                     <BookOpen className="h-7 w-7 text-white" />
                   </div>
                   <h3 className="text-2xl font-bold text-white mb-2">Learn a Topic</h3>
-                  <p className="text-white/80">Get a personalised learning document — £20 flat</p>
+                  <p className="text-white/80">Get a personalised learning document for £20 flat</p>
                 </div>
                 <ChevronRight className="h-8 w-8 text-white/60 group-hover:translate-x-2 transition-transform" />
               </div>
