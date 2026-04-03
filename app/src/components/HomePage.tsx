@@ -285,7 +285,7 @@ export function HomePage({
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }} className="mt-6">
             <Card className="glass-card">
               <CardHeader>
-                <CardTitle className="text-lg font-semibold flex items-center gap-2 text-foreground">
+                <CardTitle onClick={() => onOpenSettings()} className="text-lg font-semibold flex items-center gap-2 text-foreground cursor-pointer">
                   <Settings className="h-5 w-5 text-muted-foreground" />
                   Your Preferences
                 </CardTitle>
