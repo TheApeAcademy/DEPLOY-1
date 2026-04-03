@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { 
-  Brain, 
-  CheckCircle, 
-  XCircle, 
-  Clock, 
-  TrendingUp, 
+import {
+  Brain,
+  CheckCircle,
+  XCircle,
+  Clock,
+  TrendingUp,
   FileText,
   DollarSign,
   Sparkles,
@@ -24,10 +24,10 @@ interface AIAnalysisPanelProps {
   onAnalysisFailed: (error: string) => void;
 }
 
-export function AIAnalysisPanel({ 
-  assignment, 
-  onAnalysisComplete, 
-  onAnalysisFailed 
+export function AIAnalysisPanel({
+  assignment,
+  onAnalysisComplete,
+  onAnalysisFailed
 }: AIAnalysisPanelProps) {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -78,19 +78,19 @@ export function AIAnalysisPanel({
 
   const getComplexityColor = (complexity: string) => {
     switch (complexity) {
-      case 'low': return 'text-green-600 bg-green-100';
-      case 'medium': return 'text-yellow-600 bg-yellow-100';
-      case 'high': return 'text-red-600 bg-red-100';
-      default: return 'text-gray-600 bg-gray-100';
+      case 'low': return 'text-green-400 bg-green-500/10';
+      case 'medium': return 'text-yellow-400 bg-yellow-500/10';
+      case 'high': return 'text-red-400 bg-red-500/10';
+      default: return 'text-gray-400 bg-white/5';
     }
   };
 
   return (
-    <Card className="backdrop-blur-xl bg-white/80 border-white/20 shadow-lg overflow-hidden">
+    <Card className="overflow-hidden" style={{ background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '20px', boxShadow: '0 8px 32px rgba(0,0,0,0.4)' }}>
       <CardHeader className="pb-4">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg font-semibold flex items-center gap-2">
-            <Brain className="h-5 w-5 text-emerald-600" />
+          <CardTitle className="text-lg font-semibold flex items-center gap-2 text-white">
+            <Brain className="h-5 w-5 text-emerald-400" />
             Assignment Review
           </CardTitle>
           {analysis && !isAnalyzing && (
@@ -98,7 +98,8 @@ export function AIAnalysisPanel({
               variant="ghost"
               size="sm"
               onClick={handleReReview}
-              className="text-gray-500 hover:text-emerald-700"
+              className="hover:bg-white/10"
+              style={{ color: 'rgba(255,255,255,0.5)' }}
             >
               <RefreshCw className="h-4 w-4 mr-1" />
               Re-analyze
@@ -117,13 +118,14 @@ export function AIAnalysisPanel({
               exit="exit"
               className="text-center py-8"
             >
-              <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-emerald-100 to-green-100 flex items-center justify-center">
-                <Sparkles className="h-10 w-10 text-emerald-600" />
+              <div className="w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center"
+                style={{ background: 'rgba(34,197,94,0.15)' }}>
+                <Sparkles className="h-10 w-10 text-emerald-400" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              <h3 className="text-lg font-semibold text-white mb-2">
                 Ready to Analyze
               </h3>
-              <p className="text-gray-600 mb-6 max-w-sm mx-auto">
+              <p className="mb-6 max-w-sm mx-auto" style={{ color: 'rgba(255,255,255,0.6)' }}>
                 Our team will evaluate your assignment to determine complexity, estimated cost, and feasibility.
               </p>
               <Button
@@ -153,20 +155,20 @@ export function AIAnalysisPanel({
                 >
                   <Brain className="h-8 w-8 text-white" />
                 </motion.div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                <h3 className="text-lg font-semibold text-white mb-1">
                   Reviewing Assignment...
                 </h3>
-                <p className="text-gray-600">
+                <p style={{ color: 'rgba(255,255,255,0.6)' }}>
                   Evaluating complexity, requirements, and estimated effort
                 </p>
               </div>
-              
+
               <div className="space-y-4">
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Analysis Progress</span>
-                  <span className="font-medium text-emerald-700">{progress}%</span>
+                  <span style={{ color: 'rgba(255,255,255,0.6)' }}>Analysis Progress</span>
+                  <span className="font-medium text-emerald-400">{progress}%</span>
                 </div>
-                <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
+                <div className="h-3 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.08)' }}>
                   <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${progress}%` }}
@@ -174,7 +176,7 @@ export function AIAnalysisPanel({
                     className="h-full bg-gradient-to-r from-emerald-700 to-emerald-500 rounded-full"
                   />
                 </div>
-                
+
                 <div className="grid grid-cols-3 gap-3 mt-6">
                   {[
                     { label: 'Scanning content', icon: FileText, active: progress >= 20 },
@@ -185,14 +187,13 @@ export function AIAnalysisPanel({
                       key={step.label}
                       initial={{ opacity: 0.5 }}
                       animate={{ opacity: step.active ? 1 : 0.5 }}
-                      className={`text-center p-3 rounded-xl ${
-                        step.active ? 'bg-emerald-50' : 'bg-gray-50'
-                      }`}
+                      className="text-center p-3 rounded-xl"
+                      style={{ background: step.active ? 'rgba(34,197,94,0.12)' : 'rgba(255,255,255,0.04)' }}
                     >
                       <step.icon className={`h-5 w-5 mx-auto mb-2 ${
-                        step.active ? 'text-emerald-600' : 'text-gray-400'
+                        step.active ? 'text-emerald-400' : 'text-white/30'
                       }`} />
-                      <p className={`text-xs ${step.active ? 'text-emerald-700' : 'text-gray-500'}`}>
+                      <p className={`text-xs ${step.active ? 'text-emerald-400' : 'text-white/40'}`}>
                         {step.label}
                       </p>
                     </motion.div>
@@ -211,17 +212,19 @@ export function AIAnalysisPanel({
               exit="exit"
               className="text-center py-8"
             >
-              <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-red-100 flex items-center justify-center">
-                <XCircle className="h-10 w-10 text-red-500" />
+              <div className="w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center"
+                style={{ background: 'rgba(239,68,68,0.15)' }}>
+                <XCircle className="h-10 w-10 text-red-400" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              <h3 className="text-lg font-semibold text-white mb-2">
                 Analysis Failed
               </h3>
-              <p className="text-gray-600 mb-6">{error}</p>
+              <p className="mb-6" style={{ color: 'rgba(255,255,255,0.7)' }}>{error}</p>
               <Button
                 onClick={handleAnalyze}
                 variant="outline"
                 className="rounded-xl"
+                style={{ borderColor: 'rgba(255,255,255,0.2)', color: 'white', background: 'rgba(255,255,255,0.05)' }}
               >
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Try Again
@@ -239,28 +242,28 @@ export function AIAnalysisPanel({
               className="space-y-4"
             >
               {/* Status Banner */}
-              <div className={`p-4 rounded-xl ${
-                analysis.inScope 
-                  ? 'bg-green-50 border border-green-200' 
-                  : 'bg-red-50 border border-red-200'
-              }`}>
+              <div className="p-4 rounded-xl" style={
+                analysis.inScope
+                  ? { background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)' }
+                  : { background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)' }
+              }>
                 <div className="flex items-center gap-3">
                   {analysis.inScope ? (
                     <>
-                      <CheckCircle className="h-6 w-6 text-green-500" />
+                      <CheckCircle className="h-6 w-6 text-emerald-400" />
                       <div>
-                        <h4 className="font-semibold text-green-900">Assignment In Scope</h4>
-                        <p className="text-sm text-green-700">
+                        <h4 className="font-semibold text-white">Assignment In Scope</h4>
+                        <p className="text-sm" style={{ color: 'rgba(255,255,255,0.7)' }}>
                           This assignment can be completed. Proceed to payment.
                         </p>
                       </div>
                     </>
                   ) : (
                     <>
-                      <XCircle className="h-6 w-6 text-red-500" />
+                      <XCircle className="h-6 w-6 text-red-400" />
                       <div>
-                        <h4 className="font-semibold text-red-900">Assignment Out of Scope</h4>
-                        <p className="text-sm text-red-700">
+                        <h4 className="font-semibold text-white">Assignment Out of Scope</h4>
+                        <p className="text-sm" style={{ color: 'rgba(255,255,255,0.7)' }}>
                           {analysis.outOfScopeReason || 'This assignment cannot be completed.'}
                         </p>
                       </div>
@@ -276,10 +279,11 @@ export function AIAnalysisPanel({
                   initial="initial"
                   animate="animate"
                   transition={{ delay: 0.1 }}
-                  className="p-4 rounded-xl bg-gray-50 text-center"
+                  className="p-4 rounded-xl text-center"
+                  style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
                 >
-                  <TrendingUp className="h-5 w-5 mx-auto mb-2 text-emerald-600" />
-                  <p className="text-xs text-gray-500 mb-1">Complexity</p>
+                  <TrendingUp className="h-5 w-5 mx-auto mb-2 text-emerald-400" />
+                  <p className="text-xs mb-1" style={{ color: 'rgba(255,255,255,0.5)' }}>Complexity</p>
                   <Badge className={`capitalize ${getComplexityColor(analysis.complexity)}`}>
                     {analysis.complexity}
                   </Badge>
@@ -290,11 +294,12 @@ export function AIAnalysisPanel({
                   initial="initial"
                   animate="animate"
                   transition={{ delay: 0.2 }}
-                  className="p-4 rounded-xl bg-gray-50 text-center"
+                  className="p-4 rounded-xl text-center"
+                  style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
                 >
-                  <Clock className="h-5 w-5 mx-auto mb-2 text-blue-500" />
-                  <p className="text-xs text-gray-500 mb-1">Est. Hours</p>
-                  <p className="font-semibold text-gray-900">{analysis.estimatedHours}h</p>
+                  <Clock className="h-5 w-5 mx-auto mb-2 text-blue-400" />
+                  <p className="text-xs mb-1" style={{ color: 'rgba(255,255,255,0.5)' }}>Est. Hours</p>
+                  <p className="font-semibold text-white">{analysis.estimatedHours}h</p>
                 </motion.div>
 
                 <motion.div
@@ -302,11 +307,12 @@ export function AIAnalysisPanel({
                   initial="initial"
                   animate="animate"
                   transition={{ delay: 0.3 }}
-                  className="p-4 rounded-xl bg-gray-50 text-center"
+                  className="p-4 rounded-xl text-center"
+                  style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
                 >
-                  <DollarSign className="h-5 w-5 mx-auto mb-2 text-green-500" />
-                  <p className="text-xs text-gray-500 mb-1">Est. Cost</p>
-                  <p className="font-semibold text-gray-900">
+                  <DollarSign className="h-5 w-5 mx-auto mb-2 text-emerald-400" />
+                  <p className="text-xs mb-1" style={{ color: 'rgba(255,255,255,0.5)' }}>Est. Cost</p>
+                  <p className="font-semibold text-white">
                     ${analysis.estimatedCost.toFixed(2)}
                   </p>
                 </motion.div>
@@ -316,11 +322,12 @@ export function AIAnalysisPanel({
                   initial="initial"
                   animate="animate"
                   transition={{ delay: 0.4 }}
-                  className="p-4 rounded-xl bg-gray-50 text-center"
+                  className="p-4 rounded-xl text-center"
+                  style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
                 >
-                  <Sparkles className="h-5 w-5 mx-auto mb-2 text-yellow-500" />
-                  <p className="text-xs text-gray-500 mb-1">Confidence</p>
-                  <p className="font-semibold text-gray-900">
+                  <Sparkles className="h-5 w-5 mx-auto mb-2 text-yellow-400" />
+                  <p className="text-xs mb-1" style={{ color: 'rgba(255,255,255,0.5)' }}>Confidence</p>
+                  <p className="font-semibold text-white">
                     {Math.round(analysis.confidence * 100)}%
                   </p>
                 </motion.div>
@@ -328,38 +335,38 @@ export function AIAnalysisPanel({
 
               {/* Additional Details */}
               {(analysis.wordCount || analysis.pageCount || analysis.requirements.length > 0) && (
-                <div className="p-4 rounded-xl bg-emerald-50/50">
-                  <h4 className="font-semibold text-purple-900 mb-3 flex items-center gap-2">
-                    <FileText className="h-4 w-4" />
+                <div className="p-4 rounded-xl" style={{ background: 'rgba(34,197,94,0.07)', border: '1px solid rgba(34,197,94,0.15)' }}>
+                  <h4 className="font-semibold text-white mb-3 flex items-center gap-2">
+                    <FileText className="h-4 w-4 text-emerald-400" />
                     Additional Details
                   </h4>
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     {analysis.wordCount && (
                       <div>
-                        <span className="text-gray-500">Est. Word Count:</span>{' '}
-                        <span className="font-medium">{analysis.wordCount}</span>
+                        <span style={{ color: 'rgba(255,255,255,0.5)' }}>Est. Word Count:</span>{' '}
+                        <span className="font-medium text-white">{analysis.wordCount}</span>
                       </div>
                     )}
                     {analysis.pageCount && (
                       <div>
-                        <span className="text-gray-500">Est. Page Count:</span>{' '}
-                        <span className="font-medium">{analysis.pageCount}</span>
+                        <span style={{ color: 'rgba(255,255,255,0.5)' }}>Est. Page Count:</span>{' '}
+                        <span className="font-medium text-white">{analysis.pageCount}</span>
                       </div>
                     )}
                     {analysis.subjectArea && (
                       <div>
-                        <span className="text-gray-500">Subject Area:</span>{' '}
-                        <span className="font-medium">{analysis.subjectArea}</span>
+                        <span style={{ color: 'rgba(255,255,255,0.5)' }}>Subject Area:</span>{' '}
+                        <span className="font-medium text-white">{analysis.subjectArea}</span>
                       </div>
                     )}
                   </div>
-                  
+
                   {analysis.requirements.length > 0 && (
                     <div className="mt-3">
-                      <span className="text-gray-500 text-sm">Detected Requirements:</span>
+                      <span className="text-sm" style={{ color: 'rgba(255,255,255,0.5)' }}>Detected Requirements:</span>
                       <div className="flex flex-wrap gap-2 mt-2">
                         {analysis.requirements.map((req, idx) => (
-                          <Badge key={idx} variant="secondary" className="text-xs">
+                          <Badge key={idx} variant="secondary" className="text-xs bg-white/10 text-white/80">
                             {req}
                           </Badge>
                         ))}
@@ -372,18 +379,18 @@ export function AIAnalysisPanel({
               {/* Confidence Bar */}
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Analysis Confidence</span>
-                  <span className="font-medium text-emerald-700">
+                  <span style={{ color: 'rgba(255,255,255,0.6)' }}>Analysis Confidence</span>
+                  <span className="font-medium text-emerald-400">
                     {Math.round(analysis.confidence * 100)}%
                   </span>
                 </div>
-                <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                <div className="h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.08)' }}>
                   <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${analysis.confidence * 100}%` }}
                     transition={{ duration: 0.5, delay: 0.3 }}
                     className={`h-full rounded-full ${
-                      analysis.confidence >= 0.8 
+                      analysis.confidence >= 0.8
                         ? 'bg-gradient-to-r from-green-500 to-green-400'
                         : analysis.confidence >= 0.6
                         ? 'bg-gradient-to-r from-yellow-500 to-yellow-400'
