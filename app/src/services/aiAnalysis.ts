@@ -15,6 +15,11 @@ const calculatePriceLocally = (assignment: Assignment) => {
     'Research Paper': 50,
     'Thesis': 90,
     'Dissertation': 130,
+    'Reflection': 20,
+    'Literature Review': 35,
+    'Business Plan': 40,
+    'Annotated Bibliography': 25,
+    'Technical Report': 35,
     'Other': 25,
   };
 

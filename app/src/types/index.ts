@@ -38,6 +38,7 @@ export interface Assignment {
   platform: string;
   platformContact: string;
   description?: string;
+  language?: string;
   files: FileInfo[];
   status: AssignmentStatus;
   createdAt: string;

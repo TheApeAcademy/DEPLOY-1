@@ -24,6 +24,7 @@ export function SubmitAssignmentPage({ user, onBack, onSubmit, onLogin }: Submit
 
   const [step, setStep] = useState<'form' | 'analysis' | 'payment' | 'success'>('form');
   const [assignmentType, setAssignmentType] = useState('');
+  const [language, setLanguage] = useState('English');
   const [courseName, setCourseName] = useState('');
   const [className, setClassName] = useState('');
   const [teacherName, setTeacherName] = useState('');
@@ -158,7 +159,7 @@ export function SubmitAssignmentPage({ user, onBack, onSubmit, onLogin }: Submit
     const assignmentData = {
       userId: user.id, userName: user.name, userEmail: user.email,
       assignmentType, courseName, className, teacherName,
-      dueDate, platform, platformContact, description,
+      dueDate, platform, platformContact, description, language,
       files: uploadedFiles, status: 'pending' as const, schoolLevel: user.schoolLevel || 'University',
     };
 
@@ -280,6 +281,16 @@ export function SubmitAssignmentPage({ user, onBack, onSubmit, onLogin }: Submit
                     <div>
                       <label style={labelStyle}>Due Date</label>
                       <input type="date" style={inputStyle} value={dueDate} onChange={e => setDueDate(e.target.value)} required />
+                    </div>
+                  </div>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <label style={labelStyle}>Assignment Language</label>
+                      <select style={selectStyle} value={language} onChange={e => setLanguage(e.target.value)}>
+                        {['English', 'French', 'Spanish', 'Arabic'].map(l => (
+                          <option key={l} value={l} style={{ background: optionBg }}>{l}</option>
+                        ))}
+                      </select>
                     </div>
                   </div>
                   <div>

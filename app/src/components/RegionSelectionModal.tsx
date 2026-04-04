@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, MapPin, GraduationCap, BookOpen, ChevronRight, Check } from 'lucide-react';
 import type { UserPreferences } from '@/types';
-import { REGIONS, SCHOOL_LEVELS, DEPARTMENTS } from '@/data/constants';
+import { REGIONS, SCHOOL_LEVELS, DEPARTMENTS, COUNTRY_DATA, FEATURED_BY_REGION } from '@/data/constants';
 import { useTheme } from '@/contexts/ThemeContext';
 
 interface RegionSelectionModalProps {
@@ -130,7 +130,7 @@ export function RegionSelectionModal({ isOpen, onClose, onComplete }: RegionSele
                           style={{ ...btnBase, flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '20px', textAlign: 'center' }}
                           onMouseOver={hoverOn} onMouseOut={hoverOff}>
                           <span style={{ fontSize: '28px', marginBottom: '8px' }}>
-                            {r.region === 'Europe' ? '🇪🇺' : r.region === 'America' ? '🌎' : r.region === 'Gulf' ? '🏜️' : r.region === 'Africa' ? '🌍' : r.region === 'Asia' ? '🌏' : '🦘'}
+                            {r.region === 'Europe' ? '🇪🇺' : r.region === 'North America' ? '🌎' : r.region === 'South America' ? '🌱' : r.region === 'Africa' ? '🌍' : r.region === 'Middle East' ? '🕌' : r.region === 'Asia' ? '🌏' : '🦘'}
                           </span>
                           <span style={{ fontWeight: '700', fontSize: '14px', color: bodyText }}>{r.region}</span>
                           <span style={{ fontSize: '11px', color: mutedText, marginTop: '2px' }}>{r.countries.length} countries</span>
@@ -144,14 +144,48 @@ export function RegionSelectionModal({ isOpen, onClose, onComplete }: RegionSele
                       <p style={{ fontSize: '13px', color: mutedText, marginBottom: '14px' }}>
                         Region: <span style={{ color: '#22c55e', fontWeight: '700' }}>{selectedRegion}</span>
                       </p>
+                      {(FEATURED_BY_REGION[selectedRegion]?.length ?? 0) > 0 && (
+                        <>
+                          <p style={{ fontSize: '10px', fontWeight: '700', letterSpacing: '1.5px', textTransform: 'uppercase', color: '#22c55e', marginBottom: '8px' }}>⭐ Featured</p>
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px', marginBottom: '16px' }}>
+                            {FEATURED_BY_REGION[selectedRegion].map(country => {
+                              const cd = COUNTRY_DATA[country] ?? { flag: '🌐', currency: '' };
+                              return (
+                                <button key={country} onClick={() => handleCountrySelect(country)}
+                                  style={{ ...btnBase, background: isDark ? 'rgba(34,197,94,0.07)' : 'rgba(34,197,94,0.05)', borderColor: 'rgba(34,197,94,0.25)' }}
+                                  onMouseOver={hoverOn} onMouseOut={hoverOff}>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                    <span style={{ fontSize: '20px' }}>{cd.flag}</span>
+                                    <div>
+                                      <div style={{ fontSize: '13px', fontWeight: '600', color: bodyText }}>{country}</div>
+                                      <div style={{ fontSize: '10px', color: '#22c55e' }}>{cd.currency}</div>
+                                    </div>
+                                  </div>
+                                  <ChevronRight className="h-4 w-4 text-emerald-500" style={{ flexShrink: 0 }} />
+                                </button>
+                              );
+                            })}
+                          </div>
+                          <p style={{ fontSize: '10px', fontWeight: '700', letterSpacing: '1.5px', textTransform: 'uppercase', color: mutedText, marginBottom: '8px' }}>All Countries</p>
+                        </>
+                      )}
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
-                        {REGIONS.find(r => r.region === selectedRegion)?.countries.map(country => (
-                          <button key={country} onClick={() => handleCountrySelect(country)}
-                            style={btnBase} onMouseOver={hoverOn} onMouseOut={hoverOff}>
-                            <span style={{ fontSize: '13px', fontWeight: '600', color: bodyText }}>{country}</span>
-                            <ChevronRight className="h-4 w-4 text-emerald-500" style={{ flexShrink: 0 }} />
-                          </button>
-                        ))}
+                        {REGIONS.find(r => r.region === selectedRegion)?.countries.map(country => {
+                          const cd = COUNTRY_DATA[country] ?? { flag: '🌐', currency: '' };
+                          return (
+                            <button key={country} onClick={() => handleCountrySelect(country)}
+                              style={btnBase} onMouseOver={hoverOn} onMouseOut={hoverOff}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <span style={{ fontSize: '20px' }}>{cd.flag}</span>
+                                <div>
+                                  <div style={{ fontSize: '13px', fontWeight: '600', color: bodyText }}>{country}</div>
+                                  <div style={{ fontSize: '10px', color: mutedText }}>{cd.currency}</div>
+                                </div>
+                              </div>
+                              <ChevronRight className="h-4 w-4 text-emerald-500" style={{ flexShrink: 0 }} />
+                            </button>
+                          );
+                        })}
                       </div>
                     </motion.div>
                   )}
@@ -167,7 +201,7 @@ export function RegionSelectionModal({ isOpen, onClose, onComplete }: RegionSele
                             style={{ ...btnBase, flexDirection: 'column', alignItems: 'center', padding: '20px', textAlign: 'center' }}
                             onMouseOver={hoverOn} onMouseOut={hoverOff}>
                             <span style={{ fontSize: '26px', marginBottom: '8px' }}>
-                              {level === 'Primary' ? '🎒' : level === 'Middle' ? '📚' : level === 'High' ? '🎓' : '🏛️'}
+                              {level === 'Primary' ? '🎒' : level === 'Middle' ? '📚' : level === 'High' ? '🎓' : level === 'College' ? '🏫' : '🏛️'}
                             </span>
                             <span style={{ fontWeight: '700', fontSize: '14px', color: bodyText }}>{level}</span>
                             <span style={{ fontSize: '11px', color: mutedText, marginTop: '2px' }}>{DEPARTMENTS[level]?.length || 0} depts</span>
