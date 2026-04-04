@@ -4,7 +4,7 @@ import { ArrowLeft, Upload, X, FileText, User as UserIcon, Mail, CheckCircle, Ph
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import type { User, Assignment, FileInfo, AIAnalysis, Payment } from '@/types';
-import { ASSIGNMENT_TYPES } from '@/data/constants';
+import { ASSIGNMENT_TYPES, getCurrencySymbol } from '@/data/constants';
 import { createAssignment, updateAssignmentStatus, logActivity } from '@/services/database';
 import { uploadFiles } from '@/services/upload';
 import { AIAnalysisPanel } from './assignment/AIAnalysisPanel';
@@ -21,6 +21,7 @@ interface SubmitAssignmentPageProps {
 export function SubmitAssignmentPage({ user, onBack, onSubmit, onLogin }: SubmitAssignmentPageProps) {
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === 'dark';
+  const currencySymbol = getCurrencySymbol(user?.country ?? '');
 
   const [step, setStep] = useState<'form' | 'analysis' | 'payment' | 'success'>('form');
   const [assignmentType, setAssignmentType] = useState('');
@@ -440,13 +441,13 @@ export function SubmitAssignmentPage({ user, onBack, onSubmit, onLogin }: Submit
 
         {step === 'analysis' && currentAssignment && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <AIAnalysisPanel assignment={currentAssignment} onAnalysisComplete={handleAnalysisComplete} onAnalysisFailed={(err) => toast.error(`Analysis failed: ${err}`)} />
+            <AIAnalysisPanel assignment={currentAssignment} onAnalysisComplete={handleAnalysisComplete} onAnalysisFailed={(err) => toast.error(`Analysis failed: ${err}`)} currencySymbol={currencySymbol} />
           </motion.div>
         )}
 
         {step === 'payment' && currentAssignment && analysis?.inScope && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <PaymentPanel assignment={currentAssignment} user={user!} onPaymentComplete={handlePaymentComplete} onPaymentFailed={(err) => toast.error(`Payment failed: ${err}`)} />
+            <PaymentPanel assignment={currentAssignment} user={user!} onPaymentComplete={handlePaymentComplete} onPaymentFailed={(err) => toast.error(`Payment failed: ${err}`)} currencySymbol={currencySymbol} />
           </motion.div>
         )}
 

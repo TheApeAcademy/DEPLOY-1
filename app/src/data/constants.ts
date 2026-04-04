@@ -189,6 +189,27 @@ export const FEATURED_BY_REGION: Record<string, string[]> = {
   'Middle East': ['United Arab Emirates', 'Bahrain', 'Saudi Arabia'],
 };
 
+const EUROPEAN_COUNTRIES = new Set([
+  'Albania', 'Andorra', 'Austria', 'Belarus', 'Belgium', 'Bosnia and Herzegovina',
+  'Bulgaria', 'Croatia', 'Cyprus', 'Czech Republic', 'Denmark', 'Estonia',
+  'Finland', 'France', 'Germany', 'Greece', 'Hungary', 'Iceland', 'Ireland',
+  'Italy', 'Kosovo', 'Latvia', 'Liechtenstein', 'Lithuania', 'Luxembourg',
+  'Malta', 'Moldova', 'Monaco', 'Montenegro', 'Netherlands', 'North Macedonia',
+  'Norway', 'Poland', 'Portugal', 'Romania', 'Russia', 'San Marino', 'Serbia',
+  'Slovakia', 'Slovenia', 'Spain', 'Sweden', 'Switzerland', 'Ukraine',
+]);
+
+export function getCurrencySymbol(country: string): string {
+  if (country === 'United Kingdom') return '£';
+  if (country === 'United States' || country === 'Canada') return '$';
+  if (country === 'Nigeria') return '₦';
+  if (country === 'United Arab Emirates') return 'AED ';
+  if (country === 'Bahrain') return 'BHD ';
+  if (country === 'Saudi Arabia') return 'SAR ';
+  if (EUROPEAN_COUNTRIES.has(country)) return '€';
+  return '$';
+}
+
 export const SCHOOL_LEVELS = ['Primary', 'Middle', 'High', 'College', 'University'];
 
 export const DEPARTMENTS: { [key: string]: string[] } = {

@@ -22,12 +22,14 @@ interface AIAnalysisPanelProps {
   assignment: Assignment;
   onAnalysisComplete: (analysis: AIAnalysis) => void;
   onAnalysisFailed: (error: string) => void;
+  currencySymbol?: string;
 }
 
 export function AIAnalysisPanel({
   assignment,
   onAnalysisComplete,
-  onAnalysisFailed
+  onAnalysisFailed,
+  currencySymbol = '£',
 }: AIAnalysisPanelProps) {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -313,7 +315,7 @@ export function AIAnalysisPanel({
                   <DollarSign className="h-5 w-5 mx-auto mb-2 text-emerald-400" />
                   <p className="text-xs mb-1" style={{ color: 'rgba(255,255,255,0.5)' }}>Est. Cost</p>
                   <p className="font-semibold text-white">
-                    ${analysis.estimatedCost.toFixed(2)}
+                    {currencySymbol}{analysis.estimatedCost.toFixed(2)}
                   </p>
                 </motion.div>
 

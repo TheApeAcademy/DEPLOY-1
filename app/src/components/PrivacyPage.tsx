@@ -28,6 +28,43 @@ export function PrivacyPage({ onBack }: LegalPageProps) {
 
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-8">Effective Date: March 13, 2026</p>
 
+          {/* GDPR Compliance Section */}
+          <div className="mb-10 p-6 rounded-xl border border-emerald-500/30 bg-emerald-50/50 dark:bg-emerald-950/30">
+            <h2 className="text-emerald-700 dark:text-emerald-400 mt-0">GDPR Compliance &amp; Your Data Rights</h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">This section applies to all users, particularly those in the European Economic Area (EEA).</p>
+
+            <h3 className="font-semibold mt-4 mb-2">What Data We Collect</h3>
+            <ul>
+              <li><strong>Identity data:</strong> your name and email address provided at registration</li>
+              <li><strong>Academic data:</strong> assignment details, uploaded files, subject and course information</li>
+              <li><strong>Payment reference:</strong> transaction reference numbers (we do not store card details)</li>
+              <li><strong>Usage data:</strong> login timestamps, assignment submission history, and activity logs</li>
+            </ul>
+
+            <h3 className="font-semibold mt-4 mb-2">How It Is Stored</h3>
+            <p>All personal data is stored in <strong>Supabase</strong>, a secure cloud database with encryption at rest and in transit. Access is restricted to authorised personnel only. Uploaded files are stored via <strong>Cloudinary</strong> with access-controlled URLs.</p>
+
+            <h3 className="font-semibold mt-4 mb-2">How Long We Keep It</h3>
+            <p>We retain your personal data for <strong>12 months from your last activity</strong> on the platform. After this period, inactive accounts and their associated data are permanently deleted. You may request earlier deletion at any time.</p>
+
+            <h3 className="font-semibold mt-4 mb-2">Your Rights</h3>
+            <p>Under GDPR and applicable data protection laws, you have the right to:</p>
+            <ul>
+              <li><strong>Access</strong> — request a copy of the personal data we hold about you</li>
+              <li><strong>Rectification</strong> — request correction of inaccurate or incomplete data</li>
+              <li><strong>Erasure</strong> — request deletion of your account and all personal data (the "right to be forgotten")</li>
+              <li><strong>Portability</strong> — request your data in a machine-readable format</li>
+              <li><strong>Objection</strong> — object to processing of your data for certain purposes</li>
+            </ul>
+            <p>To exercise any of these rights, contact us at: <strong>ojoshbanky@gmail.com</strong>. We will respond within 30 days.</p>
+
+            <h3 className="font-semibold mt-4 mb-2">Cookies</h3>
+            <p>We use <strong>session cookies only</strong> — these are strictly necessary to keep you logged in during your visit. We do not use tracking cookies, advertising cookies, or third-party analytics cookies. No cookie consent banner is required as we only use essential cookies.</p>
+
+            <h3 className="font-semibold mt-4 mb-2">GDPR Compliance Statement</h3>
+            <p>Ape Academy is committed to processing personal data in accordance with the <strong>General Data Protection Regulation (GDPR)</strong> (EU) 2016/679. Our lawful basis for processing is <em>contractual necessity</em> — we process your data to deliver the service you requested. For EU/EEA users, you also have the right to lodge a complaint with your local data protection authority if you believe your rights have been violated.</p>
+          </div>
+
           <h2>1. Introduction</h2>
           <p>
             Your privacy matters to Ape Academy. This policy explains what personal data we collect, how we use it, and the rights you have over it.

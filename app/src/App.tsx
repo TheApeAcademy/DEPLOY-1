@@ -13,6 +13,7 @@ import { RegionSelectionModal } from '@/components/RegionSelectionModal';
 import { AuthModal } from '@/components/AuthModal';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import { TopicRequestPage } from '@/components/TopicRequestPage';
+import { ConversionPage } from '@/components/ConversionPage';
 import { HelpWidget } from '@/components/HelpWidget';
 import { recordPayment } from '@/services/payment';
 import type { User, UserPreferences, Assignment } from '@/types';
@@ -20,10 +21,12 @@ import { supabase } from '@/lib/supabase';
 import { getCurrentUser, signOut, updateProfile } from '@/services/auth';
 import { logActivity } from '@/services/database';
 
-type Page = 'landing' | 'home' | 'submit' | 'success' | 'admin' | 'settings' | 'terms' | 'privacy' | 'topic';
+type Page = 'landing' | 'home' | 'submit' | 'success' | 'admin' | 'settings' | 'terms' | 'privacy' | 'topic' | 'conversion';
 
 function AppInner() {
-  const [currentPage, setCurrentPage] = useState<Page>('landing');
+  const [currentPage, setCurrentPage] = useState<Page>(
+    window.location.pathname === '/convert' ? 'conversion' : 'landing'
+  );
   const [user, setUser] = useState<User | null>(null);
   const [preferences, setPreferences] = useState<UserPreferences | null>(null);
   const [currentAssignment, setCurrentAssignment] = useState<Assignment | null>(null);
@@ -210,6 +213,11 @@ function AppInner() {
         {currentPage === 'privacy' && (
           <motion.div key="privacy" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             <PrivacyPage onBack={() => setCurrentPage(user ? (user.role === 'admin' ? 'admin' : 'settings') : 'landing')} />
+          </motion.div>
+        )}
+        {currentPage === 'conversion' && (
+          <motion.div key="conversion" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <ConversionPage onSubmitAssignment={handleNavigateToSubmit} onLogin={() => setShowAuthModal(true)} />
           </motion.div>
         )}
       </AnimatePresence>
