@@ -25,7 +25,21 @@
         background: #0a1a0c;
         min-height: 100vh;
       }
+      /* African geometric pattern background */
+      body::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background-image: url('/pattern.jpg');
+        background-size: cover;
+        background-position: center;
+        opacity: 0.08;
+        pointer-events: none;
+        z-index: 0;
+      }
       #root {
+        position: relative;
+        z-index: 1;
         min-height: 100vh;
       }
       #splash {

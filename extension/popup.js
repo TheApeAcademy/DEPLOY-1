@@ -1,7 +1,6 @@
 // ApeAcademy Extension — popup.js
-// Replace SUPABASE_ANON_KEY with the value of VITE_SUPABASE_ANON_KEY from app/.env
 const SUPABASE_URL = 'https://gtnnzhphexfjblujspmr.supabase.co';
-const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY_HERE'; // copy from app/.env VITE_SUPABASE_ANON_KEY
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0bm56aHBoZXhmamJsdWpzcG1yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIyNzU2NzUsImV4cCI6MjA4Nzg1MTY3NX0.a7zi2U0VeTFpLNQu1Csh-VwjqwaVlKwnbj7T1C27kak';
 const PAYMENT_LINK = 'https://flutterwave.com/pay/ctiqneyy3cgv';
 
 const PRICES = {
