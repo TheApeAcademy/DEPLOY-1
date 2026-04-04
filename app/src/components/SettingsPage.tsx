@@ -64,16 +64,19 @@ export function SettingsPage({ user, onBack, onLogout, onUserUpdate, onOpenTerms
     onLogout();
   };
 
+  const inputClass = "w-full px-4 py-2 rounded-xl border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500 placeholder:text-muted-foreground";
+  const labelClass = "block text-sm font-medium text-foreground mb-1";
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50">
-      <header className="backdrop-blur-xl bg-white/70 border-b border-white/20 sticky top-0 z-40">
+    <div className="min-h-screen bg-background">
+      <header className="glass border-b sticky top-0 z-40">
         <div className="max-w-3xl mx-auto px-6 py-4 flex items-center gap-4">
-          <button onClick={onBack} className="p-2 rounded-xl hover:bg-gray-100 transition-colors">
-            <ArrowLeft className="h-5 w-5 text-gray-600" />
+          <button onClick={onBack} className="p-2 rounded-xl hover:bg-white/10 transition-colors">
+            <ArrowLeft className="h-5 w-5 text-foreground" />
           </button>
           <div className="flex items-center gap-3">
             <span className="text-2xl">🦍</span>
-            <span className="text-xl font-bold text-gray-900">Settings</span>
+            <span className="text-xl font-bold text-foreground">Settings</span>
           </div>
         </div>
       </header>
@@ -81,34 +84,33 @@ export function SettingsPage({ user, onBack, onLogout, onUserUpdate, onOpenTerms
       <main className="max-w-3xl mx-auto px-6 py-10 space-y-6">
 
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
-          <Card className="bg-white/80 border-white/20 shadow-lg">
+          <Card className="glass-card">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-gray-900">
-                <UserIcon className="h-5 w-5 text-emerald-600" />
+              <CardTitle className="flex items-center gap-2 text-foreground">
+                <UserIcon className="h-5 w-5 text-emerald-500" />
                 Profile
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center gap-4 pb-4 border-b border-gray-100">
+              <div className="flex items-center gap-4 pb-4 border-b border-border">
                 <div className="w-14 h-14 rounded-full bg-gradient-to-br from-emerald-700 to-emerald-500 flex items-center justify-center text-white text-xl font-bold">
                   {user.name.charAt(0).toUpperCase()}
                 </div>
                 <div>
-                  <div className="font-semibold text-gray-900">{user.name}</div>
-                  <div className="text-sm text-gray-500">{user.email}</div>
+                  <div className="font-semibold text-foreground">{user.name}</div>
+                  <div className="text-sm text-muted-foreground">{user.email}</div>
                   {user.role === 'admin' && <Badge className="mt-1 bg-red-500 text-white text-xs">Admin</Badge>}
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Display Name</label>
-                <input type="text" value={name} onChange={e => setName(e.target.value)}
-                  className="w-full px-4 py-2 rounded-xl border border-gray-200 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+                <label className={labelClass}>Display Name</label>
+                <input type="text" value={name} onChange={e => setName(e.target.value)} className={inputClass} />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                <label className={labelClass}>Email</label>
                 <input type="text" value={user.email} disabled
-                  className="w-full px-4 py-2 rounded-xl border border-gray-200 bg-gray-50 text-gray-400 cursor-not-allowed" />
-                <p className="text-xs text-gray-400 mt-1">Email cannot be changed</p>
+                  className="w-full px-4 py-2 rounded-xl border border-border bg-muted text-muted-foreground cursor-not-allowed" />
+                <p className="text-xs text-muted-foreground mt-1">Email cannot be changed</p>
               </div>
               <Button onClick={handleSaveProfile} disabled={savingProfile || name.trim() === user.name}
                 className="bg-gradient-to-r from-emerald-700 to-emerald-500 hover:from-emerald-800 hover:to-emerald-600 text-white rounded-xl">
@@ -120,28 +122,27 @@ export function SettingsPage({ user, onBack, onLogout, onUserUpdate, onOpenTerms
         </motion.div>
 
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-          <Card className="bg-white/80 border-white/20 shadow-lg">
+          <Card className="glass-card">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-gray-900">
-                <Lock className="h-5 w-5 text-emerald-600" />
+              <CardTitle className="flex items-center gap-2 text-foreground">
+                <Lock className="h-5 w-5 text-emerald-500" />
                 Password
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="relative">
-                <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
+                <label className={labelClass}>New Password</label>
                 <input type={showNew ? 'text' : 'password'} value={newPassword}
                   onChange={e => setNewPassword(e.target.value)} placeholder="At least 6 characters"
-                  className="w-full px-4 py-2 pr-10 rounded-xl border border-gray-200 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-500" />
-                <button onClick={() => setShowNew(!showNew)} className="absolute right-3 top-8 text-gray-400">
+                  className={`${inputClass} pr-10`} />
+                <button onClick={() => setShowNew(!showNew)} className="absolute right-3 top-8 text-muted-foreground">
                   {showNew ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
+                <label className={labelClass}>Confirm New Password</label>
                 <input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)}
-                  placeholder="Repeat new password"
-                  className="w-full px-4 py-2 rounded-xl border border-gray-200 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+                  placeholder="Repeat new password" className={inputClass} />
               </div>
               <Button onClick={handleChangePassword} disabled={savingPassword || !newPassword || !confirmPassword}
                 className="bg-gradient-to-r from-emerald-700 to-emerald-500 hover:from-emerald-800 hover:to-emerald-600 text-white rounded-xl">
@@ -152,10 +153,10 @@ export function SettingsPage({ user, onBack, onLogout, onUserUpdate, onOpenTerms
         </motion.div>
 
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-          <Card className="bg-white/80 border-white/20 shadow-lg">
+          <Card className="glass-card">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-gray-900">
-                <Bell className="h-5 w-5 text-emerald-600" />
+              <CardTitle className="flex items-center gap-2 text-foreground">
+                <Bell className="h-5 w-5 text-emerald-500" />
                 Notifications
               </CardTitle>
             </CardHeader>
@@ -167,11 +168,11 @@ export function SettingsPage({ user, onBack, onLogout, onUserUpdate, onOpenTerms
               ].map(item => (
                 <div key={item.label} className="flex items-center justify-between py-2">
                   <div>
-                    <p className="font-medium text-gray-900">{item.label}</p>
-                    <p className="text-sm text-gray-500">{item.sub}</p>
+                    <p className="font-medium text-foreground">{item.label}</p>
+                    <p className="text-sm text-muted-foreground">{item.sub}</p>
                   </div>
                   <button onClick={() => item.set(!item.value)}
-                    className={`relative w-11 h-6 rounded-full transition-colors ${item.value ? 'bg-emerald-500' : 'bg-gray-300'}`}>
+                    className={`relative w-11 h-6 rounded-full transition-colors ${item.value ? 'bg-emerald-500' : 'bg-white/20'}`}>
                     <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${item.value ? 'translate-x-5' : 'translate-x-0'}`} />
                   </button>
                 </div>
@@ -181,53 +182,53 @@ export function SettingsPage({ user, onBack, onLogout, onUserUpdate, onOpenTerms
         </motion.div>
 
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
-          <Card className="bg-white/80 border-white/20 shadow-lg">
+          <Card className="glass-card">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-gray-900">
-                <Shield className="h-5 w-5 text-emerald-600" />
+              <CardTitle className="flex items-center gap-2 text-foreground">
+                <Shield className="h-5 w-5 text-emerald-500" />
                 Privacy & Legal
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between py-2">
                 <div>
-                  <p className="font-medium text-gray-900">Anonymous analytics</p>
-                  <p className="text-sm text-gray-500">Help improve ApeAcademy with anonymised usage data</p>
+                  <p className="font-medium text-foreground">Anonymous analytics</p>
+                  <p className="text-sm text-muted-foreground">Help improve ApeAcademy with anonymised usage data</p>
                 </div>
                 <button onClick={() => setDataSharing(!dataSharing)}
-                  className={`relative w-11 h-6 rounded-full transition-colors ${dataSharing ? 'bg-emerald-500' : 'bg-gray-300'}`}>
+                  className={`relative w-11 h-6 rounded-full transition-colors ${dataSharing ? 'bg-emerald-500' : 'bg-white/20'}`}>
                   <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${dataSharing ? 'translate-x-5' : 'translate-x-0'}`} />
                 </button>
               </div>
               <div className="flex gap-4 pt-2">
-                <button onClick={onOpenTerms} className="text-sm text-emerald-600 hover:underline">Terms & Conditions</button>
-                <button onClick={onOpenPrivacy} className="text-sm text-emerald-600 hover:underline">Privacy Policy</button>
+                <button onClick={onOpenTerms} className="text-sm text-emerald-400 hover:underline">Terms & Conditions</button>
+                <button onClick={onOpenPrivacy} className="text-sm text-emerald-400 hover:underline">Privacy Policy</button>
               </div>
             </CardContent>
           </Card>
         </motion.div>
 
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-          <Card className="bg-white/80 border-white/20 shadow-lg">
+          <Card className="glass-card">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-gray-900">
-                <LogOut className="h-5 w-5 text-gray-500" />
+              <CardTitle className="flex items-center gap-2 text-foreground">
+                <LogOut className="h-5 w-5 text-muted-foreground" />
                 Account
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-              <Button onClick={onLogout} variant="outline" className="w-full rounded-xl border-gray-200 text-gray-700">
+              <Button onClick={onLogout} variant="outline" className="w-full rounded-xl border-border text-foreground hover:bg-white/10">
                 <LogOut className="h-4 w-4 mr-2" />
                 Log Out
               </Button>
-              <div className="pt-4 border-t border-red-100">
-                <p className="font-semibold text-red-600 mb-1 flex items-center gap-2">
+              <div className="pt-4 border-t border-red-500/20">
+                <p className="font-semibold text-red-400 mb-1 flex items-center gap-2">
                   <Trash2 className="h-4 w-4" /> Delete Account
                 </p>
-                <p className="text-sm text-gray-500 mb-3">This permanently deletes your account and all your data. This cannot be undone.</p>
+                <p className="text-sm text-muted-foreground mb-3">This permanently deletes your account and all your data. This cannot be undone.</p>
                 <input type="text" value={deleteConfirm} onChange={e => setDeleteConfirm(e.target.value)}
                   placeholder='Type "DELETE" to confirm'
-                  className="w-full px-4 py-2 rounded-xl border border-red-200 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-red-400 mb-3" />
+                  className="w-full px-4 py-2 rounded-xl border border-red-500/30 bg-red-500/5 text-foreground focus:outline-none focus:ring-2 focus:ring-red-400 mb-3 placeholder:text-muted-foreground" />
                 <Button onClick={handleDeleteAccount} disabled={deleteConfirm !== 'DELETE' || deletingAccount}
                   className="bg-red-600 hover:bg-red-700 text-white rounded-xl w-full">
                   {deletingAccount ? 'Deleting...' : 'Delete My Account'}
