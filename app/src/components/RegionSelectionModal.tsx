@@ -4,6 +4,7 @@ import { X, MapPin, GraduationCap, BookOpen, ChevronRight, Check } from 'lucide-
 import type { UserPreferences } from '@/types';
 import { REGIONS, SCHOOL_LEVELS, DEPARTMENTS, COUNTRY_DATA, FEATURED_BY_REGION } from '@/data/constants';
 import { useTheme } from '@/contexts/ThemeContext';
+import i18n, { detectLanguage, applyDirection } from '@/i18n';
 
 interface RegionSelectionModalProps {
   isOpen: boolean;
@@ -55,7 +56,13 @@ export function RegionSelectionModal({ isOpen, onClose, onComplete }: RegionSele
   const footerBorder = isDark ? '1px solid rgba(34,197,94,0.08)' : '1px solid rgba(0,0,0,0.06)';
 
   const handleRegionSelect = (region: string) => { setSelectedRegion(region); setStep('country'); };
-  const handleCountrySelect = (country: string) => { setSelectedCountry(country); setStep('school'); };
+  const handleCountrySelect = (country: string) => {
+    setSelectedCountry(country);
+    const lang = detectLanguage(country);
+    i18n.changeLanguage(lang);
+    applyDirection(lang);
+    setStep('school');
+  };
   const handleSchoolSelect = (level: string) => { setSelectedSchoolLevel(level); setStep('department'); };
   const handleDepartmentSelect = (dept: string) => {
     onComplete({ region: selectedRegion, country: selectedCountry, schoolLevel: selectedSchoolLevel, department: dept });

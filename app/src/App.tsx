@@ -20,6 +20,7 @@ import type { User, UserPreferences, Assignment } from '@/types';
 import { supabase } from '@/lib/supabase';
 import { getCurrentUser, signOut, updateProfile } from '@/services/auth';
 import { logActivity } from '@/services/database';
+import { initPushNotifications } from '@/services/notifications';
 
 type Page = 'landing' | 'home' | 'submit' | 'success' | 'admin' | 'settings' | 'terms' | 'privacy' | 'topic' | 'conversion';
 
@@ -93,6 +94,7 @@ function AppInner() {
     setUser(newUser);
     toast.success(isSignup ? 'Account created! Welcome 🦍' : 'Welcome back!');
     setCurrentPage(newUser.role === 'admin' ? 'admin' : 'home');
+    initPushNotifications();
   };
 
   const handleLogout = async () => {

@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ApeAcademy</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      width: 380px;
+      min-height: 500px;
+      background: #0f1117;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      color: #e8f5ec;
+    }
+
+    /* Header */
+    .header {
+      background: rgba(34,197,94,0.08);
+      border-bottom: 1px solid rgba(34,197,94,0.15);
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .header-logo { font-size: 22px; }
+    .header-title {
+      font-size: 16px;
+      font-weight: 800;
+      color: #22c55e;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+
+    /* Content */
+    .content { padding: 16px; }
+
+    /* Labels */
+    label {
+      display: block;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: rgba(134,239,172,0.7);
+      margin-bottom: 6px;
+    }
+
+    /* Inputs */
+    input[type="email"],
+    input[type="password"],
+    textarea,
+    select {
+      width: 100%;
+      padding: 10px 12px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(34,197,94,0.15);
+      border-radius: 10px;
+      color: #e8f5ec;
+      font-size: 13px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
+      margin-bottom: 12px;
+    }
+    input:focus, textarea:focus, select:focus {
+      border-color: rgba(34,197,94,0.5);
+    }
+    textarea { resize: vertical; min-height: 100px; }
+    select {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2322c55e' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 32px;
+      cursor: pointer;
+    }
+    select option { background: #0f1117; }
+
+    /* Buttons */
+    .btn-primary {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(135deg, #14532d, #15803d 40%, #22c55e);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      transition: opacity 0.2s;
+    }
+    .btn-primary:hover { opacity: 0.9; }
+    .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .btn-secondary {
+      width: 100%;
+      padding: 10px;
+      background: rgba(255,255,255,0.06);
+      color: #86efac;
+      border: 1px solid rgba(34,197,94,0.2);
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background 0.2s;
+      margin-top: 8px;
+    }
+    .btn-secondary:hover { background: rgba(34,197,94,0.1); }
+
+    /* Sections */
+    .section { display: none; }
+    .section.active { display: block; }
+
+    /* Status / messages */
+    .status-box {
+      padding: 10px 12px;
+      border-radius: 10px;
+      font-size: 12px;
+      margin-bottom: 12px;
+    }
+    .status-success { background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.3); color: #86efac; }
+    .status-error { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: #fca5a5; }
+    .status-info { background: rgba(96,165,250,0.1); border: 1px solid rgba(96,165,250,0.3); color: #93c5fd; }
+
+    /* Price display */
+    .price-display {
+      text-align: center;
+      padding: 16px;
+      background: rgba(34,197,94,0.06);
+      border: 1px solid rgba(34,197,94,0.15);
+      border-radius: 12px;
+      margin-bottom: 12px;
+    }
+    .price-display .price {
+      font-size: 32px;
+      font-weight: 800;
+      color: white;
+    }
+    .price-display .price-label {
+      font-size: 11px;
+      color: rgba(134,239,172,0.6);
+      margin-top: 2px;
+    }
+
+    /* Signup link */
+    .signup-link {
+      text-align: center;
+      margin-top: 12px;
+      font-size: 11px;
+      color: rgba(255,255,255,0.4);
+    }
+    .signup-link a { color: #22c55e; text-decoration: none; }
+    .signup-link a:hover { text-decoration: underline; }
+
+    /* User info bar */
+    .user-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 12px;
+      background: rgba(34,197,94,0.06);
+      border-radius: 8px;
+      margin-bottom: 14px;
+      font-size: 12px;
+    }
+    .user-email { color: rgba(134,239,172,0.8); }
+    .signout-btn {
+      background: none;
+      border: none;
+      color: rgba(255,255,255,0.35);
+      font-size: 11px;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .signout-btn:hover { color: #f87171; }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid rgba(255,255,255,0.06);
+      padding: 10px 16px;
+      text-align: center;
+      font-size: 10px;
+      color: rgba(255,255,255,0.25);
+      letter-spacing: 0.5px;
+    }
+
+    /* Spinner */
+    .spinner {
+      display: inline-block;
+      width: 14px; height: 14px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <div class="header">
+    <span class="header-logo">🦍</span>
+    <span class="header-title">ApeAcademy</span>
+  </div>
+
+  <!-- Login Section -->
+  <div id="section-login" class="section active content">
+    <div id="login-status"></div>
+    <label for="email">Email</label>
+    <input type="email" id="email" placeholder="you@example.com" />
+    <label for="password">Password</label>
+    <input type="password" id="password" placeholder="Your password" />
+    <button class="btn-primary" id="btn-signin">Sign In</button>
+    <div class="signup-link">
+      Don't have an account? <a href="https://apeacademy.com" target="_blank">Sign up at apeacademy.com</a>
+    </div>
+  </div>
+
+  <!-- Submit Section -->
+  <div id="section-submit" class="section content">
+    <div class="user-bar">
+      <span class="user-email" id="user-email-display"></span>
+      <button class="signout-btn" id="btn-signout">Sign out</button>
+    </div>
+    <div id="submit-status"></div>
+
+    <label for="assignment-text">Assignment Text</label>
+    <textarea id="assignment-text" placeholder="Paste your assignment brief here, or select text on any page before opening this popup..."></textarea>
+
+    <label for="assignment-type">Assignment Type</label>
+    <select id="assignment-type">
+      <option value="">Select type</option>
+      <option value="Short Assignment">Short Assignment — £8</option>
+      <option value="Homework">Homework — £15</option>
+      <option value="Essay">Essay — £30</option>
+      <option value="Lab Report">Lab Report — £35</option>
+      <option value="Presentation">Presentation — £30</option>
+      <option value="Case Study">Case Study — £40</option>
+      <option value="Project">Project — £45</option>
+      <option value="Research Paper">Research Paper — £50</option>
+      <option value="Thesis">Thesis — £90</option>
+      <option value="Dissertation">Dissertation — £130</option>
+      <option value="Reflection">Reflection — £20</option>
+      <option value="Literature Review">Literature Review — £35</option>
+      <option value="Business Plan">Business Plan — £40</option>
+      <option value="Annotated Bibliography">Annotated Bibliography — £25</option>
+      <option value="Technical Report">Technical Report — £35</option>
+      <option value="Other">Other — £25</option>
+    </select>
+
+    <button class="btn-primary" id="btn-submit">Submit Assignment</button>
+  </div>
+
+  <!-- Result Section -->
+  <div id="section-result" class="section content">
+    <div id="result-status"></div>
+    <div class="price-display" id="price-display" style="display:none">
+      <div class="price" id="price-value"></div>
+      <div class="price-label">Reviewed and priced by our team</div>
+    </div>
+    <button class="btn-primary" id="btn-pay" style="display:none">Pay Now →</button>
+    <button class="btn-secondary" id="btn-new">Submit Another Assignment</button>
+  </div>
+
+  <footer>Powered by ApeAcademy</footer>
+  <script src="popup.js"></script>
+</body>
+</html>
