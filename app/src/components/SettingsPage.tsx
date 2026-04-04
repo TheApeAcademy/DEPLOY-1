@@ -38,30 +38,45 @@ export function SettingsPage({ user, onBack, onLogout, onUserUpdate, onOpenTerms
   const handleSaveProfile = async () => {
     if (!name.trim()) { toast.error('Name cannot be empty'); return; }
     setSavingProfile(true);
-    const { error } = await supabase.from('profiles').update({ name: name.trim() }).eq('id', user.id);
-    setSavingProfile(false);
-    if (error) { toast.error('Failed to update profile'); return; }
-    onUserUpdate({ ...user, name: name.trim() });
-    toast.success('Profile updated');
+    try {
+      const { error } = await supabase.from('profiles').update({ name: name.trim() }).eq('id', user.id);
+      if (error) { toast.error('Failed to update profile'); return; }
+      onUserUpdate({ ...user, name: name.trim() });
+      toast.success('Profile updated');
+    } catch {
+      toast.error('Failed to update profile');
+    } finally {
+      setSavingProfile(false);
+    }
   };
 
   const handleChangePassword = async () => {
     if (!newPassword || newPassword.length < 6) { toast.error('Password must be at least 6 characters'); return; }
     if (newPassword !== confirmPassword) { toast.error('Passwords do not match'); return; }
     setSavingPassword(true);
-    const { error } = await supabase.auth.updateUser({ password: newPassword });
-    setSavingPassword(false);
-    if (error) { toast.error(error.message); return; }
-    setNewPassword(''); setConfirmPassword('');
-    toast.success('Password updated');
+    try {
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) { toast.error(error.message); return; }
+      setNewPassword(''); setConfirmPassword('');
+      toast.success('Password updated');
+    } catch {
+      toast.error('Failed to update password');
+    } finally {
+      setSavingPassword(false);
+    }
   };
 
   const handleDeleteAccount = async () => {
     if (deleteConfirm !== 'DELETE') { toast.error('Type DELETE to confirm'); return; }
     setDeletingAccount(true);
-    await supabase.from('profiles').update({ name: '[Deleted]', email: '[deleted]' }).eq('id', user.id);
-    toast.success('Account deleted');
-    onLogout();
+    try {
+      await supabase.from('profiles').update({ name: '[Deleted]', email: '[deleted]' }).eq('id', user.id);
+      toast.success('Account deleted');
+      onLogout();
+    } catch {
+      toast.error('Failed to delete account');
+      setDeletingAccount(false);
+    }
   };
 
   const inputClass = "w-full px-4 py-2 rounded-xl border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500 placeholder:text-muted-foreground";
