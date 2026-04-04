@@ -10,6 +10,8 @@ export interface User {
   department?: string;
   createdAt: string;
   lastLogin?: string;
+  freeCredits?: number;
+  freeCreditsUsed?: number;
 }
 
 // File Types

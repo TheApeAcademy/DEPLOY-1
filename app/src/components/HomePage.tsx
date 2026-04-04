@@ -119,6 +119,12 @@ export function HomePage({
                 {user.role === 'admin' && (
                   <Badge className="mt-2 bg-red-500 text-white">Admin</Badge>
                 )}
+                <div className="flex items-center gap-2 mt-2">
+                  <span className="text-xs text-muted-foreground">Free credits:</span>
+                  <Badge className={`text-xs px-2 py-0.5 ${(user.freeCredits ?? 0) > 0 ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-white/10 text-muted-foreground border-transparent'}`}>
+                    {(user.freeCredits ?? 0) > 0 ? `${user.freeCredits} remaining` : '0 remaining'}
+                  </Badge>
+                </div>
               </div>
               <Button
                 onClick={() => { setShowProfile(false); onOpenSettings(); }}
@@ -148,6 +154,27 @@ export function HomePage({
           </h1>
           <p className="text-muted-foreground">Ready to ace your assignments? Let's get started.</p>
         </motion.div>
+
+        {/* Free credit banner */}
+        {user && (user.freeCredits ?? 0) > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.05 }}
+            className="mb-6 flex items-center justify-between gap-4 px-5 py-4 rounded-2xl"
+            style={{ background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)' }}
+          >
+            <p className="text-sm font-medium text-foreground">
+              🎁 You have <span className="font-bold text-emerald-400">1 free assignment</span> — Submit now and get your first document for free!
+            </p>
+            <Button
+              onClick={onSubmitAssignment}
+              className="shrink-0 rounded-xl text-white text-sm font-semibold"
+              style={{ background: 'linear-gradient(135deg,#047857,#10b981)' }}
+            >
+              Claim Free Assignment →
+            </Button>
+          </motion.div>
+        )}
 
         <motion.div
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}

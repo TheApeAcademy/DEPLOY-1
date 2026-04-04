@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import type { Payment, Assignment } from '@/types';
+import type { Payment, Assignment, User } from '@/types';
 import { supabase } from '@/lib/supabase';
 import { updateAssignmentStatus } from '@/services/database';
 import { fadeInUp } from '@/data/constants';
@@ -20,16 +20,20 @@ const BANK_DETAILS = {
 
 type PaymentMethod = 'apple' | 'card' | 'bank';
 
+const SUPABASE_URL = 'https://gtnnzhphexfjblujspmr.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0bm56aHBoZXhmamJsdWpzcG1yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIyNzU2NzUsImV4cCI6MjA4Nzg1MTY3NX0.a7zi2U0VeTFpLNQu1Csh-VwjqwaVlKwnbj7T1C27kak';
+
 interface PaymentPanelProps {
   assignment: Assignment;
-  user: { id: string; name: string; email: string };
+  user: Pick<User, 'id' | 'name' | 'email' | 'freeCredits' | 'freeCreditsUsed'>;
   onPaymentComplete: (payment: Payment) => void;
   onPaymentFailed: (error: string) => void;
   currencySymbol?: string;
 }
 
 export function PaymentPanel({ assignment, user, onPaymentComplete, onPaymentFailed: _onPaymentFailed, currencySymbol = '£' }: PaymentPanelProps) {
-  const [step, setStep] = useState<'ready' | 'confirming' | 'success' | 'error' | 'bank_pending'>('ready');
+  const [step, setStep] = useState<'ready' | 'confirming' | 'success' | 'error' | 'bank_pending' | 'free_success'>('ready');
+  const [claimingFree, setClaimingFree] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('card');
   const [error, setError] = useState<string | null>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -78,6 +82,51 @@ export function PaymentPanel({ assignment, user, onPaymentComplete, onPaymentFai
     startPolling();
   };
 
+  const handleUseFreeCredit = async () => {
+    setClaimingFree(true);
+    try {
+      // Mark assignment as paid with free credit
+      await supabase
+        .from('assignments')
+        .update({ status: 'paid', payment_amount: 0, payment_id: 'FREE_CREDIT' })
+        .eq('id', assignment.id);
+
+      // Decrement free_credits, increment free_credits_used
+      await supabase
+        .from('profiles')
+        .update({
+          free_credits: (user.freeCredits ?? 1) - 1,
+          free_credits_used: (user.freeCreditsUsed ?? 0) + 1,
+        })
+        .eq('id', user.id);
+
+      // Trigger generation
+      await fetch(`${SUPABASE_URL}/functions/v1/generate-and-deliver`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        },
+        body: JSON.stringify({ assignment_id: assignment.id }),
+      });
+
+      setStep('free_success');
+      onPaymentComplete({
+        id: 'FREE_CREDIT',
+        assignmentId: assignment.id,
+        userId: user.id,
+        amount: 0,
+        currency: 'GBP',
+        status: 'completed',
+        provider: 'wise',
+        createdAt: new Date().toISOString(),
+      });
+    } catch (err) {
+      toast.error('Failed to apply free credit. Please try again.');
+    }
+    setClaimingFree(false);
+  };
+
   const handleBankTransferSent = async () => {
     try {
       await updateAssignmentStatus(assignment.id, { status: 'pending' });
@@ -121,8 +170,39 @@ export function PaymentPanel({ assignment, user, onPaymentComplete, onPaymentFai
       <CardContent>
         <AnimatePresence mode="wait">
 
+          {step === 'free_success' && (
+            <motion.div key="free_success" variants={fadeInUp} initial="initial" animate="animate" exit="exit" className="text-center py-8">
+              <div className="text-5xl mb-4">🦍</div>
+              <h3 className="text-lg font-semibold text-white mb-3">Your free assignment is being generated!</h3>
+              <p className="text-sm max-w-xs mx-auto" style={{ color: 'rgba(255,255,255,0.6)' }}>
+                Check your dashboard in a minute — your document will be delivered to your chosen platform.
+              </p>
+            </motion.div>
+          )}
+
           {step === 'ready' && (
             <motion.div key="ready" variants={fadeInUp} initial="initial" animate="animate" exit="exit">
+
+              {/* Free credit banner */}
+              {(user.freeCredits ?? 0) > 0 && (
+                <div className="mb-5 p-4 rounded-2xl" style={{ background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.35)' }}>
+                  <p className="text-base font-bold text-white mb-1">🎁 You have 1 free assignment!</p>
+                  <p className="text-xs mb-4" style={{ color: 'rgba(255,255,255,0.6)' }}>
+                    Your first assignment is on us. Use it now and experience ApeAcademy for free.
+                  </p>
+                  <Button
+                    onClick={handleUseFreeCredit}
+                    disabled={claimingFree}
+                    className="w-full h-11 rounded-xl font-bold text-white"
+                    style={{ background: 'linear-gradient(135deg,#047857,#10b981)' }}
+                  >
+                    {claimingFree
+                      ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Applying...</>
+                      : <>Use My Free Assignment <ArrowRight className="h-4 w-4 ml-2" /></>}
+                  </Button>
+                </div>
+              )}
+
               {/* Amount */}
               <div className="text-center mb-6">
                 <p className="text-sm mb-1" style={{ color: 'rgba(255,255,255,0.5)' }}>Amount due</p>

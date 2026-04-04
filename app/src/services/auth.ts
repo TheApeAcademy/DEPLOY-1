@@ -16,6 +16,12 @@ export const signUp = async (
   if (error) return { user: null, error: error.message };
   if (!data.user) return { user: null, error: 'Signup failed — no user returned' };
 
+  // Ensure free_credits is set to 1 for new users (belt-and-suspenders on top of DB default)
+  await supabase
+    .from('profiles')
+    .update({ free_credits: 1, free_credits_used: 0 })
+    .eq('id', data.user.id);
+
   // Fetch the profile created by the DB trigger
   const { data: profile } = await supabase
     .from('profiles')
@@ -99,4 +105,6 @@ const mapProfile = (profile: any): User => ({
   department: profile.department ?? undefined,
   createdAt: profile.created_at,
   lastLogin: profile.last_login ?? undefined,
+  freeCredits: profile.free_credits ?? 1,
+  freeCreditsUsed: profile.free_credits_used ?? 0,
 });
