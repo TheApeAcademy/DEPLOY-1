@@ -28,17 +28,6 @@ type PaymentMethod = 'apple' | 'card' | 'bank';
 const SUPABASE_URL = 'https://gtnnzhphexfjblujspmr.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0bm56aHBoZXhmamJsdWpzcG1yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIyNzU2NzUsImV4cCI6MjA4Nzg1MTY3NX0.a7zi2U0VeTFpLNQu1Csh-VwjqwaVlKwnbj7T1C27kak';
 
-const BANK_DETAILS = {
-  bank: 'Sterling Bank',
-  accountName: 'Olusanu Bankole Joshua',
-  accountNumber: '2067395303',
-};
-
-type PaymentMethod = 'apple' | 'card' | 'bank';
-
-const SUPABASE_URL = 'https://gtnnzhphexfjblujspmr.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0bm56aHBoZXhmamJsdWpzcG1yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIyNzU2NzUsImV4cCI6MjA4Nzg1MTY3NX0.a7zi2U0VeTFpLNQu1Csh-VwjqwaVlKwnbj7T1C27kak';
-
 interface PaymentPanelProps {
   assignment: Assignment;
   user: Pick<User, 'id' | 'name' | 'email' | 'freeCredits' | 'freeCreditsUsed'>;
@@ -170,60 +159,6 @@ export function PaymentPanel({ assignment, user, onPaymentComplete, onPaymentFai
         createdAt: new Date().toISOString(),
       });
     } catch {
-      toast.error('Failed to apply free credit. Please try again.');
-    }
-    setClaimingFree(false);
-  };
-
-  const handleBankTransferSent = async () => {
-    try {
-      await updateAssignmentStatus(assignment.id, { status: 'pending' });
-    } catch {
-      // non-fatal
-    }
-    setStep('bank_pending');
-  };
-
-  const handleUseFreeCredit = async () => {
-    setClaimingFree(true);
-    try {
-      // Mark assignment as paid with free credit
-      await supabase
-        .from('assignments')
-        .update({ status: 'paid', payment_amount: 0, payment_id: 'FREE_CREDIT' })
-        .eq('id', assignment.id);
-
-      // Decrement free_credits, increment free_credits_used
-      await supabase
-        .from('profiles')
-        .update({
-          free_credits: (user.freeCredits ?? 1) - 1,
-          free_credits_used: (user.freeCreditsUsed ?? 0) + 1,
-        })
-        .eq('id', user.id);
-
-      // Trigger generation
-      await fetch(`${SUPABASE_URL}/functions/v1/generate-and-deliver`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-        },
-        body: JSON.stringify({ assignment_id: assignment.id }),
-      });
-
-      setStep('free_success');
-      onPaymentComplete({
-        id: 'FREE_CREDIT',
-        assignmentId: assignment.id,
-        userId: user.id,
-        amount: 0,
-        currency: 'GBP',
-        status: 'completed',
-        provider: 'wise',
-        createdAt: new Date().toISOString(),
-      });
-    } catch (err) {
       toast.error('Failed to apply free credit. Please try again.');
     }
     setClaimingFree(false);
