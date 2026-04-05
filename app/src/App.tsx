@@ -98,14 +98,17 @@ function AppInner() {
   };
 
   const handleLogout = async () => {
-    if (user) {
-      await logActivity({ type: 'user_logout', userId: user.id, userName: user.name, userEmail: user.email, description: `${user.name} logged out` });
+    try {
+      if (user) {
+        await logActivity({ type: 'user_logout', userId: user.id, userName: user.name, userEmail: user.email, description: `${user.name} logged out` });
+      }
+    } catch {
+      // non-fatal — proceed with logout regardless
     }
-    await signOut();
+    await supabase.auth.signOut();
     setUser(null);
     setPreferences(null);
     setShowProfile(false);
-    toast.success('Logged out');
     setCurrentPage('landing');
   };
 

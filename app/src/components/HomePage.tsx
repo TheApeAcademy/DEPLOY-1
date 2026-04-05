@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'motion/react';
-import { 
-  User as UserIcon, 
-  MapPin, 
-  GraduationCap, 
-  FileText, 
-  LogOut, 
+import {
+  User as UserIcon,
+  MapPin,
+  GraduationCap,
+  FileText,
+  LogOut,
   Settings,
   Plus,
   History,
@@ -35,6 +35,13 @@ interface HomePageProps {
   setShowProfile: (show: boolean) => void;
 }
 
+const LANGUAGES = [
+  { code: 'en', label: 'English',  flag: '🇬🇧' },
+  { code: 'fr', label: 'Français', flag: '🇫🇷' },
+  { code: 'es', label: 'Español',  flag: '🇪🇸' },
+  { code: 'ar', label: 'العربية', flag: '🇸🇦' },
+];
+
 export function HomePage({
   user,
   preferences,
@@ -47,19 +54,20 @@ export function HomePage({
   showProfile,
   setShowProfile,
 }: HomePageProps) {
+  const { t, i18n } = useTranslation();
+  const { resolvedTheme, toggleTheme } = useTheme();
   const [userAssignments, setUserAssignments] = useState<any[]>([]);
   const [selectedAssignment, setSelectedAssignment] = useState<any>(null);
   const [showLangMenu, setShowLangMenu] = useState(false);
-  const { resolvedTheme, toggleTheme } = useTheme();
-  const { i18n } = useTranslation();
 
-  const languages = [
-    {code:'en', label:'English', flag:'🇬🇧'},
-    {code:'fr', label:'Français', flag:'🇫🇷'},
-    {code:'es', label:'Español', flag:'🇪🇸'},
-    {code:'ar', label:'العربية', flag:'🇸🇦'},
-  ];
-  const currentLang = languages.find(l => l.code === i18n.language) || languages[0];
+  const currentLang = LANGUAGES.find(l => l.code === i18n.language) || LANGUAGES[0];
+
+  const switchLanguage = (code: string) => {
+    i18n.changeLanguage(code);
+    document.documentElement.dir = code === 'ar' ? 'rtl' : 'ltr';
+    document.documentElement.lang = code;
+    setShowLangMenu(false);
+  };
 
   useEffect(() => {
     if (!user) return;
@@ -73,8 +81,6 @@ export function HomePage({
     };
     fetchAssignments();
   }, [user]);
-
-  const recentAssignments = userAssignments.slice(0, 3);
 
   const stats = {
     total: userAssignments.length,
@@ -99,6 +105,7 @@ export function HomePage({
             </div>
 
             <div className="flex items-center gap-2">
+              {/* Theme toggle */}
               <button
                 onClick={toggleTheme}
                 className="glass w-9 h-9 rounded-full flex items-center justify-center hover:scale-110 transition-all text-base"
@@ -106,26 +113,78 @@ export function HomePage({
               >
                 {resolvedTheme === 'dark' ? '☀️' : '🌙'}
               </button>
-              <div style={{position:'relative'}}>
+
+              {/* Language switcher */}
+              <div style={{ position: 'relative' }}>
                 <button
-                  onClick={() => setShowLangMenu(!showLangMenu)}
-                  style={{background:'rgba(255,255,255,0.1)',border:'1px solid rgba(255,255,255,0.15)',borderRadius:20,padding:'5px 12px',fontSize:12,color:'inherit',cursor:'pointer'}}
+                  onClick={() => setShowLangMenu(v => !v)}
+                  style={{
+                    background: 'rgba(255,255,255,0.1)',
+                    border: '1px solid rgba(255,255,255,0.2)',
+                    borderRadius: 20,
+                    padding: '5px 12px',
+                    fontSize: 12,
+                    color: 'inherit',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 4,
+                  }}
                 >
-                  {currentLang.flag} {currentLang.code.toUpperCase()}
+                  <span>{currentLang.flag}</span>
+                  <span>{currentLang.code.toUpperCase()}</span>
                 </button>
+
                 {showLangMenu && (
                   <>
-                    <div onClick={() => setShowLangMenu(false)} style={{position:'fixed',inset:0,zIndex:10}}/>
-                    <div style={{position:'absolute',top:'110%',right:0,background: resolvedTheme === 'dark' ? '#1a1a2e' : 'white',border:'1px solid rgba(255,255,255,0.1)',borderRadius:12,padding:8,zIndex:20,minWidth:150,boxShadow:'0 8px 32px rgba(0,0,0,0.3)'}}>
-                      {languages.map(lang => (
-                        <button key={lang.code} onClick={() => { i18n.changeLanguage(lang.code); if(lang.code==='ar'){document.documentElement.dir='rtl'}else{document.documentElement.dir='ltr'} setShowLangMenu(false) }} style={{display:'flex',alignItems:'center',gap:8,width:'100%',padding:'8px 12px',background:'transparent',border:'none',cursor:'pointer',color:'inherit',fontSize:13,borderRadius:8,textAlign:'left'}}>
-                          {lang.flag} {lang.label}
+                    <div
+                      onClick={() => setShowLangMenu(false)}
+                      style={{ position: 'fixed', inset: 0, zIndex: 10 }}
+                    />
+                    <div style={{
+                      position: 'absolute',
+                      top: '110%',
+                      right: 0,
+                      background: resolvedTheme === 'dark' ? '#1a1a2e' : '#ffffff',
+                      border: '1px solid rgba(128,128,128,0.2)',
+                      borderRadius: 12,
+                      padding: 6,
+                      zIndex: 20,
+                      minWidth: 155,
+                      boxShadow: '0 8px 32px rgba(0,0,0,0.25)',
+                    }}>
+                      {LANGUAGES.map(lang => (
+                        <button
+                          key={lang.code}
+                          onClick={() => switchLanguage(lang.code)}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 8,
+                            width: '100%',
+                            padding: '8px 12px',
+                            background: lang.code === i18n.language
+                              ? 'rgba(34,197,94,0.12)'
+                              : 'transparent',
+                            border: 'none',
+                            cursor: 'pointer',
+                            color: 'inherit',
+                            fontSize: 13,
+                            borderRadius: 8,
+                            textAlign: 'left',
+                            fontWeight: lang.code === i18n.language ? 700 : 400,
+                          }}
+                        >
+                          <span>{lang.flag}</span>
+                          <span>{lang.label}</span>
                         </button>
                       ))}
                     </div>
                   </>
                 )}
               </div>
+
+              {/* User avatar */}
               <button
                 onClick={() => (user ? setShowProfile(!showProfile) : onLogin())}
                 className="w-9 h-9 rounded-full bg-gradient-to-r from-emerald-700 to-emerald-500 flex items-center justify-center hover:scale-110 transition-transform"
@@ -164,7 +223,7 @@ export function HomePage({
                 className="w-full justify-start text-foreground hover:bg-white/20"
               >
                 <Settings className="h-4 w-4 mr-2" />
-                Settings
+                {t('nav.settings')}
               </Button>
               <Button
                 onClick={() => { setShowProfile(false); onLogout(); }}
@@ -172,7 +231,7 @@ export function HomePage({
                 className="w-full justify-start text-red-500 hover:bg-red-500/10"
               >
                 <LogOut className="h-4 w-4 mr-2" />
-                Log Out
+                {t('nav.logout')}
               </Button>
             </div>
           </div>
@@ -182,9 +241,9 @@ export function HomePage({
       <main className="max-w-6xl mx-auto px-6 py-12 page-content">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
           <h1 className="text-4xl font-bold text-foreground mb-2">
-            Welcome back, {user?.name?.split(' ')[0] || 'Student'}! 👋
+            {t('dashboard.welcome', { name: user?.name?.split(' ')[0] || 'Student' })} 👋
           </h1>
-          <p className="text-muted-foreground">Ready to ace your assignments? Let's get started.</p>
+          <p className="text-muted-foreground">{t('dashboard.ready')}</p>
         </motion.div>
 
         {/* Free credit banner */}
@@ -214,9 +273,9 @@ export function HomePage({
           className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8"
         >
           {[
-            { label: 'Total Assignments', value: stats.total, icon: FileText, color: 'bg-emerald-100 dark:bg-emerald-900/30', iconColor: 'text-emerald-700 dark:text-emerald-400' },
-            { label: 'Pending', value: stats.pending, icon: History, color: 'bg-yellow-100 dark:bg-yellow-900/30', iconColor: 'text-yellow-600 dark:text-yellow-400' },
-            { label: 'Completed', value: stats.completed, icon: Sparkles, color: 'bg-green-100 dark:bg-green-900/30', iconColor: 'text-green-600 dark:text-green-400' },
+            { label: t('dashboard.totalAssignments'), value: stats.total,     icon: FileText, color: 'bg-emerald-100 dark:bg-emerald-900/30', iconColor: 'text-emerald-700 dark:text-emerald-400' },
+            { label: t('dashboard.pending'),          value: stats.pending,   icon: History,  color: 'bg-yellow-100 dark:bg-yellow-900/30',  iconColor: 'text-yellow-600 dark:text-yellow-400'  },
+            { label: t('dashboard.completed'),        value: stats.completed, icon: Sparkles, color: 'bg-green-100 dark:bg-green-900/30',   iconColor: 'text-green-600 dark:text-green-400'   },
           ].map((stat, i) => (
             <Card key={i} className="glass-card">
               <CardContent className="p-6">
@@ -239,7 +298,8 @@ export function HomePage({
           transition={{ delay: 0.2 }}
           className="grid md:grid-cols-2 gap-6 mb-8"
         >
-          <Card className="bg-gradient-to-br from-emerald-700 to-emerald-500 border-0 shadow-lg hover:shadow-xl transition-all cursor-pointer group hover:-translate-y-1"
+          <Card
+            className="bg-gradient-to-br from-emerald-700 to-emerald-500 border-0 shadow-lg hover:shadow-xl transition-all cursor-pointer group hover:-translate-y-1"
             onClick={onSubmitAssignment}
           >
             <CardContent className="p-8">
@@ -248,15 +308,16 @@ export function HomePage({
                   <div className="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                     <Plus className="h-7 w-7 text-white" />
                   </div>
-                  <h3 className="text-2xl font-bold text-white mb-2">Submit Assignment</h3>
-                  <p className="text-white/80">Get AI-powered analysis and pricing instantly</p>
+                  <h3 className="text-2xl font-bold text-white mb-2">{t('dashboard.submitAssignment')}</h3>
+                  <p className="text-white/80">{t('dashboard.submitSubtitle')}</p>
                 </div>
                 <ChevronRight className="h-8 w-8 text-white/60 group-hover:translate-x-2 transition-transform" />
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-blue-600 to-indigo-500 border-0 shadow-lg hover:shadow-xl transition-all cursor-pointer group hover:-translate-y-1"
+          <Card
+            className="bg-gradient-to-br from-blue-600 to-indigo-500 border-0 shadow-lg hover:shadow-xl transition-all cursor-pointer group hover:-translate-y-1"
             onClick={onRequestTopic}
           >
             <CardContent className="p-8">
@@ -265,8 +326,8 @@ export function HomePage({
                   <div className="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                     <BookOpen className="h-7 w-7 text-white" />
                   </div>
-                  <h3 className="text-2xl font-bold text-white mb-2">Learn a Topic</h3>
-                  <p className="text-white/80">Get a personalised learning document for £20 flat</p>
+                  <h3 className="text-2xl font-bold text-white mb-2">{t('dashboard.learnTopic')}</h3>
+                  <p className="text-white/80">{t('dashboard.learnSubtitle')}</p>
                 </div>
                 <ChevronRight className="h-8 w-8 text-white/60 group-hover:translate-x-2 transition-transform" />
               </div>
@@ -279,7 +340,7 @@ export function HomePage({
             <CardHeader>
               <CardTitle className="text-lg font-semibold flex items-center gap-2 text-foreground">
                 <History className="h-5 w-5 text-muted-foreground" />
-                Recent Assignments
+                {t('dashboard.recentAssignments')}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -287,22 +348,26 @@ export function HomePage({
               {userAssignments.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
                   <FileText className="h-12 w-12 mx-auto mb-3 opacity-30" />
-                  <p>No assignments yet</p>
-                  <p className="text-sm">Submit your first assignment above</p>
+                  <p>{t('dashboard.noAssignments')}</p>
+                  <p className="text-sm">{t('dashboard.noAssignmentsSubtitle')}</p>
                 </div>
               ) : (
                 <div className="space-y-3">
                   {userAssignments.map((assignment) => {
                     const statusMap: Record<string, any> = {
-                      pending:    { label: 'Submitted',    bg: 'rgba(234,179,8,0.08)',  border: 'rgba(234,179,8,0.3)',  text: '#fbbf24', dot: '#f59e0b', pulse: false },
-                      submitted:  { label: 'Submitted',    bg: 'rgba(234,179,8,0.08)',  border: 'rgba(234,179,8,0.3)',  text: '#fbbf24', dot: '#f59e0b', pulse: false },
-                      paid:       { label: 'Paid ✓',       bg: 'rgba(59,130,246,0.08)', border: 'rgba(59,130,246,0.3)', text: '#60a5fa', dot: '#3b82f6', pulse: true  },
-                      generating: { label: '⚡ Generating',bg: 'rgba(168,85,247,0.08)', border: 'rgba(168,85,247,0.3)', text: '#c084fc', dot: '#a855f7', pulse: true  },
-                      completed:  { label: '✓ Completed',  bg: 'rgba(34,197,94,0.08)',  border: 'rgba(34,197,94,0.3)',  text: '#4ade80', dot: '#22c55e', pulse: false },
+                      pending:    { label: t('status.pending'),    bg: 'rgba(234,179,8,0.08)',  border: 'rgba(234,179,8,0.3)',  text: '#fbbf24', dot: '#f59e0b', pulse: false },
+                      submitted:  { label: t('status.submitted'),  bg: 'rgba(234,179,8,0.08)',  border: 'rgba(234,179,8,0.3)',  text: '#fbbf24', dot: '#f59e0b', pulse: false },
+                      paid:       { label: t('status.paid'),       bg: 'rgba(59,130,246,0.08)', border: 'rgba(59,130,246,0.3)', text: '#60a5fa', dot: '#3b82f6', pulse: true  },
+                      generating: { label: t('status.generating'), bg: 'rgba(168,85,247,0.08)', border: 'rgba(168,85,247,0.3)', text: '#c084fc', dot: '#a855f7', pulse: true  },
+                      completed:  { label: t('status.completed'),  bg: 'rgba(34,197,94,0.08)',  border: 'rgba(34,197,94,0.3)',  text: '#4ade80', dot: '#22c55e', pulse: false },
                     };
                     const cfg = statusMap[assignment.status] || statusMap.pending;
                     return (
-                      <div key={assignment.id} onClick={() => setSelectedAssignment(assignment)} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px', padding: '16px', cursor: 'pointer' }}>
+                      <div
+                        key={assignment.id}
+                        onClick={() => setSelectedAssignment(assignment)}
+                        style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px', padding: '16px', cursor: 'pointer' }}
+                      >
                         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px', marginBottom: '8px' }}>
                           <div style={{ flex: 1 }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px', flexWrap: 'wrap' as const }}>
@@ -344,9 +409,9 @@ export function HomePage({
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }} className="mt-6">
             <Card className="glass-card">
               <CardHeader>
-                <CardTitle onClick={() => onOpenSettings()} className="text-lg font-semibold flex items-center gap-2 text-foreground cursor-pointer">
+                <CardTitle onClick={onOpenSettings} className="text-lg font-semibold flex items-center gap-2 text-foreground cursor-pointer">
                   <Settings className="h-5 w-5 text-muted-foreground" />
-                  Your Preferences
+                  {t('dashboard.yourPreferences')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -356,7 +421,7 @@ export function HomePage({
                       <MapPin className="h-5 w-5 text-emerald-700 dark:text-emerald-400" />
                     </div>
                     <div>
-                      <div className="text-sm text-muted-foreground">Location</div>
+                      <div className="text-sm text-muted-foreground">{t('dashboard.location')}</div>
                       <div className="font-semibold text-foreground">{preferences.country}</div>
                       <div className="text-xs text-muted-foreground">{preferences.region}</div>
                     </div>
@@ -366,7 +431,7 @@ export function HomePage({
                       <GraduationCap className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                     </div>
                     <div>
-                      <div className="text-sm text-muted-foreground">School Level</div>
+                      <div className="text-sm text-muted-foreground">{t('dashboard.schoolLevel')}</div>
                       <div className="font-semibold text-foreground">{preferences.schoolLevel}</div>
                     </div>
                   </div>
@@ -375,14 +440,14 @@ export function HomePage({
                       <FileText className="h-5 w-5 text-green-600 dark:text-green-400" />
                     </div>
                     <div>
-                      <div className="text-sm text-muted-foreground">Department</div>
+                      <div className="text-sm text-muted-foreground">{t('dashboard.department')}</div>
                       <div className="font-semibold text-foreground">{preferences.department}</div>
                     </div>
                   </div>
                 </div>
                 <Button onClick={onSelectRegion} variant="outline" className="mt-6 rounded-xl">
                   <Settings className="h-4 w-4 mr-2" />
-                  Update Preferences
+                  {t('dashboard.updatePreferences')}
                 </Button>
               </CardContent>
             </Card>
@@ -393,13 +458,13 @@ export function HomePage({
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="mt-6">
             <Card className="glass-card border border-emerald-200 dark:border-emerald-900/50">
               <CardContent className="p-8 text-center">
-                <h3 className="text-2xl font-semibold text-foreground mb-3">Get Started Today</h3>
-                <p className="text-muted-foreground mb-6">Select your region and preferences to personalise your experience</p>
+                <h3 className="text-2xl font-semibold text-foreground mb-3">{t('dashboard.getStarted')}</h3>
+                <p className="text-muted-foreground mb-6">{t('dashboard.getStartedSubtitle')}</p>
                 <Button
                   onClick={onSelectRegion}
                   className="rounded-xl bg-gradient-to-r from-emerald-700 to-emerald-500 hover:from-emerald-800 hover:to-emerald-600"
                 >
-                  Select Region Now
+                  {t('dashboard.selectRegion')}
                 </Button>
               </CardContent>
             </Card>
@@ -407,62 +472,66 @@ export function HomePage({
         )}
       </main>
 
+      {/* Assignment detail drawer */}
       {selectedAssignment && (
         <>
           <div
             onClick={() => setSelectedAssignment(null)}
-            style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.5)',zIndex:40}}
+            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 40 }}
           />
           <div style={{
-            position:'fixed',bottom:0,left:0,right:0,zIndex:50,
+            position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 50,
             background: resolvedTheme === 'dark' ? '#1a1a2e' : '#ffffff',
-            borderRadius:'20px 20px 0 0',
-            maxHeight:'80vh',overflowY:'auto',
-            padding:'24px 20px 40px',
-            boxShadow:'0 -4px 40px rgba(0,0,0,0.3)'
+            borderRadius: '20px 20px 0 0',
+            maxHeight: '80vh', overflowY: 'auto',
+            padding: '24px 20px 40px',
+            boxShadow: '0 -4px 40px rgba(0,0,0,0.3)',
           }}>
-            <div style={{width:40,height:4,background:'#ccc',borderRadius:2,margin:'0 auto 20px'}}/>
-            <button onClick={() => setSelectedAssignment(null)} style={{position:'absolute',top:16,right:16,background:'transparent',border:'none',fontSize:20,cursor:'pointer',color:'inherit'}}>✕</button>
+            <div style={{ width: 40, height: 4, background: '#ccc', borderRadius: 2, margin: '0 auto 20px' }} />
+            <button
+              onClick={() => setSelectedAssignment(null)}
+              style={{ position: 'absolute', top: 16, right: 16, background: 'transparent', border: 'none', fontSize: 20, cursor: 'pointer', color: 'inherit' }}
+            >✕</button>
 
-            <div style={{display:'flex',gap:8,alignItems:'center',marginBottom:16,flexWrap:'wrap'}}>
-              <span style={{background:'rgba(34,197,94,0.15)',border:'1px solid rgba(34,197,94,0.3)',color:'#22c55e',padding:'4px 12px',borderRadius:20,fontSize:11,fontWeight:700,letterSpacing:1,textTransform:'uppercase'}}>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 16, flexWrap: 'wrap' }}>
+              <span style={{ background: 'rgba(34,197,94,0.15)', border: '1px solid rgba(34,197,94,0.3)', color: '#22c55e', padding: '4px 12px', borderRadius: 20, fontSize: 11, fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase' }}>
                 {selectedAssignment.assignment_type}
               </span>
-              <span style={{fontSize:12,color: resolvedTheme === 'dark' ? 'rgba(255,255,255,0.5)' : '#6b7280'}}>
+              <span style={{ fontSize: 12, color: resolvedTheme === 'dark' ? 'rgba(255,255,255,0.5)' : '#6b7280' }}>
                 {selectedAssignment.course_name}
               </span>
             </div>
 
-            <div style={{fontSize:13,color: resolvedTheme === 'dark' ? 'rgba(255,255,255,0.5)' : '#6b7280',marginBottom:8}}>
+            <div style={{ fontSize: 13, color: resolvedTheme === 'dark' ? 'rgba(255,255,255,0.5)' : '#6b7280', marginBottom: 8 }}>
               Teacher: {selectedAssignment.teacher_name || 'N/A'} · Due: {selectedAssignment.due_date || 'N/A'}
             </div>
 
-            <div style={{fontSize:14,color: resolvedTheme === 'dark' ? 'rgba(255,255,255,0.8)' : '#374151',lineHeight:1.7,marginBottom:20,background: resolvedTheme === 'dark' ? 'rgba(255,255,255,0.05)' : '#f9fafb',padding:14,borderRadius:10}}>
+            <div style={{ fontSize: 14, color: resolvedTheme === 'dark' ? 'rgba(255,255,255,0.8)' : '#374151', lineHeight: 1.7, marginBottom: 20, background: resolvedTheme === 'dark' ? 'rgba(255,255,255,0.05)' : '#f9fafb', padding: 14, borderRadius: 10 }}>
               {selectedAssignment.description || 'No description provided.'}
             </div>
 
             {selectedAssignment.status === 'completed' && selectedAssignment.delivery_url && (
               <div>
-                <a href={selectedAssignment.delivery_url} target="_blank" rel="noreferrer" style={{display:'block',background:'#22c55e',color:'white',textAlign:'center',padding:'14px',borderRadius:12,fontWeight:700,fontSize:15,textDecoration:'none',marginBottom:10}}>
+                <a href={selectedAssignment.delivery_url} target="_blank" rel="noreferrer" style={{ display: 'block', background: '#22c55e', color: 'white', textAlign: 'center', padding: '14px', borderRadius: 12, fontWeight: 700, fontSize: 15, textDecoration: 'none', marginBottom: 10 }}>
                   View Your Document
                 </a>
-                <p style={{fontSize:12,color: resolvedTheme === 'dark' ? 'rgba(255,255,255,0.4)' : '#9ca3af',textAlign:'center'}}>
+                <p style={{ fontSize: 12, color: resolvedTheme === 'dark' ? 'rgba(255,255,255,0.4)' : '#9ca3af', textAlign: 'center' }}>
                   Open in browser and press Ctrl+S to save offline
                 </p>
               </div>
             )}
             {selectedAssignment.status === 'generating' && (
-              <div style={{background:'rgba(168,85,247,0.1)',border:'1px solid rgba(168,85,247,0.3)',borderRadius:10,padding:14,textAlign:'center',color:'#c084fc',fontSize:13}}>
+              <div style={{ background: 'rgba(168,85,247,0.1)', border: '1px solid rgba(168,85,247,0.3)', borderRadius: 10, padding: 14, textAlign: 'center', color: '#c084fc', fontSize: 13 }}>
                 Claude is generating your document. Check back in 1-2 minutes.
               </div>
             )}
             {(selectedAssignment.status === 'submitted' || selectedAssignment.status === 'analyzed') && (
-              <div style={{background:'rgba(234,179,8,0.1)',border:'1px solid rgba(234,179,8,0.3)',borderRadius:10,padding:14,textAlign:'center',color:'#ca8a04',fontSize:13}}>
+              <div style={{ background: 'rgba(234,179,8,0.1)', border: '1px solid rgba(234,179,8,0.3)', borderRadius: 10, padding: 14, textAlign: 'center', color: '#ca8a04', fontSize: 13 }}>
                 Awaiting payment confirmation
               </div>
             )}
             {selectedAssignment.status === 'paid' && (
-              <div style={{background:'rgba(34,197,94,0.1)',border:'1px solid rgba(34,197,94,0.3)',borderRadius:10,padding:14,textAlign:'center',color:'#22c55e',fontSize:13}}>
+              <div style={{ background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: 10, padding: 14, textAlign: 'center', color: '#22c55e', fontSize: 13 }}>
                 Payment received - generating your document...
               </div>
             )}

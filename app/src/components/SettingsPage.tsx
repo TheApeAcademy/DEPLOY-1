@@ -22,7 +22,6 @@ interface SettingsPageProps {
 }
 
 export function SettingsPage({ user, onBack, onLogout, onUserUpdate, onOpenTerms, onOpenPrivacy }: SettingsPageProps) {
-  console.log('SettingsPage mounted, user:', user?.email)
   const [name, setName] = useState(user?.name ?? '');
   const [savingProfile, setSavingProfile] = useState(false);
   const [newPassword, setNewPassword] = useState('');
@@ -35,8 +34,6 @@ export function SettingsPage({ user, onBack, onLogout, onUserUpdate, onOpenTerms
   const [dataSharing, setDataSharing] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState('');
   const [deletingAccount, setDeletingAccount] = useState(false);
-  if (!user) return <div style={{padding:40,color:'white'}}>Loading...</div>
-
   const handleSaveProfile = async () => {
     if (!name.trim()) { toast.error('Name cannot be empty'); return; }
     setSavingProfile(true);
@@ -85,7 +82,6 @@ export function SettingsPage({ user, onBack, onLogout, onUserUpdate, onOpenTerms
   const labelClass = "block text-sm font-medium text-foreground mb-1";
 
   return (
-    <div style={{minHeight:'100vh', padding:'20px', background:'var(--background)'}}>
     <div className="min-h-screen bg-background">
       <header className="glass border-b sticky top-0 z-40">
         <div className="max-w-3xl mx-auto px-6 py-4 flex items-center gap-4">
@@ -257,7 +253,6 @@ export function SettingsPage({ user, onBack, onLogout, onUserUpdate, onOpenTerms
         </motion.div>
 
       </main>
-    </div>
     </div>
   );
 }
