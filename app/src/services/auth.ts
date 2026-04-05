@@ -14,7 +14,7 @@ export const signUp = async (
   });
 
   if (error) return { user: null, error: error.message };
-  if (!data.user) return { user: null, error: 'Signup failed — no user returned' };
+  if (!data.user) return { user: null, error: 'Signup failed - no user returned' };
 
   // Fetch the profile created by the DB trigger
   const { data: profile } = await supabase

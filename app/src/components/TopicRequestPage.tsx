@@ -175,7 +175,7 @@ export function TopicRequestPage({ user, onBack, onLogin }: TopicRequestPageProp
               fontWeight: '700', fontSize: '15px', textDecoration: 'none',
               marginBottom: '16px', width: '100%', justifyContent: 'center',
             }}>
-            <ExternalLink className="h-4 w-4" /> Pay £20 — Complete Order
+            <ExternalLink className="h-4 w-4" /> Pay £20 - Complete Order
           </a>
           <p style={{ fontSize: '11px', color: isDark ? 'rgba(134,239,172,0.4)' : '#9ca3af', marginBottom: '20px' }}>⚠️ Enter exactly £20 on the payment page</p>
           <button onClick={onBack} style={{ background: 'none', border: 'none', color: mutedText, cursor: 'pointer', fontSize: '13px', fontFamily: 'inherit' }}>
@@ -221,7 +221,7 @@ export function TopicRequestPage({ user, onBack, onLogin }: TopicRequestPageProp
                   <label style={labelStyle}>Topic Name</label>
                   <input style={inputStyle} placeholder="e.g. Photosynthesis, Integration by Parts, The French Revolution"
                     value={topicName} onChange={e => setTopicName(e.target.value)} required />
-                  <p style={{ fontSize: '11px', color: mutedText, marginTop: '4px' }}>Be specific — "Newton's Second Law" is better than "Physics"</p>
+                  <p style={{ fontSize: '11px', color: mutedText, marginTop: '4px' }}>Be specific - "Newton's Second Law" is better than "Physics"</p>
                 </div>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
@@ -258,7 +258,7 @@ export function TopicRequestPage({ user, onBack, onLogin }: TopicRequestPageProp
             {/* File Upload */}
             <div style={panel}>
               <div style={panelTitleStyle}>{greenBar} Upload Reference Files (Optional)</div>
-              <p style={{ fontSize: '13px', color: mutedText, marginBottom: '16px' }}>Textbook pages, past papers, notes — anything that helps us understand what you need</p>
+              <p style={{ fontSize: '13px', color: mutedText, marginBottom: '16px' }}>Textbook pages, past papers, notes - anything that helps us understand what you need</p>
               <input type="file" id="fileUpload" multiple onChange={handleFileUpload} className="hidden" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg" />
               <div onClick={() => document.getElementById('fileUpload')?.click()}
                 style={{ border: '2px dashed rgba(34,197,94,0.3)', borderRadius: '14px', padding: '28px', textAlign: 'center', cursor: 'pointer', transition: 'all 0.2s' }}
@@ -361,7 +361,7 @@ export function TopicRequestPage({ user, onBack, onLogin }: TopicRequestPageProp
                 cursor: (!topicName || !subject || !level || !specificQuestions || !platform || !platformContact || isSubmitting || isUploading) ? 'not-allowed' : 'pointer',
                 fontFamily: 'inherit', boxShadow: '0 4px 16px rgba(34,197,94,0.3)', transition: 'all 0.2s',
               }}>
-              {isSubmitting ? 'Submitting...' : '📚 Request Topic Explanation — £20'}
+              {isSubmitting ? 'Submitting...' : '📚 Request Topic Explanation - £20'}
             </button>
           </form>
         </motion.div>

@@ -58,7 +58,7 @@ export function PrivacyPage({ onBack }: LegalPageProps) {
           <p>
             We do not sell your personal data to third parties under any circumstances.
             We may share anonymised, aggregated data for research or platform improvement purposes.
-            Personal data may be shared with third-party service providers solely to deliver the service — these providers are contractually bound to protect your data.
+            Personal data may be shared with third-party service providers solely to deliver the service - these providers are contractually bound to protect your data.
             We may disclose data where required by law or to protect the rights, property, or safety of Ape Academy or its users.
           </p>
 

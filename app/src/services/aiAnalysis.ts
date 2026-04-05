@@ -1,43 +1,74 @@
 import type { AIAnalysis, Assignment } from '@/types';
 import { updateAssignmentStatus, logActivity } from '@/services/database';
 
-const calculatePriceLocally = (assignment: Assignment) => {
-  const type = assignment.assignmentType || 'Other';
+const GULF_COUNTRIES = new Set([
+  'UAE', 'United Arab Emirates', 'Saudi Arabia', 'Qatar', 'Bahrain', 'Kuwait', 'Oman',
+]);
 
-  const universityPrices: Record<string, number> = {
-    'Short Assignment': 8,
-    'Homework': 15,
-    'Essay': 30,
-    'Lab Report': 35,
-    'Presentation': 30,
-    'Case Study': 40,
-    'Project': 45,
-    'Research Paper': 50,
-    'Thesis': 90,
-    'Dissertation': 130,
-    'Other': 25,
-  };
+const BASE_PRICES: Record<string, number> = {
+  'Short Assignment': 12,
+  'Homework': 22,
+  'Essay': 45,
+  'Lab Report': 52,
+  'Presentation': 45,
+  'Case Study': 58,
+  'Project': 65,
+  'Research Paper': 72,
+  'Thesis': 130,
+  'Dissertation': 185,
+  'Reflection': 30,
+  'Literature Review': 52,
+  'Business Plan': 58,
+  'Annotated Bibliography': 38,
+  'Technical Report': 52,
+  'Topic Request': 20,
+  'Other': 38,
+};
 
-  const schoolLevel = (assignment as any).schoolLevel || 'University';
-  const isSecondary = ['Primary', 'Middle', 'High'].includes(schoolLevel);
-  const basePrice = universityPrices[type] ?? 25;
-  const price = isSecondary ? Math.round(basePrice * 0.67) : basePrice;
+export const calculatePrice = (
+  type: string,
+  level: string,
+  country?: string
+): { price: number; complexity: 'low' | 'medium' | 'high'; estimatedHours: number } => {
+  // Topic Request is always flat £20 regardless of level or country
+  if (type === 'Topic Request') {
+    return { price: 20, complexity: 'low', estimatedHours: 1 };
+  }
+
+  const basePrice = BASE_PRICES[type] ?? 38;
+
+  // Level multiplier
+  const isSecondary = ['Primary', 'Middle', 'High'].includes(level);
+  const levelMultiplier = isSecondary ? 0.67 : 1.0;
+
+  // Market multiplier
+  let marketMultiplier = 1.0;
+  if (country) {
+    if (GULF_COUNTRIES.has(country)) {
+      marketMultiplier = 1.3;
+    } else if (country === 'Nigeria') {
+      marketMultiplier = 0.6;
+    }
+  }
+
+  const price = Math.round(basePrice * levelMultiplier * marketMultiplier);
 
   const complexity: 'low' | 'medium' | 'high' =
-    price <= 15 ? 'low' :
-    price <= 35 ? 'medium' : 'high';
+    price <= 20 ? 'low' :
+    price <= 50 ? 'medium' : 'high';
 
   const estimatedHours =
-    price <= 15 ? 1 :
-    price <= 35 ? 3 :
-    price <= 60 ? 5 : 10;
+    price <= 20 ? 1 :
+    price <= 50 ? 3 :
+    price <= 80 ? 5 : 10;
 
-  return { price, complexity, estimatedHours, inScope: true, currency: 'GBP' };
+  return { price, complexity, estimatedHours };
 };
 
 export const analyzeAssignment = async (
   assignment: Assignment,
-  onProgress?: (progress: number) => void
+  onProgress?: (progress: number) => void,
+  userCountry?: string
 ): Promise<{ success: boolean; analysis?: AIAnalysis; error?: string }> => {
   try {
     await updateAssignmentStatus(assignment.id, { status: 'analyzing' });
@@ -54,7 +85,9 @@ export const analyzeAssignment = async (
     onProgress?.(50);
     await new Promise(r => setTimeout(r, 400));
 
-    const priceResult = calculatePriceLocally(assignment);
+    const type = assignment.assignmentType || 'Other';
+    const level = (assignment as any).schoolLevel || 'University';
+    const priceResult = calculatePrice(type, level, userCountry);
 
     onProgress?.(80);
     await new Promise(r => setTimeout(r, 300));
@@ -105,8 +138,9 @@ export const analyzeAssignment = async (
 
 export const reanalyzeAssignment = async (
   assignment: Assignment,
-  onProgress?: (progress: number) => void
-) => analyzeAssignment(assignment, onProgress);
+  onProgress?: (progress: number) => void,
+  userCountry?: string
+) => analyzeAssignment(assignment, onProgress, userCountry);
 
 const extractRequirements = (description?: string): string[] => {
   if (!description) return [];

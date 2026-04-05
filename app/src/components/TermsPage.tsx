@@ -38,7 +38,7 @@ export function TermsPage({ onBack }: LegalPageProps) {
           <h2>2. Services Provided</h2>
           <p>
             Ape Academy offers academic assistance including assignment review, tutoring guidance, and expert feedback across a wide range of subjects and academic levels.
-            The service operates on a pay-per-assignment model — users pay for each individual submission reviewed and supported by our team.
+            The service operates on a pay-per-assignment model - users pay for each individual submission reviewed and supported by our team.
             Users acknowledge that Ape Academy is a professional paid service, not a free tool.
           </p>
 
