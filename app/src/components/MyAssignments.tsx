@@ -130,7 +130,7 @@ export default function MyAssignments() {
                 {a.status==='generating' && (
                   <div style={{ background:'rgba(168,85,247,0.06)', border:'1px solid rgba(168,85,247,0.2)', borderRadius:'10px', padding:'10px 14px', fontSize:'11px', color:'#c084fc', display:'flex', alignItems:'center', gap:'8px' }}>
                     <span className="sp">⚡</span>
-                    Claude is generating your document — check back in a minute
+                    Claude is generating your document - check back in a minute
                   </div>
                 )}
               </div>

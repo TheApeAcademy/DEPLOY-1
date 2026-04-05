@@ -12,7 +12,7 @@ export const uploadFile = async (
   onProgress?: (pct: number) => void
 ): Promise<{ url: string; publicId: string; error?: never } | { url?: never; publicId?: never; error: string }> => {
   if (!CLOUD_NAME || !UPLOAD_PRESET) {
-    return { error: 'Cloudinary not configured — add VITE_CLOUDINARY_CLOUD_NAME and VITE_CLOUDINARY_UPLOAD_PRESET to env' };
+    return { error: 'Cloudinary not configured - add VITE_CLOUDINARY_CLOUD_NAME and VITE_CLOUDINARY_UPLOAD_PRESET to env' };
   }
 
   const formData = new FormData();

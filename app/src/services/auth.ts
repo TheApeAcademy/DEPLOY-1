@@ -14,7 +14,7 @@ export const signUp = async (
   });
 
   if (error) return { user: null, error: error.message };
-  if (!data.user) return { user: null, error: 'Signup failed — no user returned' };
+  if (!data.user) return { user: null, error: 'Signup failed - no user returned' };
 
   // Ensure free_credits is set to 1 for new users (belt-and-suspenders on top of DB default)
   await supabase

@@ -14,7 +14,7 @@ const steps = [
   },
   {
     title: 'Step 2: AI Analysis',
-    body: 'Our system analyses your assignment instantly — assessing complexity, estimated hours, and calculates a fair price.',
+    body: 'Our system analyses your assignment instantly - assessing complexity, estimated hours, and calculates a fair price.',
   },
   {
     title: 'Step 3: Review and Pay',
@@ -22,7 +22,7 @@ const steps = [
   },
   {
     title: 'Step 4: Track Progress',
-    body: 'Monitor your assignment status on your dashboard — from submitted to in progress to completed.',
+    body: 'Monitor your assignment status on your dashboard - from submitted to in progress to completed.',
   },
   {
     title: 'Settings & Preferences',

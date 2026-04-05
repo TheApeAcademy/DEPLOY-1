@@ -53,7 +53,7 @@ interface AdminDashboardProps {
 }
 
 export function AdminDashboard({ onLogout }: AdminDashboardProps) {
-  // Your contact details — used for quick-contact buttons
+  // Your contact details - used for quick-contact buttons
   const { resolvedTheme, toggleTheme } = useTheme();
   const OWNER_EMAIL = 'j0shbankole19@gmail.com';
   const OWNER_WHATSAPP = '+2349051717561'; // cleaned number
@@ -86,7 +86,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
   };
 
   const buildEmailLink = (assignment: Assignment) => {
-    const subject = encodeURIComponent(`ApeAcademy Order #${assignment.id.slice(-8)} — ${assignment.courseName}`);
+    const subject = encodeURIComponent(`ApeAcademy Order #${assignment.id.slice(-8)} - ${assignment.courseName}`);
     const body = encodeURIComponent(
       `Hi ${assignment.userName || 'there'},
 
@@ -974,7 +974,7 @@ ApeAcademy Team`
                 <h4 className="font-semibold text-emerald-900 mb-1">Contact Student</h4>
                 <p className="text-xs text-emerald-700 mb-3">
                   Preferred: <span className="font-bold">{selectedAssignment.platform}</span>
-                  {' — '}{selectedAssignment.platformContact}
+                  {' - '}{selectedAssignment.platformContact}
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {selectedAssignment.platform === 'WhatsApp' && (
@@ -1005,7 +1005,7 @@ ApeAcademy Team`
                       className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-white text-sm font-semibold transition-all hover:scale-105"
                       style={{ background: 'linear-gradient(135deg, #FFFC00, #FFD700)', color: '#000', boxShadow: '0 4px 12px rgba(255,252,0,0.4)' }}
                     >
-                      👻 Open Snapchat — {selectedAssignment.platformContact}
+                      👻 Open Snapchat - {selectedAssignment.platformContact}
                     </a>
                   )}
                   {/* Always show fallback email to student's account email */}

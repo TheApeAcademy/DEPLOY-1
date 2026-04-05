@@ -166,7 +166,7 @@ export function LandingPage({ onSubmitAssignment, onSelectRegion, onLogin }: Lan
               transition={{ delay: 0.7, duration: 0.8 }}
               className="text-lg md:text-xl text-white/70 font-light leading-relaxed max-w-2xl mx-auto mb-10"
             >
-              Premium Assignment Review ✨ — delivered with unmatched quality, precision, and speed.
+              Premium Assignment Review ✨ - delivered with unmatched quality, precision, and speed.
             </motion.p>
 
             {/* CTA Buttons */}

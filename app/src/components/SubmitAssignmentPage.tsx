@@ -441,7 +441,7 @@ export function SubmitAssignmentPage({ user, onBack, onSubmit, onLogin }: Submit
 
         {step === 'analysis' && currentAssignment && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <AIAnalysisPanel assignment={currentAssignment} onAnalysisComplete={handleAnalysisComplete} onAnalysisFailed={(err) => toast.error(`Analysis failed: ${err}`)} currencySymbol={currencySymbol} />
+            <AIAnalysisPanel assignment={currentAssignment} onAnalysisComplete={handleAnalysisComplete} onAnalysisFailed={(err) => toast.error(`Analysis failed: ${err}`)} userCountry={user?.country} />
           </motion.div>
         )}
 

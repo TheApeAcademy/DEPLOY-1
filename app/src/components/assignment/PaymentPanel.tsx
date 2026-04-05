@@ -9,8 +9,24 @@ import type { Payment, Assignment, User } from '@/types';
 import { supabase } from '@/lib/supabase';
 import { updateAssignmentStatus } from '@/services/database';
 import { fadeInUp } from '@/data/constants';
+import { useTheme } from '@/contexts/ThemeContext';
 
-const PAYMENT_LINK = 'https://flutterwave.com/pay/ctiqneyy3cgv';
+declare global {
+  interface Window {
+    FlutterwaveCheckout: (options: any) => void;
+  }
+}
+
+const BANK_DETAILS = {
+  bank: 'Sterling Bank',
+  accountName: 'Olusanu Bankole Joshua',
+  accountNumber: '2067395303',
+};
+
+type PaymentMethod = 'apple' | 'card' | 'bank';
+
+const SUPABASE_URL = 'https://gtnnzhphexfjblujspmr.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0bm56aHBoZXhmamJsdWpzcG1yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIyNzU2NzUsImV4cCI6MjA4Nzg1MTY3NX0.a7zi2U0VeTFpLNQu1Csh-VwjqwaVlKwnbj7T1C27kak';
 
 const BANK_DETAILS = {
   bank: 'Sterling Bank',
@@ -32,12 +48,27 @@ interface PaymentPanelProps {
 }
 
 export function PaymentPanel({ assignment, user, onPaymentComplete, onPaymentFailed: _onPaymentFailed, currencySymbol = '£' }: PaymentPanelProps) {
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === 'dark';
+
   const [step, setStep] = useState<'ready' | 'confirming' | 'success' | 'error' | 'bank_pending' | 'free_success'>('ready');
   const [claimingFree, setClaimingFree] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('card');
   const [error, setError] = useState<string | null>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const pollCount = useRef(0);
+
+  // Theme-aware colors
+  const cardBg = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.88)';
+  const cardBorder = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.1)';
+  const textPrimary = isDark ? 'white' : '#111827';
+  const textMuted = isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.55)';
+  const textFaint = isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.45)';
+  const textVeryFaint = isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)';
+  const cellBg = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)';
+  const cellBorder = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.1)';
+  const comingSoonBg = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)';
+  const comingSoonColor = isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.4)';
 
   useEffect(() => {
     return () => { if (pollRef.current) clearInterval(pollRef.current); };
@@ -77,9 +108,80 @@ export function PaymentPanel({ assignment, user, onPaymentComplete, onPaymentFai
 
   const handlePay = () => {
     if (!assignment.paymentAmount) { toast.error('No payment amount set'); return; }
-    window.open(PAYMENT_LINK, '_blank');
-    setStep('confirming');
-    startPolling();
+    const currencyCode = currencySymbol === '₦' ? 'NGN' : currencySymbol === '$' ? 'USD' : 'GBP';
+    window.FlutterwaveCheckout({
+      public_key: import.meta.env.VITE_FLW_PUBLIC_KEY,
+      tx_ref: `APE-${ref8}-${Date.now()}`,
+      amount: assignment.paymentAmount,
+      currency: currencyCode,
+      customer: {
+        email: user.email,
+        name: user.name,
+      },
+      customizations: {
+        title: 'ApeAcademy',
+        description: `${assignment.assignmentType || 'Assignment'} - ${assignment.courseName}`,
+        logo: '/favicon.svg',
+      },
+      callback: (_response: any) => {
+        setStep('confirming');
+        startPolling();
+      },
+      onclose: () => {
+        // User closed without completing - stay on ready
+      },
+    });
+  };
+
+  const handleUseFreeCredit = async () => {
+    setClaimingFree(true);
+    try {
+      await supabase
+        .from('assignments')
+        .update({ status: 'paid', payment_amount: 0, payment_id: 'FREE_CREDIT' })
+        .eq('id', assignment.id);
+
+      await supabase
+        .from('profiles')
+        .update({
+          free_credits: (user.freeCredits ?? 1) - 1,
+          free_credits_used: (user.freeCreditsUsed ?? 0) + 1,
+        })
+        .eq('id', user.id);
+
+      await fetch(`${SUPABASE_URL}/functions/v1/generate-and-deliver`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        },
+        body: JSON.stringify({ assignment_id: assignment.id }),
+      });
+
+      setStep('free_success');
+      onPaymentComplete({
+        id: 'FREE_CREDIT',
+        assignmentId: assignment.id,
+        userId: user.id,
+        amount: 0,
+        currency: 'GBP',
+        status: 'completed',
+        provider: 'wise',
+        createdAt: new Date().toISOString(),
+      });
+    } catch {
+      toast.error('Failed to apply free credit. Please try again.');
+    }
+    setClaimingFree(false);
+  };
+
+  const handleBankTransferSent = async () => {
+    try {
+      await updateAssignmentStatus(assignment.id, { status: 'pending' });
+    } catch {
+      // non-fatal
+    }
+    setStep('bank_pending');
   };
 
   const handleUseFreeCredit = async () => {
@@ -148,8 +250,8 @@ export function PaymentPanel({ assignment, user, onPaymentComplete, onPaymentFai
   const methodCardStyle = (method: PaymentMethod): React.CSSProperties => ({
     width: '100%',
     textAlign: 'left',
-    background: paymentMethod === method ? 'rgba(34,197,94,0.08)' : 'rgba(255,255,255,0.05)',
-    border: `1px solid ${paymentMethod === method ? 'rgba(34,197,94,0.4)' : 'rgba(255,255,255,0.08)'}`,
+    background: paymentMethod === method ? 'rgba(34,197,94,0.08)' : cellBg,
+    border: `1px solid ${paymentMethod === method ? 'rgba(34,197,94,0.4)' : cellBorder}`,
     borderRadius: '16px',
     padding: '16px',
     cursor: method === 'apple' ? 'not-allowed' : 'pointer',
@@ -160,9 +262,9 @@ export function PaymentPanel({ assignment, user, onPaymentComplete, onPaymentFai
   });
 
   return (
-    <Card className="overflow-hidden" style={{ background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '20px', boxShadow: '0 8px 32px rgba(0,0,0,0.4)' }}>
+    <Card className="overflow-hidden" style={{ background: cardBg, backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', border: `1px solid ${cardBorder}`, borderRadius: '20px', boxShadow: isDark ? '0 8px 32px rgba(0,0,0,0.4)' : '0 4px 24px rgba(0,0,0,0.1)' }}>
       <CardHeader className="pb-4">
-        <CardTitle className="text-lg font-semibold flex items-center gap-2 text-white">
+        <CardTitle className="text-lg font-semibold flex items-center gap-2" style={{ color: textPrimary }}>
           <CreditCard className="h-5 w-5 text-emerald-400" />
           Secure Payment
         </CardTitle>
@@ -173,9 +275,9 @@ export function PaymentPanel({ assignment, user, onPaymentComplete, onPaymentFai
           {step === 'free_success' && (
             <motion.div key="free_success" variants={fadeInUp} initial="initial" animate="animate" exit="exit" className="text-center py-8">
               <div className="text-5xl mb-4">🦍</div>
-              <h3 className="text-lg font-semibold text-white mb-3">Your free assignment is being generated!</h3>
-              <p className="text-sm max-w-xs mx-auto" style={{ color: 'rgba(255,255,255,0.6)' }}>
-                Check your dashboard in a minute — your document will be delivered to your chosen platform.
+              <h3 className="text-lg font-semibold mb-3" style={{ color: textPrimary }}>Your free assignment is being generated!</h3>
+              <p className="text-sm max-w-xs mx-auto" style={{ color: textMuted }}>
+                Check your dashboard in a minute - your document will be delivered to your chosen platform.
               </p>
             </motion.div>
           )}
@@ -186,8 +288,8 @@ export function PaymentPanel({ assignment, user, onPaymentComplete, onPaymentFai
               {/* Free credit banner */}
               {(user.freeCredits ?? 0) > 0 && (
                 <div className="mb-5 p-4 rounded-2xl" style={{ background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.35)' }}>
-                  <p className="text-base font-bold text-white mb-1">🎁 You have 1 free assignment!</p>
-                  <p className="text-xs mb-4" style={{ color: 'rgba(255,255,255,0.6)' }}>
+                  <p className="text-base font-bold mb-1" style={{ color: textPrimary }}>🎁 You have 1 free assignment!</p>
+                  <p className="text-xs mb-4" style={{ color: textMuted }}>
                     Your first assignment is on us. Use it now and experience ApeAcademy for free.
                   </p>
                   <Button
@@ -205,15 +307,15 @@ export function PaymentPanel({ assignment, user, onPaymentComplete, onPaymentFai
 
               {/* Amount */}
               <div className="text-center mb-6">
-                <p className="text-sm mb-1" style={{ color: 'rgba(255,255,255,0.5)' }}>Amount due</p>
-                <div className="text-4xl font-bold text-white mb-1">
+                <p className="text-sm mb-1" style={{ color: textFaint }}>Amount due</p>
+                <div className="text-4xl font-bold mb-1" style={{ color: textPrimary }}>
                   {currencySymbol}{assignment.paymentAmount?.toFixed(2) || '0.00'}
                 </div>
-                <p className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>Reviewed and approved by our team</p>
+                <p className="text-xs" style={{ color: textVeryFaint }}>Reviewed and approved by our team</p>
               </div>
 
               {/* Method selection */}
-              <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: 'rgba(255,255,255,0.35)' }}>
+              <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: textVeryFaint }}>
                 Choose payment method
               </p>
               <div className="space-y-3 mb-5">
@@ -225,13 +327,17 @@ export function PaymentPanel({ assignment, user, onPaymentComplete, onPaymentFai
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <span className="text-2xl">🍎</span>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px', background: isDark ? '#fff' : '#000', borderRadius: '7px', flexShrink: 0 }}>
+                        <svg width="16" height="20" viewBox="0 0 814 1000" fill={isDark ? '#000' : '#fff'} xmlns="http://www.w3.org/2000/svg">
+                          <path d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76 0-103.7 40.8-165.9 40.8s-105-57.8-155.5-127.4C46 497.7 0 373.5 0 254 0 66.8 109.1 0 216.8 0c72.4 0 132.6 39.5 172.6 39.5 37.5 0 112.9-42 194.5-42 30.2 0 110.7 4.2 180.4 70.9zm-65.1-159.2c-7.6 35.5-23.2 70.9-47.3 99.2-24.1 28.3-58.1 53.1-100.4 53.1-2.5 0-5.1-.3-7.6-.6.6-35.5 17.7-70.3 41.8-96.8 24.5-27.9 62.5-52.8 113.5-55.2v.3z"/>
+                        </svg>
+                      </span>
                       <div>
-                        <div className="font-semibold text-white text-sm">Apple Pay</div>
-                        <div className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>Pay instantly with Face ID or Touch ID</div>
+                        <div className="font-semibold text-sm" style={{ color: textPrimary }}>Apple Pay</div>
+                        <div className="text-xs" style={{ color: textFaint }}>Pay instantly with Face ID or Touch ID</div>
                       </div>
                     </div>
-                    <span style={{ background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.45)', borderRadius: '6px', padding: '2px 8px', fontSize: '10px', fontWeight: 700 }}>Coming Soon</span>
+                    <span style={{ background: comingSoonBg, color: comingSoonColor, borderRadius: '6px', padding: '2px 8px', fontSize: '10px', fontWeight: 700 }}>Coming Soon</span>
                   </div>
                 </button>
 
@@ -244,8 +350,8 @@ export function PaymentPanel({ assignment, user, onPaymentComplete, onPaymentFai
                     <div className="flex items-center gap-3">
                       <span className="text-2xl">💳</span>
                       <div>
-                        <div className="font-semibold text-white text-sm">Card Payment</div>
-                        <div className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>Visa, Mastercard, or any debit card</div>
+                        <div className="font-semibold text-sm" style={{ color: textPrimary }}>Card Payment</div>
+                        <div className="text-xs" style={{ color: textFaint }}>Visa, Mastercard, or any debit card</div>
                       </div>
                     </div>
                     <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30 text-xs">Recommended</Badge>
@@ -260,8 +366,8 @@ export function PaymentPanel({ assignment, user, onPaymentComplete, onPaymentFai
                   <div className="flex items-center gap-3">
                     <span className="text-2xl">🏦</span>
                     <div>
-                      <div className="font-semibold text-white text-sm">Bank Transfer</div>
-                      <div className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>Pay directly to our account</div>
+                      <div className="font-semibold text-sm" style={{ color: textPrimary }}>Bank Transfer</div>
+                      <div className="text-xs" style={{ color: textFaint }}>Pay directly to our account</div>
                     </div>
                   </div>
                   {paymentMethod === 'bank' && (
@@ -274,12 +380,12 @@ export function PaymentPanel({ assignment, user, onPaymentComplete, onPaymentFai
                         { label: 'Reference', value: ref8 },
                       ].map(({ label, value }) => (
                         <div key={label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: '11px' }}>{label}</span>
-                          <span style={{ fontFamily: 'monospace', fontWeight: 700, color: 'white', fontSize: '12px' }}>{value}</span>
+                          <span style={{ color: textFaint, fontSize: '11px' }}>{label}</span>
+                          <span style={{ fontFamily: 'monospace', fontWeight: 700, color: textPrimary, fontSize: '12px' }}>{value}</span>
                         </div>
                       ))}
                       <p className="text-xs mt-3" style={{ color: 'rgba(253,224,71,0.8)', lineHeight: 1.5 }}>
-                        ⚠️ Send exact amount shown. Use your assignment ID as reference. Allow 1–2 hours for confirmation.
+                        ⚠️ Send exact amount shown. Use your assignment ID as reference. Allow 1-2 hours for confirmation.
                       </p>
                     </div>
                   )}
@@ -296,7 +402,7 @@ export function PaymentPanel({ assignment, user, onPaymentComplete, onPaymentFai
                 </div>
               )}
 
-              <div className="flex items-center justify-center gap-2 text-sm mb-5" style={{ color: 'rgba(255,255,255,0.5)' }}>
+              <div className="flex items-center justify-center gap-2 text-sm mb-5" style={{ color: textFaint }}>
                 <Shield className="h-4 w-4 text-emerald-400" />
                 <span>Secured by Flutterwave · bank-level encryption</span>
               </div>
@@ -324,9 +430,9 @@ export function PaymentPanel({ assignment, user, onPaymentComplete, onPaymentFai
                 style={{ background: 'rgba(34,197,94,0.15)' }}>
                 <span className="text-4xl">🏦</span>
               </div>
-              <h3 className="text-lg font-semibold text-white mb-2">Transfer Received — Thank You!</h3>
-              <p className="text-sm mb-4 max-w-xs mx-auto" style={{ color: 'rgba(255,255,255,0.6)' }}>
-                We'll verify your bank transfer and start your assignment within 1–2 hours.
+              <h3 className="text-lg font-semibold mb-2" style={{ color: textPrimary }}>Transfer Received - Thank You!</h3>
+              <p className="text-sm mb-4 max-w-xs mx-auto" style={{ color: textMuted }}>
+                We'll verify your bank transfer and start your assignment within 1-2 hours.
                 Use reference <span className="font-mono font-bold text-emerald-400">{ref8}</span> if you need to contact us.
               </p>
               <Badge className="bg-emerald-500 text-white px-4 py-1 text-sm">Awaiting Confirmation ⏳</Badge>
@@ -340,12 +446,12 @@ export function PaymentPanel({ assignment, user, onPaymentComplete, onPaymentFai
                 style={{ background: 'linear-gradient(135deg,#047857,#10b981)' }}>
                 <Loader2 className="h-10 w-10 text-white animate-spin" />
               </motion.div>
-              <h3 className="text-lg font-semibold text-white mb-2">Confirming Payment...</h3>
-              <p className="text-sm mb-4" style={{ color: 'rgba(255,255,255,0.6)' }}>Complete your payment in the Flutterwave tab. This page will update automatically once confirmed.</p>
+              <h3 className="text-lg font-semibold mb-2" style={{ color: textPrimary }}>Confirming Payment...</h3>
+              <p className="text-sm mb-4" style={{ color: textMuted }}>Your payment is being verified. This page will update automatically once confirmed.</p>
               <button onClick={handlePay} className="inline-flex items-center gap-2 text-sm text-emerald-400 font-medium underline mb-6">
                 <ExternalLink className="h-4 w-4" /> Open payment page again
               </button>
-              <p className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>Do not close this tab.</p>
+              <p className="text-xs" style={{ color: textVeryFaint }}>Do not close this tab.</p>
             </motion.div>
           )}
 
@@ -356,8 +462,8 @@ export function PaymentPanel({ assignment, user, onPaymentComplete, onPaymentFai
                 style={{ background: 'rgba(34,197,94,0.15)' }}>
                 <CheckCircle className="h-10 w-10 text-emerald-400" />
               </motion.div>
-              <h3 className="text-lg font-semibold text-white mb-2">Payment Confirmed!</h3>
-              <p className="mb-4" style={{ color: 'rgba(255,255,255,0.7)' }}>{currencySymbol}{assignment.paymentAmount?.toFixed(2)} received. Your assignment is now in progress.</p>
+              <h3 className="text-lg font-semibold mb-2" style={{ color: textPrimary }}>Payment Confirmed!</h3>
+              <p className="mb-4" style={{ color: textMuted }}>{currencySymbol}{assignment.paymentAmount?.toFixed(2)} received. Your assignment is now in progress.</p>
               <Badge className="bg-emerald-500 text-white px-4 py-1 text-sm">Submitted ✓</Badge>
             </motion.div>
           )}
@@ -368,9 +474,9 @@ export function PaymentPanel({ assignment, user, onPaymentComplete, onPaymentFai
                 style={{ background: 'rgba(239,68,68,0.15)' }}>
                 <XCircle className="h-10 w-10 text-red-400" />
               </div>
-              <h3 className="text-lg font-semibold text-white mb-2">Something went wrong</h3>
-              <p className="text-sm mb-6 max-w-xs mx-auto" style={{ color: 'rgba(255,255,255,0.7)' }}>{error}</p>
-              <Button onClick={handleRetry} variant="outline" className="rounded-xl" style={{ borderColor: 'rgba(255,255,255,0.2)', color: 'white', background: 'rgba(255,255,255,0.05)' }}>
+              <h3 className="text-lg font-semibold mb-2" style={{ color: textPrimary }}>Something went wrong</h3>
+              <p className="text-sm mb-6 max-w-xs mx-auto" style={{ color: textMuted }}>{error}</p>
+              <Button onClick={handleRetry} variant="outline" className="rounded-xl" style={{ borderColor: cellBorder, color: textPrimary, background: cellBg }}>
                 <RefreshCw className="h-4 w-4 mr-2" /> Try Again
               </Button>
             </motion.div>
