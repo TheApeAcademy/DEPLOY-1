@@ -1,16 +1,10 @@
-
 import { useState } from 'react';
-import { motion } from 'motion/react';
-import {
-  ArrowLeft, User as UserIcon, Lock, Bell, Shield, Trash2,
-  Save, Eye, EyeOff, LogOut,
-} from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { useTranslation } from 'react-i18next';
+import { ArrowLeft, User as UserIcon, Lock, Bell, Shield, Trash2, Save, Eye, EyeOff, LogOut } from 'lucide-react';
 import { toast } from 'sonner';
 import type { User } from '@/types';
 import { supabase } from '@/lib/supabase';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface SettingsPageProps {
   user: User;
@@ -22,7 +16,11 @@ interface SettingsPageProps {
 }
 
 export function SettingsPage({ user, onBack, onLogout, onUserUpdate, onOpenTerms, onOpenPrivacy }: SettingsPageProps) {
-  const [name, setName] = useState(user?.name ?? '');
+  const { t } = useTranslation();
+  const { resolvedTheme } = useTheme();
+  const dark = resolvedTheme === 'dark';
+
+  const [name, setName] = useState(user.name);
   const [savingProfile, setSavingProfile] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -34,6 +32,17 @@ export function SettingsPage({ user, onBack, onLogout, onUserUpdate, onOpenTerms
   const [dataSharing, setDataSharing] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState('');
   const [deletingAccount, setDeletingAccount] = useState(false);
+
+  // Theme-aware colours
+  const bg       = dark ? '#0a0f0b' : '#f0fdf4';
+  const cardBg   = dark ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.85)';
+  const cardBord = dark ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.1)';
+  const txt      = dark ? '#e2e8f0' : '#111827';
+  const txtMuted = dark ? 'rgba(255,255,255,0.5)' : '#6b7280';
+  const inputBg  = dark ? 'rgba(255,255,255,0.07)' : '#ffffff';
+  const inputBord= dark ? '1px solid rgba(255,255,255,0.12)' : '1px solid #d1d5db';
+  const divider  = dark ? 'rgba(255,255,255,0.1)' : '#e5e7eb';
+
   const handleSaveProfile = async () => {
     if (!name.trim()) { toast.error('Name cannot be empty'); return; }
     setSavingProfile(true);
@@ -78,181 +87,158 @@ export function SettingsPage({ user, onBack, onLogout, onUserUpdate, onOpenTerms
     }
   };
 
-  const inputClass = "w-full px-4 py-2 rounded-xl border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500 placeholder:text-muted-foreground";
-  const labelClass = "block text-sm font-medium text-foreground mb-1";
+  const inputStyle: React.CSSProperties = {
+    width: '100%', padding: '10px 14px', borderRadius: 12,
+    border: inputBord, background: inputBg,
+    color: txt, fontSize: 14, outline: 'none',
+    boxSizing: 'border-box',
+  };
+  const labelStyle: React.CSSProperties = { display: 'block', fontSize: 13, fontWeight: 600, color: txtMuted, marginBottom: 6 };
+  const cardStyle: React.CSSProperties = { background: cardBg, border: cardBord, borderRadius: 16, padding: '20px 22px', marginBottom: 16, backdropFilter: 'blur(12px)' };
+  const sectionTitle: React.CSSProperties = { fontSize: 15, fontWeight: 700, color: txt, display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 };
+
+  const Toggle = ({ value, onChange }: { value: boolean; onChange: () => void }) => (
+    <button
+      onClick={onChange}
+      style={{ position: 'relative', width: 44, height: 24, borderRadius: 12, border: 'none', cursor: 'pointer', background: value ? '#22c55e' : (dark ? 'rgba(255,255,255,0.2)' : '#d1d5db'), flexShrink: 0, transition: 'background 0.2s' }}
+    >
+      <span style={{ position: 'absolute', top: 2, left: value ? 22 : 2, width: 20, height: 20, borderRadius: '50%', background: '#fff', transition: 'left 0.2s', boxShadow: '0 1px 4px rgba(0,0,0,0.2)' }} />
+    </button>
+  );
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="glass border-b sticky top-0 z-40">
-        <div className="max-w-3xl mx-auto px-6 py-4 flex items-center gap-4">
-          <button onClick={onBack} className="p-2 rounded-xl hover:bg-white/10 transition-colors">
-            <ArrowLeft className="h-5 w-5 text-foreground" />
+    <div style={{ minHeight: '100vh', background: bg, color: txt }}>
+      {/* Header */}
+      <div style={{ background: dark ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.8)', backdropFilter: 'blur(20px)', borderBottom: `1px solid ${divider}`, position: 'sticky', top: 0, zIndex: 40 }}>
+        <div style={{ maxWidth: 640, margin: '0 auto', padding: '14px 20px', display: 'flex', alignItems: 'center', gap: 12 }}>
+          <button onClick={onBack} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: txt, display: 'flex', alignItems: 'center', padding: '6px 10px', borderRadius: 10, gap: 6, fontSize: 14 }}>
+            <ArrowLeft size={18} /> Back
           </button>
-          <div className="flex items-center gap-3">
-            <span className="text-2xl">🦍</span>
-            <span className="text-xl font-bold text-foreground">Settings</span>
+          <span style={{ fontSize: 18, fontWeight: 700, color: txt }}>🦍 {t('nav.settings')}</span>
+        </div>
+      </div>
+
+      <div style={{ maxWidth: 640, margin: '0 auto', padding: '24px 20px 60px' }}>
+
+        {/* Profile */}
+        <div style={cardStyle}>
+          <div style={sectionTitle}><UserIcon size={18} color="#22c55e" /> Profile</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14, paddingBottom: 16, marginBottom: 16, borderBottom: `1px solid ${divider}` }}>
+            <div style={{ width: 52, height: 52, borderRadius: '50%', background: 'linear-gradient(135deg,#047857,#10b981)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 20, fontWeight: 700, flexShrink: 0 }}>
+              {user.name.charAt(0).toUpperCase()}
+            </div>
+            <div>
+              <div style={{ fontWeight: 600, color: txt }}>{user.name}</div>
+              <div style={{ fontSize: 13, color: txtMuted }}>{user.email}</div>
+            </div>
+          </div>
+          <div style={{ marginBottom: 12 }}>
+            <label style={labelStyle}>Display Name</label>
+            <input value={name} onChange={e => setName(e.target.value)} style={inputStyle} />
+          </div>
+          <div style={{ marginBottom: 16 }}>
+            <label style={labelStyle}>Email</label>
+            <input value={user.email} disabled style={{ ...inputStyle, opacity: 0.5, cursor: 'not-allowed' }} />
+            <p style={{ fontSize: 12, color: txtMuted, marginTop: 4 }}>Email cannot be changed</p>
+          </div>
+          <button
+            onClick={handleSaveProfile}
+            disabled={savingProfile || name.trim() === user.name}
+            style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'linear-gradient(135deg,#047857,#10b981)', color: '#fff', border: 'none', borderRadius: 12, padding: '10px 20px', fontSize: 14, fontWeight: 600, cursor: savingProfile || name.trim() === user.name ? 'not-allowed' : 'pointer', opacity: savingProfile || name.trim() === user.name ? 0.6 : 1 }}
+          >
+            <Save size={16} /> {savingProfile ? 'Saving...' : 'Save Profile'}
+          </button>
+        </div>
+
+        {/* Password */}
+        <div style={cardStyle}>
+          <div style={sectionTitle}><Lock size={18} color="#22c55e" /> Password</div>
+          <div style={{ marginBottom: 12, position: 'relative' }}>
+            <label style={labelStyle}>New Password</label>
+            <input type={showNew ? 'text' : 'password'} value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="At least 6 characters" style={{ ...inputStyle, paddingRight: 42 }} />
+            <button onClick={() => setShowNew(v => !v)} style={{ position: 'absolute', right: 12, bottom: 10, background: 'transparent', border: 'none', cursor: 'pointer', color: txtMuted }}>
+              {showNew ? <EyeOff size={16} /> : <Eye size={16} />}
+            </button>
+          </div>
+          <div style={{ marginBottom: 16 }}>
+            <label style={labelStyle}>Confirm New Password</label>
+            <input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} placeholder="Repeat new password" style={inputStyle} />
+          </div>
+          <button
+            onClick={handleChangePassword}
+            disabled={savingPassword || !newPassword || !confirmPassword}
+            style={{ background: 'linear-gradient(135deg,#047857,#10b981)', color: '#fff', border: 'none', borderRadius: 12, padding: '10px 20px', fontSize: 14, fontWeight: 600, cursor: savingPassword || !newPassword || !confirmPassword ? 'not-allowed' : 'pointer', opacity: savingPassword || !newPassword || !confirmPassword ? 0.6 : 1 }}
+          >
+            {savingPassword ? 'Updating...' : 'Update Password'}
+          </button>
+        </div>
+
+        {/* Notifications */}
+        <div style={cardStyle}>
+          <div style={sectionTitle}><Bell size={18} color="#22c55e" /> Notifications</div>
+          {[
+            { label: 'Assignment updates', sub: 'Status changes on your submissions', value: notifAssignment, set: () => setNotifAssignment(v => !v) },
+            { label: 'Announcements', sub: 'Platform news and important updates', value: notifAnnouncements, set: () => setNotifAnnouncements(v => !v) },
+            { label: 'Promotions', sub: 'Discounts and special offers', value: notifPromotions, set: () => setNotifPromotions(v => !v) },
+          ].map(item => (
+            <div key={item.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: `1px solid ${divider}` }}>
+              <div>
+                <div style={{ fontWeight: 500, color: txt, fontSize: 14 }}>{item.label}</div>
+                <div style={{ fontSize: 12, color: txtMuted }}>{item.sub}</div>
+              </div>
+              <Toggle value={item.value} onChange={item.set} />
+            </div>
+          ))}
+        </div>
+
+        {/* Privacy */}
+        <div style={cardStyle}>
+          <div style={sectionTitle}><Shield size={18} color="#22c55e" /> Privacy & Legal</div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: `1px solid ${divider}`, marginBottom: 12 }}>
+            <div>
+              <div style={{ fontWeight: 500, color: txt, fontSize: 14 }}>Anonymous analytics</div>
+              <div style={{ fontSize: 12, color: txtMuted }}>Help improve ApeAcademy with anonymised usage data</div>
+            </div>
+            <Toggle value={dataSharing} onChange={() => setDataSharing(v => !v)} />
+          </div>
+          <div style={{ display: 'flex', gap: 16 }}>
+            <button onClick={onOpenTerms} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#22c55e', fontSize: 13, textDecoration: 'underline' }}>Terms & Conditions</button>
+            <button onClick={onOpenPrivacy} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#22c55e', fontSize: 13, textDecoration: 'underline' }}>Privacy Policy</button>
           </div>
         </div>
-      </header>
 
-      <main className="max-w-3xl mx-auto px-6 py-10 space-y-6">
+        {/* Account / Logout */}
+        <div style={cardStyle}>
+          <div style={sectionTitle}><LogOut size={18} color={txtMuted} /> Account</div>
+          <button
+            onClick={onLogout}
+            style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', background: dark ? 'rgba(255,255,255,0.06)' : '#f3f4f6', border: `1px solid ${dark ? 'rgba(255,255,255,0.12)' : '#d1d5db'}`, borderRadius: 12, padding: '12px 16px', fontSize: 14, fontWeight: 600, color: txt, cursor: 'pointer', marginBottom: 20 }}
+          >
+            <LogOut size={16} /> {t('nav.logout')}
+          </button>
 
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
-          <Card className="glass-card">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-foreground">
-                <UserIcon className="h-5 w-5 text-emerald-500" />
-                Profile
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center gap-4 pb-4 border-b border-border">
-                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-emerald-700 to-emerald-500 flex items-center justify-center text-white text-xl font-bold">
-                  {user.name.charAt(0).toUpperCase()}
-                </div>
-                <div>
-                  <div className="font-semibold text-foreground">{user.name}</div>
-                  <div className="text-sm text-muted-foreground">{user.email}</div>
-                  {user.role === 'admin' && <Badge className="mt-1 bg-red-500 text-white text-xs">Admin</Badge>}
-                </div>
-              </div>
-              <div>
-                <label className={labelClass}>Display Name</label>
-                <input type="text" value={name} onChange={e => setName(e.target.value)} className={inputClass} />
-              </div>
-              <div>
-                <label className={labelClass}>Email</label>
-                <input type="text" value={user.email} disabled
-                  className="w-full px-4 py-2 rounded-xl border border-border bg-muted text-muted-foreground cursor-not-allowed" />
-                <p className="text-xs text-muted-foreground mt-1">Email cannot be changed</p>
-              </div>
-              <Button onClick={handleSaveProfile} disabled={savingProfile || name.trim() === user.name}
-                className="bg-gradient-to-r from-emerald-700 to-emerald-500 hover:from-emerald-800 hover:to-emerald-600 text-white rounded-xl">
-                <Save className="h-4 w-4 mr-2" />
-                {savingProfile ? 'Saving...' : 'Save Profile'}
-              </Button>
-            </CardContent>
-          </Card>
-        </motion.div>
+          <div style={{ borderTop: '1px solid rgba(239,68,68,0.25)', paddingTop: 16 }}>
+            <p style={{ fontWeight: 600, color: '#f87171', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6, fontSize: 14 }}>
+              <Trash2 size={15} /> Delete Account
+            </p>
+            <p style={{ fontSize: 13, color: txtMuted, marginBottom: 10 }}>This permanently deletes your account and all data. Cannot be undone.</p>
+            <input
+              value={deleteConfirm}
+              onChange={e => setDeleteConfirm(e.target.value)}
+              placeholder='Type "DELETE" to confirm'
+              style={{ ...inputStyle, border: '1px solid rgba(239,68,68,0.4)', background: dark ? 'rgba(239,68,68,0.06)' : 'rgba(239,68,68,0.04)', marginBottom: 10 }}
+            />
+            <button
+              onClick={handleDeleteAccount}
+              disabled={deleteConfirm !== 'DELETE' || deletingAccount}
+              style={{ width: '100%', background: '#dc2626', color: '#fff', border: 'none', borderRadius: 12, padding: '11px', fontSize: 14, fontWeight: 700, cursor: deleteConfirm !== 'DELETE' || deletingAccount ? 'not-allowed' : 'pointer', opacity: deleteConfirm !== 'DELETE' || deletingAccount ? 0.55 : 1 }}
+            >
+              {deletingAccount ? 'Deleting...' : 'Delete My Account'}
+            </button>
+          </div>
+        </div>
 
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-          <Card className="glass-card">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-foreground">
-                <Lock className="h-5 w-5 text-emerald-500" />
-                Password
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="relative">
-                <label className={labelClass}>New Password</label>
-                <input type={showNew ? 'text' : 'password'} value={newPassword}
-                  onChange={e => setNewPassword(e.target.value)} placeholder="At least 6 characters"
-                  className={`${inputClass} pr-10`} />
-                <button onClick={() => setShowNew(!showNew)} className="absolute right-3 top-8 text-muted-foreground">
-                  {showNew ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-              </div>
-              <div>
-                <label className={labelClass}>Confirm New Password</label>
-                <input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)}
-                  placeholder="Repeat new password" className={inputClass} />
-              </div>
-              <Button onClick={handleChangePassword} disabled={savingPassword || !newPassword || !confirmPassword}
-                className="bg-gradient-to-r from-emerald-700 to-emerald-500 hover:from-emerald-800 hover:to-emerald-600 text-white rounded-xl">
-                {savingPassword ? 'Updating...' : 'Update Password'}
-              </Button>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-          <Card className="glass-card">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-foreground">
-                <Bell className="h-5 w-5 text-emerald-500" />
-                Notifications
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {[
-                { label: 'Assignment updates', sub: 'Status changes on your submissions', value: notifAssignment, set: setNotifAssignment },
-                { label: 'Announcements', sub: 'Platform news and important updates', value: notifAnnouncements, set: setNotifAnnouncements },
-                { label: 'Promotions', sub: 'Discounts and special offers', value: notifPromotions, set: setNotifPromotions },
-              ].map(item => (
-                <div key={item.label} className="flex items-center justify-between py-2">
-                  <div>
-                    <p className="font-medium text-foreground">{item.label}</p>
-                    <p className="text-sm text-muted-foreground">{item.sub}</p>
-                  </div>
-                  <button onClick={() => item.set(!item.value)}
-                    className={`relative w-11 h-6 rounded-full transition-colors ${item.value ? 'bg-emerald-500' : 'bg-white/20'}`}>
-                    <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${item.value ? 'translate-x-5' : 'translate-x-0'}`} />
-                  </button>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
-          <Card className="glass-card">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-foreground">
-                <Shield className="h-5 w-5 text-emerald-500" />
-                Privacy & Legal
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between py-2">
-                <div>
-                  <p className="font-medium text-foreground">Anonymous analytics</p>
-                  <p className="text-sm text-muted-foreground">Help improve ApeAcademy with anonymised usage data</p>
-                </div>
-                <button onClick={() => setDataSharing(!dataSharing)}
-                  className={`relative w-11 h-6 rounded-full transition-colors ${dataSharing ? 'bg-emerald-500' : 'bg-white/20'}`}>
-                  <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${dataSharing ? 'translate-x-5' : 'translate-x-0'}`} />
-                </button>
-              </div>
-              <div className="flex gap-4 pt-2">
-                <button onClick={onOpenTerms} className="text-sm text-emerald-400 hover:underline">Terms & Conditions</button>
-                <button onClick={onOpenPrivacy} className="text-sm text-emerald-400 hover:underline">Privacy Policy</button>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-          <Card className="glass-card">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-foreground">
-                <LogOut className="h-5 w-5 text-muted-foreground" />
-                Account
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <Button onClick={onLogout} variant="outline" className="w-full rounded-xl border-border text-foreground hover:bg-white/10">
-                <LogOut className="h-4 w-4 mr-2" />
-                Log Out
-              </Button>
-              <div className="pt-4 border-t border-red-500/20">
-                <p className="font-semibold text-red-400 mb-1 flex items-center gap-2">
-                  <Trash2 className="h-4 w-4" /> Delete Account
-                </p>
-                <p className="text-sm text-muted-foreground mb-3">This permanently deletes your account and all your data. This cannot be undone.</p>
-                <input type="text" value={deleteConfirm} onChange={e => setDeleteConfirm(e.target.value)}
-                  placeholder='Type "DELETE" to confirm'
-                  className="w-full px-4 py-2 rounded-xl border border-red-500/30 bg-red-500/5 text-foreground focus:outline-none focus:ring-2 focus:ring-red-400 mb-3 placeholder:text-muted-foreground" />
-                <Button onClick={handleDeleteAccount} disabled={deleteConfirm !== 'DELETE' || deletingAccount}
-                  className="bg-red-600 hover:bg-red-700 text-white rounded-xl w-full">
-                  {deletingAccount ? 'Deleting...' : 'Delete My Account'}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-      </main>
+      </div>
     </div>
   );
 }

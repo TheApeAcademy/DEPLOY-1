@@ -366,22 +366,22 @@ export function HomePage({
                       <div
                         key={assignment.id}
                         onClick={() => setSelectedAssignment(assignment)}
-                        style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px', padding: '16px', cursor: 'pointer' }}
+                        style={{ background: resolvedTheme === 'dark' ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)', border: resolvedTheme === 'dark' ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.08)', borderRadius: '14px', padding: '16px', cursor: 'pointer' }}
                       >
                         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px', marginBottom: '8px' }}>
                           <div style={{ flex: 1 }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px', flexWrap: 'wrap' as const }}>
-                              <span style={{ background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: '6px', padding: '2px 8px', fontSize: '10px', fontWeight: 700, color: '#4ade80', textTransform: 'uppercase' as const }}>{assignment.assignment_type}</span>
-                              {assignment.course_name && <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>{assignment.course_name}</span>}
+                              <span style={{ background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: '6px', padding: '2px 8px', fontSize: '10px', fontWeight: 700, color: resolvedTheme === 'dark' ? '#4ade80' : '#15803d', textTransform: 'uppercase' as const }}>{assignment.assignment_type}</span>
+                              {assignment.course_name && <span style={{ fontSize: '11px', color: resolvedTheme === 'dark' ? 'rgba(255,255,255,0.4)' : '#6b7280' }}>{assignment.course_name}</span>}
                             </div>
-                            <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.65)', lineHeight: 1.5, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' as const }}>{assignment.description || 'No description'}</p>
+                            <p style={{ fontSize: '13px', color: resolvedTheme === 'dark' ? 'rgba(255,255,255,0.65)' : '#374151', lineHeight: 1.5, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' as const }}>{assignment.description || 'No description'}</p>
                           </div>
                           <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: cfg.bg, border: `1px solid ${cfg.border}`, borderRadius: '100px', padding: '4px 12px', fontSize: '11px', fontWeight: 700, color: cfg.text, whiteSpace: 'nowrap' as const, flexShrink: 0 }}>
                             <span className={cfg.pulse ? 'dp' : ''} style={{ width: '6px', height: '6px', borderRadius: '50%', background: cfg.dot, display: 'inline-block' }}/>
                             {cfg.label}
                           </span>
                         </div>
-                        <div style={{ display: 'flex', gap: '16px', fontSize: '11px', color: 'rgba(255,255,255,0.3)', marginBottom: assignment.delivery_url || assignment.status === 'generating' ? '10px' : '0' }}>
+                        <div style={{ display: 'flex', gap: '16px', fontSize: '11px', color: resolvedTheme === 'dark' ? 'rgba(255,255,255,0.3)' : '#9ca3af', marginBottom: assignment.delivery_url || assignment.status === 'generating' ? '10px' : '0' }}>
                           {assignment.due_date && <span>⏰ Due {assignment.due_date}</span>}
                           {assignment.payment_amount && <span style={{ color: 'rgba(74,222,128,0.6)' }}>£{Number(assignment.payment_amount).toFixed(2)} paid</span>}
                         </div>

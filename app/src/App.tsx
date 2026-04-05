@@ -79,8 +79,8 @@ function AppInner() {
 
     restoreSession();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_OUT' || !session) {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT') {
         setUser(null);
         setCurrentPage('landing');
         setPreferences(null);
@@ -97,19 +97,18 @@ function AppInner() {
     initPushNotifications();
   };
 
-  const handleLogout = async () => {
-    try {
-      if (user) {
-        await logActivity({ type: 'user_logout', userId: user.id, userName: user.name, userEmail: user.email, description: `${user.name} logged out` });
-      }
-    } catch {
-      // non-fatal — proceed with logout regardless
-    }
-    await supabase.auth.signOut();
+  const handleLogout = () => {
+    // Clear UI state immediately so the user sees instant logout
+    const snap = user;
     setUser(null);
     setPreferences(null);
     setShowProfile(false);
     setCurrentPage('landing');
+    // Background tasks — fire and forget
+    if (snap) {
+      logActivity({ type: 'user_logout', userId: snap.id, userName: snap.name, userEmail: snap.email, description: `${snap.name} logged out` }).catch(() => {});
+    }
+    supabase.auth.signOut().catch(() => {});
   };
 
   const handleRegionComplete = async (prefs: UserPreferences) => {
