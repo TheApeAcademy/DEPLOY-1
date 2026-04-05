@@ -1,0 +1,18 @@
+{
+  "name": "ApeAcademy",
+  "short_name": "ApeAcademy",
+  "description": "Elite Academic Assistance — Assignments, Essays, Dissertations",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0a1a0c",
+  "theme_color": "#22c55e",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
