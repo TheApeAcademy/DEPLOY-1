@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion } from 'motion/react';
 import { 
   User as UserIcon, 
@@ -47,7 +48,18 @@ export function HomePage({
   setShowProfile,
 }: HomePageProps) {
   const [userAssignments, setUserAssignments] = useState<any[]>([]);
+  const [selectedAssignment, setSelectedAssignment] = useState<any>(null);
+  const [showLangMenu, setShowLangMenu] = useState(false);
   const { resolvedTheme, toggleTheme } = useTheme();
+  const { i18n } = useTranslation();
+
+  const languages = [
+    {code:'en', label:'English', flag:'🇬🇧'},
+    {code:'fr', label:'Français', flag:'🇫🇷'},
+    {code:'es', label:'Español', flag:'🇪🇸'},
+    {code:'ar', label:'العربية', flag:'🇸🇦'},
+  ];
+  const currentLang = languages.find(l => l.code === i18n.language) || languages[0];
 
   useEffect(() => {
     if (!user) return;
@@ -94,6 +106,26 @@ export function HomePage({
               >
                 {resolvedTheme === 'dark' ? '☀️' : '🌙'}
               </button>
+              <div style={{position:'relative'}}>
+                <button
+                  onClick={() => setShowLangMenu(!showLangMenu)}
+                  style={{background:'rgba(255,255,255,0.1)',border:'1px solid rgba(255,255,255,0.15)',borderRadius:20,padding:'5px 12px',fontSize:12,color:'inherit',cursor:'pointer'}}
+                >
+                  {currentLang.flag} {currentLang.code.toUpperCase()}
+                </button>
+                {showLangMenu && (
+                  <>
+                    <div onClick={() => setShowLangMenu(false)} style={{position:'fixed',inset:0,zIndex:10}}/>
+                    <div style={{position:'absolute',top:'110%',right:0,background: resolvedTheme === 'dark' ? '#1a1a2e' : 'white',border:'1px solid rgba(255,255,255,0.1)',borderRadius:12,padding:8,zIndex:20,minWidth:150,boxShadow:'0 8px 32px rgba(0,0,0,0.3)'}}>
+                      {languages.map(lang => (
+                        <button key={lang.code} onClick={() => { i18n.changeLanguage(lang.code); if(lang.code==='ar'){document.documentElement.dir='rtl'}else{document.documentElement.dir='ltr'} setShowLangMenu(false) }} style={{display:'flex',alignItems:'center',gap:8,width:'100%',padding:'8px 12px',background:'transparent',border:'none',cursor:'pointer',color:'inherit',fontSize:13,borderRadius:8,textAlign:'left'}}>
+                          {lang.flag} {lang.label}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
               <button
                 onClick={() => (user ? setShowProfile(!showProfile) : onLogin())}
                 className="w-9 h-9 rounded-full bg-gradient-to-r from-emerald-700 to-emerald-500 flex items-center justify-center hover:scale-110 transition-transform"
@@ -135,7 +167,7 @@ export function HomePage({
                 Settings
               </Button>
               <Button
-                onClick={onLogout}
+                onClick={() => { setShowProfile(false); onLogout(); }}
                 variant="ghost"
                 className="w-full justify-start text-red-500 hover:bg-red-500/10"
               >
@@ -270,7 +302,7 @@ export function HomePage({
                     };
                     const cfg = statusMap[assignment.status] || statusMap.pending;
                     return (
-                      <div key={assignment.id} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px', padding: '16px' }}>
+                      <div key={assignment.id} onClick={() => setSelectedAssignment(assignment)} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px', padding: '16px', cursor: 'pointer' }}>
                         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px', marginBottom: '8px' }}>
                           <div style={{ flex: 1 }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px', flexWrap: 'wrap' as const }}>
@@ -374,6 +406,69 @@ export function HomePage({
           </motion.div>
         )}
       </main>
+
+      {selectedAssignment && (
+        <>
+          <div
+            onClick={() => setSelectedAssignment(null)}
+            style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.5)',zIndex:40}}
+          />
+          <div style={{
+            position:'fixed',bottom:0,left:0,right:0,zIndex:50,
+            background: resolvedTheme === 'dark' ? '#1a1a2e' : '#ffffff',
+            borderRadius:'20px 20px 0 0',
+            maxHeight:'80vh',overflowY:'auto',
+            padding:'24px 20px 40px',
+            boxShadow:'0 -4px 40px rgba(0,0,0,0.3)'
+          }}>
+            <div style={{width:40,height:4,background:'#ccc',borderRadius:2,margin:'0 auto 20px'}}/>
+            <button onClick={() => setSelectedAssignment(null)} style={{position:'absolute',top:16,right:16,background:'transparent',border:'none',fontSize:20,cursor:'pointer',color:'inherit'}}>✕</button>
+
+            <div style={{display:'flex',gap:8,alignItems:'center',marginBottom:16,flexWrap:'wrap'}}>
+              <span style={{background:'rgba(34,197,94,0.15)',border:'1px solid rgba(34,197,94,0.3)',color:'#22c55e',padding:'4px 12px',borderRadius:20,fontSize:11,fontWeight:700,letterSpacing:1,textTransform:'uppercase'}}>
+                {selectedAssignment.assignment_type}
+              </span>
+              <span style={{fontSize:12,color: resolvedTheme === 'dark' ? 'rgba(255,255,255,0.5)' : '#6b7280'}}>
+                {selectedAssignment.course_name}
+              </span>
+            </div>
+
+            <div style={{fontSize:13,color: resolvedTheme === 'dark' ? 'rgba(255,255,255,0.5)' : '#6b7280',marginBottom:8}}>
+              Teacher: {selectedAssignment.teacher_name || 'N/A'} · Due: {selectedAssignment.due_date || 'N/A'}
+            </div>
+
+            <div style={{fontSize:14,color: resolvedTheme === 'dark' ? 'rgba(255,255,255,0.8)' : '#374151',lineHeight:1.7,marginBottom:20,background: resolvedTheme === 'dark' ? 'rgba(255,255,255,0.05)' : '#f9fafb',padding:14,borderRadius:10}}>
+              {selectedAssignment.description || 'No description provided.'}
+            </div>
+
+            {selectedAssignment.status === 'completed' && selectedAssignment.delivery_url && (
+              <div>
+                <a href={selectedAssignment.delivery_url} target="_blank" rel="noreferrer" style={{display:'block',background:'#22c55e',color:'white',textAlign:'center',padding:'14px',borderRadius:12,fontWeight:700,fontSize:15,textDecoration:'none',marginBottom:10}}>
+                  View Your Document
+                </a>
+                <p style={{fontSize:12,color: resolvedTheme === 'dark' ? 'rgba(255,255,255,0.4)' : '#9ca3af',textAlign:'center'}}>
+                  Open in browser and press Ctrl+S to save offline
+                </p>
+              </div>
+            )}
+            {selectedAssignment.status === 'generating' && (
+              <div style={{background:'rgba(168,85,247,0.1)',border:'1px solid rgba(168,85,247,0.3)',borderRadius:10,padding:14,textAlign:'center',color:'#c084fc',fontSize:13}}>
+                Claude is generating your document. Check back in 1-2 minutes.
+              </div>
+            )}
+            {(selectedAssignment.status === 'submitted' || selectedAssignment.status === 'analyzed') && (
+              <div style={{background:'rgba(234,179,8,0.1)',border:'1px solid rgba(234,179,8,0.3)',borderRadius:10,padding:14,textAlign:'center',color:'#ca8a04',fontSize:13}}>
+                Awaiting payment confirmation
+              </div>
+            )}
+            {selectedAssignment.status === 'paid' && (
+              <div style={{background:'rgba(34,197,94,0.1)',border:'1px solid rgba(34,197,94,0.3)',borderRadius:10,padding:14,textAlign:'center',color:'#22c55e',fontSize:13}}>
+                Payment received - generating your document...
+              </div>
+            )}
+          </div>
+        </>
+      )}
     </div>
   );
 }
