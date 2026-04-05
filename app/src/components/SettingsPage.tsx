@@ -1,13 +1,5 @@
 
 import { useState } from 'react';
-import { motion } from 'motion/react';
-import {
-  ArrowLeft, User as UserIcon, Lock, Bell, Shield, Trash2,
-  Save, Eye, EyeOff, LogOut,
-} from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import type { User } from '@/types';
 import { supabase } from '@/lib/supabase';
@@ -22,43 +14,26 @@ interface SettingsPageProps {
 }
 
 export function SettingsPage({ user, onBack, onLogout, onUserUpdate, onOpenTerms, onOpenPrivacy }: SettingsPageProps) {
-  const [name, setName] = useState(user.name);
-  const [savingProfile, setSavingProfile] = useState(false);
+  console.log('SettingsPage rendering with user:', user);
+
+  const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showNew, setShowNew] = useState(false);
   const [savingPassword, setSavingPassword] = useState(false);
-  const [notifAssignment, setNotifAssignment] = useState(true);
-  const [notifAnnouncements, setNotifAnnouncements] = useState(true);
-  const [notifPromotions, setNotifPromotions] = useState(false);
-  const [dataSharing, setDataSharing] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState('');
   const [deletingAccount, setDeletingAccount] = useState(false);
 
-  const handleSaveProfile = async () => {
-    if (!name.trim()) { toast.error('Name cannot be empty'); return; }
-    setSavingProfile(true);
-    try {
-      const { error } = await supabase.from('profiles').update({ name: name.trim() }).eq('id', user.id);
-      if (error) { toast.error('Failed to update profile'); return; }
-      onUserUpdate({ ...user, name: name.trim() });
-      toast.success('Profile updated');
-    } catch {
-      toast.error('Failed to update profile');
-    } finally {
-      setSavingProfile(false);
-    }
-  };
-
   const handleChangePassword = async () => {
-    if (!newPassword || newPassword.length < 6) { toast.error('Password must be at least 6 characters'); return; }
+    if (!currentPassword) { toast.error('Enter your current password'); return; }
+    if (!newPassword || newPassword.length < 6) { toast.error('New password must be at least 6 characters'); return; }
     if (newPassword !== confirmPassword) { toast.error('Passwords do not match'); return; }
     setSavingPassword(true);
     try {
       const { error } = await supabase.auth.updateUser({ password: newPassword });
       if (error) { toast.error(error.message); return; }
-      setNewPassword(''); setConfirmPassword('');
-      toast.success('Password updated');
+      setCurrentPassword(''); setNewPassword(''); setConfirmPassword('');
+      toast.success('Password updated successfully');
     } catch {
       toast.error('Failed to update password');
     } finally {
@@ -79,181 +54,270 @@ export function SettingsPage({ user, onBack, onLogout, onUserUpdate, onOpenTerms
     }
   };
 
-  const inputClass = "w-full px-4 py-2 rounded-xl border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500 placeholder:text-muted-foreground";
-  const labelClass = "block text-sm font-medium text-foreground mb-1";
+  try {
+    const containerStyle: React.CSSProperties = {
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #0a1a0c 0%, #0d1f0f 100%)',
+      fontFamily: 'DM Sans, system-ui, sans-serif',
+      color: '#f0fdf4',
+    };
 
-  return (
-    <div className="min-h-screen bg-background">
-      <header className="glass border-b sticky top-0 z-40">
-        <div className="max-w-3xl mx-auto px-6 py-4 flex items-center gap-4">
-          <button onClick={onBack} className="p-2 rounded-xl hover:bg-white/10 transition-colors">
-            <ArrowLeft className="h-5 w-5 text-foreground" />
+    const headerStyle: React.CSSProperties = {
+      position: 'sticky',
+      top: 0,
+      zIndex: 40,
+      background: 'rgba(10,26,12,0.85)',
+      backdropFilter: 'blur(20px)',
+      WebkitBackdropFilter: 'blur(20px)',
+      borderBottom: '1px solid rgba(255,255,255,0.08)',
+      padding: '16px 24px',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '16px',
+    };
+
+    const backBtnStyle: React.CSSProperties = {
+      background: 'rgba(255,255,255,0.08)',
+      border: '1px solid rgba(255,255,255,0.12)',
+      borderRadius: '10px',
+      padding: '8px 16px',
+      color: '#f0fdf4',
+      cursor: 'pointer',
+      fontSize: '14px',
+      fontWeight: 600,
+      display: 'flex',
+      alignItems: 'center',
+      gap: '6px',
+    };
+
+    const cardStyle: React.CSSProperties = {
+      background: 'rgba(255,255,255,0.05)',
+      border: '1px solid rgba(255,255,255,0.09)',
+      borderRadius: '16px',
+      padding: '24px',
+      marginBottom: '16px',
+    };
+
+    const cardTitleStyle: React.CSSProperties = {
+      fontSize: '16px',
+      fontWeight: 700,
+      color: '#f0fdf4',
+      marginBottom: '20px',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '8px',
+    };
+
+    const inputStyle: React.CSSProperties = {
+      width: '100%',
+      padding: '10px 14px',
+      borderRadius: '10px',
+      border: '1px solid rgba(255,255,255,0.12)',
+      background: 'rgba(255,255,255,0.06)',
+      color: '#f0fdf4',
+      fontSize: '14px',
+      outline: 'none',
+      boxSizing: 'border-box',
+      fontFamily: 'inherit',
+    };
+
+    const labelStyle: React.CSSProperties = {
+      display: 'block',
+      fontSize: '12px',
+      fontWeight: 600,
+      color: 'rgba(255,255,255,0.5)',
+      marginBottom: '6px',
+      textTransform: 'uppercase',
+      letterSpacing: '0.05em',
+    };
+
+    const saveBtnStyle: React.CSSProperties = {
+      background: 'linear-gradient(135deg, #047857, #10b981)',
+      color: '#fff',
+      border: 'none',
+      borderRadius: '10px',
+      padding: '10px 24px',
+      fontSize: '14px',
+      fontWeight: 700,
+      cursor: savingPassword ? 'not-allowed' : 'pointer',
+      opacity: savingPassword ? 0.7 : 1,
+      marginTop: '8px',
+    };
+
+    const deleteBtnStyle: React.CSSProperties = {
+      background: '#dc2626',
+      color: '#fff',
+      border: 'none',
+      borderRadius: '10px',
+      padding: '10px 24px',
+      fontSize: '14px',
+      fontWeight: 700,
+      cursor: deletingAccount || deleteConfirm !== 'DELETE' ? 'not-allowed' : 'pointer',
+      opacity: deletingAccount || deleteConfirm !== 'DELETE' ? 0.5 : 1,
+      width: '100%',
+      marginTop: '8px',
+    };
+
+    const linkBtnStyle: React.CSSProperties = {
+      background: 'none',
+      border: 'none',
+      color: '#4ade80',
+      cursor: 'pointer',
+      fontSize: '14px',
+      fontWeight: 600,
+      padding: '4px 0',
+      textDecoration: 'underline',
+    };
+
+    const logoutBtnStyle: React.CSSProperties = {
+      background: 'rgba(239,68,68,0.1)',
+      border: '1px solid rgba(239,68,68,0.3)',
+      borderRadius: '10px',
+      padding: '10px 24px',
+      color: '#f87171',
+      cursor: 'pointer',
+      fontSize: '14px',
+      fontWeight: 700,
+      width: '100%',
+    };
+
+    return (
+      <div style={containerStyle}>
+        <header style={headerStyle}>
+          <button style={backBtnStyle} onClick={onBack}>
+            ← Back
           </button>
-          <div className="flex items-center gap-3">
-            <span className="text-2xl">🦍</span>
-            <span className="text-xl font-bold text-foreground">Settings</span>
+          <span style={{ fontSize: '20px', fontWeight: 800, color: '#f0fdf4' }}>
+            🦍 Settings
+          </span>
+        </header>
+
+        <main style={{ maxWidth: '640px', margin: '0 auto', padding: '32px 24px' }}>
+
+          {/* User Info */}
+          <div style={cardStyle}>
+            <div style={cardTitleStyle}>
+              👤 Account
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '16px', paddingBottom: '16px', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+              <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: 'linear-gradient(135deg, #047857, #10b981)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', fontWeight: 800, color: '#fff', flexShrink: 0 }}>
+                {user.name ? user.name.charAt(0).toUpperCase() : '?'}
+              </div>
+              <div>
+                <div style={{ fontSize: '18px', fontWeight: 700, color: '#f0fdf4', marginBottom: '4px' }}>{user.name}</div>
+                <div style={{ fontSize: '14px', color: 'rgba(255,255,255,0.5)' }}>{user.email}</div>
+                {user.role === 'admin' && (
+                  <span style={{ display: 'inline-block', marginTop: '6px', background: 'rgba(239,68,68,0.2)', border: '1px solid rgba(239,68,68,0.4)', borderRadius: '6px', padding: '2px 8px', fontSize: '11px', fontWeight: 700, color: '#f87171' }}>
+                    Admin
+                  </span>
+                )}
+              </div>
+            </div>
           </div>
-        </div>
-      </header>
 
-      <main className="max-w-3xl mx-auto px-6 py-10 space-y-6">
-
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
-          <Card className="glass-card">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-foreground">
-                <UserIcon className="h-5 w-5 text-emerald-500" />
-                Profile
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center gap-4 pb-4 border-b border-border">
-                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-emerald-700 to-emerald-500 flex items-center justify-center text-white text-xl font-bold">
-                  {user.name.charAt(0).toUpperCase()}
-                </div>
-                <div>
-                  <div className="font-semibold text-foreground">{user.name}</div>
-                  <div className="text-sm text-muted-foreground">{user.email}</div>
-                  {user.role === 'admin' && <Badge className="mt-1 bg-red-500 text-white text-xs">Admin</Badge>}
-                </div>
-              </div>
+          {/* Change Password */}
+          <div style={cardStyle}>
+            <div style={cardTitleStyle}>
+              🔒 Change Password
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
               <div>
-                <label className={labelClass}>Display Name</label>
-                <input type="text" value={name} onChange={e => setName(e.target.value)} className={inputClass} />
+                <label style={labelStyle}>Current Password</label>
+                <input
+                  type="password"
+                  value={currentPassword}
+                  onChange={e => setCurrentPassword(e.target.value)}
+                  placeholder="Your current password"
+                  style={inputStyle}
+                />
               </div>
-              <div>
-                <label className={labelClass}>Email</label>
-                <input type="text" value={user.email} disabled
-                  className="w-full px-4 py-2 rounded-xl border border-border bg-muted text-muted-foreground cursor-not-allowed" />
-                <p className="text-xs text-muted-foreground mt-1">Email cannot be changed</p>
-              </div>
-              <Button onClick={handleSaveProfile} disabled={savingProfile || name.trim() === user.name}
-                className="bg-gradient-to-r from-emerald-700 to-emerald-500 hover:from-emerald-800 hover:to-emerald-600 text-white rounded-xl">
-                <Save className="h-4 w-4 mr-2" />
-                {savingProfile ? 'Saving...' : 'Save Profile'}
-              </Button>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-          <Card className="glass-card">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-foreground">
-                <Lock className="h-5 w-5 text-emerald-500" />
-                Password
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="relative">
-                <label className={labelClass}>New Password</label>
-                <input type={showNew ? 'text' : 'password'} value={newPassword}
-                  onChange={e => setNewPassword(e.target.value)} placeholder="At least 6 characters"
-                  className={`${inputClass} pr-10`} />
-                <button onClick={() => setShowNew(!showNew)} className="absolute right-3 top-8 text-muted-foreground">
-                  {showNew ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              <div style={{ position: 'relative' }}>
+                <label style={labelStyle}>New Password</label>
+                <input
+                  type={showNew ? 'text' : 'password'}
+                  value={newPassword}
+                  onChange={e => setNewPassword(e.target.value)}
+                  placeholder="At least 6 characters"
+                  style={{ ...inputStyle, paddingRight: '40px' }}
+                />
+                <button
+                  onClick={() => setShowNew(!showNew)}
+                  style={{ position: 'absolute', right: '10px', top: '30px', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.4)', fontSize: '14px' }}
+                >
+                  {showNew ? '🙈' : '👁'}
                 </button>
               </div>
               <div>
-                <label className={labelClass}>Confirm New Password</label>
-                <input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)}
-                  placeholder="Repeat new password" className={inputClass} />
+                <label style={labelStyle}>Confirm New Password</label>
+                <input
+                  type="password"
+                  value={confirmPassword}
+                  onChange={e => setConfirmPassword(e.target.value)}
+                  placeholder="Repeat new password"
+                  style={inputStyle}
+                />
               </div>
-              <Button onClick={handleChangePassword} disabled={savingPassword || !newPassword || !confirmPassword}
-                className="bg-gradient-to-r from-emerald-700 to-emerald-500 hover:from-emerald-800 hover:to-emerald-600 text-white rounded-xl">
-                {savingPassword ? 'Updating...' : 'Update Password'}
-              </Button>
-            </CardContent>
-          </Card>
-        </motion.div>
+              <button style={saveBtnStyle} onClick={handleChangePassword} disabled={savingPassword}>
+                {savingPassword ? 'Updating...' : 'Save New Password'}
+              </button>
+            </div>
+          </div>
 
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-          <Card className="glass-card">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-foreground">
-                <Bell className="h-5 w-5 text-emerald-500" />
-                Notifications
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {[
-                { label: 'Assignment updates', sub: 'Status changes on your submissions', value: notifAssignment, set: setNotifAssignment },
-                { label: 'Announcements', sub: 'Platform news and important updates', value: notifAnnouncements, set: setNotifAnnouncements },
-                { label: 'Promotions', sub: 'Discounts and special offers', value: notifPromotions, set: setNotifPromotions },
-              ].map(item => (
-                <div key={item.label} className="flex items-center justify-between py-2">
-                  <div>
-                    <p className="font-medium text-foreground">{item.label}</p>
-                    <p className="text-sm text-muted-foreground">{item.sub}</p>
-                  </div>
-                  <button onClick={() => item.set(!item.value)}
-                    className={`relative w-11 h-6 rounded-full transition-colors ${item.value ? 'bg-emerald-500' : 'bg-white/20'}`}>
-                    <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${item.value ? 'translate-x-5' : 'translate-x-0'}`} />
-                  </button>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        </motion.div>
+          {/* Legal */}
+          <div style={cardStyle}>
+            <div style={cardTitleStyle}>
+              📋 Legal
+            </div>
+            <div style={{ display: 'flex', gap: '24px' }}>
+              <button style={linkBtnStyle} onClick={onOpenTerms}>Terms of Service</button>
+              <button style={linkBtnStyle} onClick={onOpenPrivacy}>Privacy Policy</button>
+            </div>
+          </div>
 
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
-          <Card className="glass-card">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-foreground">
-                <Shield className="h-5 w-5 text-emerald-500" />
-                Privacy & Legal
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between py-2">
-                <div>
-                  <p className="font-medium text-foreground">Anonymous analytics</p>
-                  <p className="text-sm text-muted-foreground">Help improve ApeAcademy with anonymised usage data</p>
-                </div>
-                <button onClick={() => setDataSharing(!dataSharing)}
-                  className={`relative w-11 h-6 rounded-full transition-colors ${dataSharing ? 'bg-emerald-500' : 'bg-white/20'}`}>
-                  <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${dataSharing ? 'translate-x-5' : 'translate-x-0'}`} />
-                </button>
-              </div>
-              <div className="flex gap-4 pt-2">
-                <button onClick={onOpenTerms} className="text-sm text-emerald-400 hover:underline">Terms & Conditions</button>
-                <button onClick={onOpenPrivacy} className="text-sm text-emerald-400 hover:underline">Privacy Policy</button>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
+          {/* Logout */}
+          <div style={cardStyle}>
+            <div style={cardTitleStyle}>
+              🚪 Session
+            </div>
+            <button style={logoutBtnStyle} onClick={onLogout}>
+              Log Out
+            </button>
+          </div>
 
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-          <Card className="glass-card">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-foreground">
-                <LogOut className="h-5 w-5 text-muted-foreground" />
-                Account
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <Button onClick={onLogout} variant="outline" className="w-full rounded-xl border-border text-foreground hover:bg-white/10">
-                <LogOut className="h-4 w-4 mr-2" />
-                Log Out
-              </Button>
-              <div className="pt-4 border-t border-red-500/20">
-                <p className="font-semibold text-red-400 mb-1 flex items-center gap-2">
-                  <Trash2 className="h-4 w-4" /> Delete Account
-                </p>
-                <p className="text-sm text-muted-foreground mb-3">This permanently deletes your account and all your data. This cannot be undone.</p>
-                <input type="text" value={deleteConfirm} onChange={e => setDeleteConfirm(e.target.value)}
-                  placeholder='Type "DELETE" to confirm'
-                  className="w-full px-4 py-2 rounded-xl border border-red-500/30 bg-red-500/5 text-foreground focus:outline-none focus:ring-2 focus:ring-red-400 mb-3 placeholder:text-muted-foreground" />
-                <Button onClick={handleDeleteAccount} disabled={deleteConfirm !== 'DELETE' || deletingAccount}
-                  className="bg-red-600 hover:bg-red-700 text-white rounded-xl w-full">
-                  {deletingAccount ? 'Deleting...' : 'Delete My Account'}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
+          {/* Delete Account */}
+          <div style={{ ...cardStyle, border: '1px solid rgba(239,68,68,0.2)', background: 'rgba(239,68,68,0.04)' }}>
+            <div style={{ ...cardTitleStyle, color: '#f87171' }}>
+              🗑 Delete Account
+            </div>
+            <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.45)', marginBottom: '16px', lineHeight: 1.6 }}>
+              This permanently deletes your account and all your data. This cannot be undone.
+            </p>
+            <label style={labelStyle}>Type DELETE to confirm</label>
+            <input
+              type="text"
+              value={deleteConfirm}
+              onChange={e => setDeleteConfirm(e.target.value)}
+              placeholder='Type "DELETE" to confirm'
+              style={{ ...inputStyle, border: '1px solid rgba(239,68,68,0.3)', background: 'rgba(239,68,68,0.05)', marginBottom: '4px' }}
+            />
+            <button style={deleteBtnStyle} onClick={handleDeleteAccount} disabled={deleteConfirm !== 'DELETE' || deletingAccount}>
+              {deletingAccount ? 'Deleting...' : 'Delete My Account'}
+            </button>
+          </div>
 
-      </main>
-    </div>
-  );
+        </main>
+      </div>
+    );
+  } catch (err) {
+    console.error('SettingsPage crashed:', err);
+    return (
+      <div style={{ minHeight: '100vh', background: '#0a1a0c', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '16px', color: '#f0fdf4', fontFamily: 'sans-serif' }}>
+        <div style={{ fontSize: '48px' }}>⚠️</div>
+        <div style={{ fontSize: '18px', fontWeight: 700 }}>Settings failed to load</div>
+        <button onClick={onBack} style={{ background: '#10b981', color: '#fff', border: 'none', borderRadius: '10px', padding: '10px 24px', cursor: 'pointer', fontSize: '14px', fontWeight: 700 }}>
+          Go Back
+        </button>
+      </div>
+    );
+  }
 }

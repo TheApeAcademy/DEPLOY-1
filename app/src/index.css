@@ -51,8 +51,9 @@
 
 @layer base {
   * { @apply border-border; }
-  body { @apply bg-background text-foreground; }
-  html.dark body { background: #0a0f0b; }
+  body { @apply text-foreground; background-color: transparent !important; }
+  html, #root { background-color: transparent !important; }
+  html.dark body { background-color: transparent !important; }
 }
 
 html.light body::after {

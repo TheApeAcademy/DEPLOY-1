@@ -37,6 +37,12 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const resolved = getResolved(theme);
     setResolvedTheme(resolved);
     document.documentElement.classList.toggle('dark', resolved === 'dark');
+    document.documentElement.classList.toggle('light', resolved === 'light');
+    if (resolved === 'light') {
+      document.body.classList.add('light');
+    } else {
+      document.body.classList.remove('light');
+    }
   }, [theme]);
 
   useEffect(() => {
@@ -46,6 +52,12 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       const resolved: ResolvedTheme = mq.matches ? 'dark' : 'light';
       setResolvedTheme(resolved);
       document.documentElement.classList.toggle('dark', mq.matches);
+      document.documentElement.classList.toggle('light', !mq.matches);
+      if (!mq.matches) {
+        document.body.classList.add('light');
+      } else {
+        document.body.classList.remove('light');
+      }
     };
     mq.addEventListener('change', handler);
     return () => mq.removeEventListener('change', handler);

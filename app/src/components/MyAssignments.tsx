@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface Assignment {
   id: string;
@@ -25,6 +26,7 @@ export default function MyAssignments() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all'|'submitted'|'completed'>('all');
   const [copied, setCopied] = useState<string|null>(null);
+  const { resolvedTheme } = useTheme();
 
   useEffect(() => {
     fetchAssignments();
@@ -60,9 +62,9 @@ export default function MyAssignments() {
 
   const tab = (f: typeof filter) => ({
     background: filter === f ? 'rgba(34,197,94,0.12)' : 'transparent',
-    border: `1px solid ${filter === f ? 'rgba(34,197,94,0.3)' : 'rgba(255,255,255,0.08)'}`,
+    border: `1px solid ${filter === f ? 'rgba(34,197,94,0.3)' : resolvedTheme === 'dark' ? 'rgba(255,255,255,0.08)' : '#e5e7eb'}`,
     borderRadius: '8px', padding: '6px 14px', fontSize: '12px', fontWeight: 600 as const,
-    color: filter === f ? '#4ade80' : 'rgba(255,255,255,0.4)', cursor: 'pointer' as const,
+    color: filter === f ? '#4ade80' : resolvedTheme === 'dark' ? 'rgba(255,255,255,0.4)' : '#6b7280', cursor: 'pointer' as const,
   });
 
   return (
@@ -70,8 +72,8 @@ export default function MyAssignments() {
       <style>{'.dp{animation:dp 1.5s ease-in-out infinite} .sp{animation:sp 1s linear infinite} @keyframes dp{0%,100%{opacity:1}50%{opacity:0.3}} @keyframes sp{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}'}</style>
       <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'20px', flexWrap:'wrap', gap:'12px' }}>
         <div>
-          <h2 style={{ fontSize:'20px', fontWeight:800, color:'#fff', marginBottom:'3px' }}>My Assignments</h2>
-          <p style={{ fontSize:'12px', color:'rgba(255,255,255,0.35)' }}>{completed} completed · {pending} in progress</p>
+          <h2 style={{ fontSize:'20px', fontWeight:800, color: resolvedTheme === 'dark' ? '#fff' : '#111827', marginBottom:'3px' }}>My Assignments</h2>
+          <p style={{ fontSize:'12px', color: resolvedTheme === 'dark' ? 'rgba(255,255,255,0.35)' : '#6b7280' }}>{completed} completed · {pending} in progress</p>
         </div>
         <div style={{ display:'flex', gap:'8px' }}>
           {(['all','submitted','completed'] as const).map(f => (
@@ -94,22 +96,28 @@ export default function MyAssignments() {
         <div style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
           {filtered.map(a => {
             const cfg = STATUS[a.status] || STATUS.pending;
+            const isDark = resolvedTheme === 'dark';
+            const cardBg = isDark ? 'rgba(255,255,255,0.03)' : '#ffffff';
+            const cardBorder = isDark ? '1px solid rgba(255,255,255,0.08)' : '1px solid #e5e7eb';
+            const titleColor = isDark ? '#ffffff' : '#111827';
+            const courseColor = isDark ? 'rgba(255,255,255,0.6)' : '#6b7280';
+            const dueDateColor = isDark ? 'rgba(255,255,255,0.3)' : '#9ca3af';
             return (
-              <div key={a.id} style={{ background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:'14px', padding:'20px' }}>
+              <div key={a.id} style={{ background:cardBg, border:cardBorder, borderRadius:'14px', padding:'20px' }}>
                 <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', gap:'12px', marginBottom:'10px' }}>
                   <div style={{ flex:1 }}>
                     <div style={{ display:'flex', alignItems:'center', gap:'8px', marginBottom:'4px', flexWrap:'wrap' }}>
                       <span style={{ background:'rgba(34,197,94,0.1)', border:'1px solid rgba(34,197,94,0.2)', borderRadius:'6px', padding:'2px 8px', fontSize:'10px', fontWeight:700, color:'#4ade80', textTransform:'uppercase' as const }}>{a.assignment_type}</span>
-                      {a.course_name && <span style={{ fontSize:'11px', color:'rgba(255,255,255,0.4)' }}>{a.course_name}</span>}
+                      {a.course_name && <span style={{ fontSize:'11px', color:courseColor }}>{a.course_name}</span>}
                     </div>
-                    <p style={{ fontSize:'13px', color:'rgba(255,255,255,0.7)', lineHeight:1.5 }}>{a.description || 'No description provided'}</p>
+                    <p style={{ fontSize:'13px', color:titleColor, lineHeight:1.5 }}>{a.description || 'No description provided'}</p>
                   </div>
                   <span style={{ display:'inline-flex', alignItems:'center', gap:'6px', background:cfg.bg, border:'1px solid ' + cfg.border, borderRadius:'100px', padding:'4px 12px', fontSize:'11px', fontWeight:700, color:cfg.text, whiteSpace:'nowrap' as const, flexShrink:0 }}>
                     <span className={cfg.pulse ? 'dp' : ''} style={{ width:'6px', height:'6px', borderRadius:'50%', background:cfg.dot, display:'inline-block' }}/>
                     {cfg.label}
                   </span>
                 </div>
-                <div style={{ display:'flex', gap:'16px', fontSize:'11px', color:'rgba(255,255,255,0.3)', marginBottom: a.delivery_url || a.status==='generating' ? '12px' : '0' }}>
+                <div style={{ display:'flex', gap:'16px', fontSize:'11px', color:dueDateColor, marginBottom: a.delivery_url || a.status==='generating' ? '12px' : '0' }}>
                   <span>Submitted {new Date(a.created_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}</span>
                   {a.due_date && <span>Due {a.due_date}</span>}
                   {a.payment_amount && <span style={{ color:'rgba(74,222,128,0.6)' }}>£{Number(a.payment_amount).toFixed(2)} paid</span>}

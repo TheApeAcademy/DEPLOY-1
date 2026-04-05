@@ -262,11 +262,11 @@ export function PaymentPanel({ assignment, user, onPaymentComplete, onPaymentFai
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px', background: isDark ? '#fff' : '#000', borderRadius: '7px', flexShrink: 0 }}>
-                        <svg width="16" height="20" viewBox="0 0 814 1000" fill={isDark ? '#000' : '#fff'} xmlns="http://www.w3.org/2000/svg">
-                          <path d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76 0-103.7 40.8-165.9 40.8s-105-57.8-155.5-127.4C46 497.7 0 373.5 0 254 0 66.8 109.1 0 216.8 0c72.4 0 132.6 39.5 172.6 39.5 37.5 0 112.9-42 194.5-42 30.2 0 110.7 4.2 180.4 70.9zm-65.1-159.2c-7.6 35.5-23.2 70.9-47.3 99.2-24.1 28.3-58.1 53.1-100.4 53.1-2.5 0-5.1-.3-7.6-.6.6-35.5 17.7-70.3 41.8-96.8 24.5-27.9 62.5-52.8 113.5-55.2v.3z"/>
+                      <div style={{width:44,height:28,background:'#000',borderRadius:6,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                        <svg width="20" height="20" viewBox="0 0 814 1000" fill="white" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76 0-103.7 40.8-165.9 40.8s-105-37.3-165.5-122.7c-69-100.8-128.7-254.3-128.7-400.8 0-230.1 149.7-352 297.7-352 78.7 0 144.2 51.9 192.8 51.9 46.4 0 119.3-55 210.2-55 33.9 0 138.4 3.2 209.3 114.3zm-71.3-188.9c31.9-38.1 54.3-90.8 54.3-143.5 0-7.1-.6-14.3-1.9-20.1-51.9 2-112.3 34.6-149 75.8-28.5 32.4-55.1 85.1-55.1 138.4 0 7.7 1.3 15.5 1.9 17.9 3.2.6 8.4 1.3 13.6 1.3 46.4 0 102.8-31.3 136.2-69.8z"/>
                         </svg>
-                      </span>
+                      </div>
                       <div>
                         <div className="font-semibold text-sm" style={{ color: textPrimary }}>Apple Pay</div>
                         <div className="text-xs" style={{ color: textFaint }}>Pay instantly with Face ID or Touch ID</div>
