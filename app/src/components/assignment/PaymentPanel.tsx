@@ -276,7 +276,7 @@ export function PaymentPanel({ assignment, user, onPaymentComplete, onPaymentFai
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px', borderRadius: '7px', flexShrink: 0, fontSize: '20px' }}>
-                        🍎
+                        🔒
                       </span>
                       <div>
                         <div className="font-semibold text-sm" style={{ color: textPrimary }}>Apple Pay</div>
