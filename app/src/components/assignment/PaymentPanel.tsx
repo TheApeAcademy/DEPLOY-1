@@ -17,11 +17,7 @@ declare global {
   }
 }
 
-const BANK_DETAILS = {
-  bank: 'Sterling Bank',
-  accountName: 'Olusanu Bankole Joshua',
-  accountNumber: '2067395303',
-};
+
 
 type PaymentMethod = 'apple' | 'card' | 'bank';
 
@@ -164,13 +160,30 @@ export function PaymentPanel({ assignment, user, onPaymentComplete, onPaymentFai
     setClaimingFree(false);
   };
 
-  const handleBankTransferSent = async () => {
-    try {
-      await updateAssignmentStatus(assignment.id, { status: 'pending' });
-    } catch {
-      // non-fatal
-    }
-    setStep('bank_pending');
+  const handleBankPay = () => {
+    if (!assignment.paymentAmount) { toast.error('No payment amount set'); return; }
+    const currencyCode = currencySymbol === '\u20a6' ? 'NGN' : currencySymbol === '$' ? 'USD' : 'GBP';
+    window.FlutterwaveCheckout({
+      public_key: import.meta.env.VITE_FLW_PUBLIC_KEY,
+      tx_ref: `APE-${assignment.id.slice(0, 8).toUpperCase()}-${Date.now()}`,
+      amount: assignment.paymentAmount,
+      currency: currencyCode,
+      payment_options: 'banktransfer',
+      customer: {
+        email: user.email,
+        name: user.name,
+      },
+      customizations: {
+        title: 'ApeAcademy',
+        description: `${assignment.assignmentType || 'Assignment'} - ${assignment.courseName}`,
+        logo: '/favicon.svg',
+      },
+      callback: (_response: any) => {
+        setStep('confirming');
+        startPolling();
+      },
+      onclose: () => {},
+    });
   };
 
   const handleRetry = () => {
@@ -299,26 +312,14 @@ export function PaymentPanel({ assignment, user, onPaymentComplete, onPaymentFai
                   <div className="flex items-center gap-3">
                     <span className="text-2xl">🏦</span>
                     <div>
-                      <div className="font-semibold text-sm" style={{ color: textPrimary }}>Bank Transfer</div>
-                      <div className="text-xs" style={{ color: textFaint }}>Pay directly to our account</div>
+                      <div className="font-semibold text-sm" style={{ color: textPrimary }}>Flutterwave Bank Transfer</div>
+                      <div className="text-xs" style={{ color: textFaint }}>Pay via bank transfer through Flutterwave</div>
                     </div>
                   </div>
                   {paymentMethod === 'bank' && (
-                    <div className="mt-4 space-y-2" style={{ borderTop: '1px solid rgba(34,197,94,0.15)', paddingTop: '12px' }}>
-                      {[
-                        { label: 'Bank', value: BANK_DETAILS.bank },
-                        { label: 'Account Name', value: BANK_DETAILS.accountName },
-                        { label: 'Account Number', value: BANK_DETAILS.accountNumber },
-                        { label: 'Amount', value: `${currencySymbol}${assignment.paymentAmount?.toFixed(2)}` },
-                        { label: 'Reference', value: ref8 },
-                      ].map(({ label, value }) => (
-                        <div key={label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <span style={{ color: textFaint, fontSize: '11px' }}>{label}</span>
-                          <span style={{ fontFamily: 'monospace', fontWeight: 700, color: textPrimary, fontSize: '12px' }}>{value}</span>
-                        </div>
-                      ))}
-                      <p className="text-xs mt-3" style={{ color: 'rgba(253,224,71,0.8)', lineHeight: 1.5 }}>
-                        ⚠️ Send exact amount shown. Use your assignment ID as reference. Allow 1-2 hours for confirmation.
+                    <div className="mt-3 p-3 rounded-xl" style={{ background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.15)' }}>
+                      <p className="text-xs" style={{ color: textFaint, lineHeight: 1.5 }}>
+                        Flutterwave will generate a dedicated bank account for your transfer. Fast and automatic confirmation.
                       </p>
                     </div>
                   )}
@@ -349,9 +350,11 @@ export function PaymentPanel({ assignment, user, onPaymentComplete, onPaymentFai
                 </Button>
               )}
               {paymentMethod === 'bank' && (
-                <Button onClick={handleBankTransferSent} className="w-full h-12 rounded-xl text-white font-semibold"
+                <Button onClick={handleBankPay} className="w-full h-12 rounded-xl text-white font-semibold"
                   style={{ background: 'linear-gradient(135deg,#047857,#10b981)' }}>
-                  <CheckCircle className="h-5 w-5 mr-2" /> I've sent the payment
+                  <span className="flex items-center gap-2">
+                    Pay {currencySymbol}{assignment.paymentAmount?.toFixed(2)} via Bank Transfer <ArrowRight className="h-5 w-5" />
+                  </span>
                 </Button>
               )}
             </motion.div>
