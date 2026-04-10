@@ -9,7 +9,7 @@ module.exports = async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   const hash = req.headers['verif-hash'];
-  if (!hash || hash !== process.env.FLW_SECRET_HASH) {
+  if (!hash || hash !== process.env.FLW_WEBHOOK_HASH) {
     return res.status(401).json({ error: 'Invalid signature' });
   }
 
