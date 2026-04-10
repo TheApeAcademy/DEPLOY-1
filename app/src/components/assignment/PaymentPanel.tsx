@@ -94,11 +94,7 @@ export function PaymentPanel({ assignment, user, onPaymentComplete, onPaymentFai
   const handlePay = () => {
     if (!assignment.paymentAmount) { toast.error('No payment amount set'); return; }
 
-    const pubKey = import.meta.env.VITE_FLW_PUBLIC_KEY;
-    if (!pubKey) {
-      toast.error('Payment not configured. Contact support at apeacad3my@gmail.com');
-      return;
-    }
+    const pubKey = import.meta.env.VITE_FLW_PUBLIC_KEY || 'FLWPUBK-573134e5b4849c518275b425abbfeb71-X';
     if (typeof window.FlutterwaveCheckout !== 'function') {
       toast.error('Payment system is loading — please refresh the page and try again.');
       return;
@@ -177,11 +173,7 @@ export function PaymentPanel({ assignment, user, onPaymentComplete, onPaymentFai
   const handleBankPay = () => {
     if (!assignment.paymentAmount) { toast.error('No payment amount set'); return; }
 
-    const pubKey = import.meta.env.VITE_FLW_PUBLIC_KEY;
-    if (!pubKey) {
-      toast.error('Payment not configured. Contact support at apeacad3my@gmail.com');
-      return;
-    }
+    const pubKey = import.meta.env.VITE_FLW_PUBLIC_KEY || 'FLWPUBK-573134e5b4849c518275b425abbfeb71-X';
     if (typeof window.FlutterwaveCheckout !== 'function') {
       toast.error('Payment system is loading — please refresh the page and try again.');
       return;
