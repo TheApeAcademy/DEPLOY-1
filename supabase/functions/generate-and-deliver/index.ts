@@ -29,11 +29,25 @@ serve(async (req) => {
 
     await supabase.from("assignments").update({ status: "generating" }).eq("id", assignment_id);
 
+    const anthropicKey = Deno.env.get("ANTHROPIC_API_KEY");
+
+    // If no API key, mark as pending manual delivery and return success
+    if (!anthropicKey) {
+      console.log("⚠️ ANTHROPIC_API_KEY not set — marking for manual delivery");
+      await supabase.from("assignments").update({
+        status: "submitted",
+        updated_at: new Date().toISOString(),
+      }).eq("id", assignment_id);
+      return new Response(JSON.stringify({ success: true, manual_delivery: true }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
+    }
+
     const claudeRes = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-api-key": Deno.env.get("ANTHROPIC_API_KEY")!,
+        "x-api-key": anthropicKey,
         "anthropic-version": "2023-06-01",
       },
       body: JSON.stringify({

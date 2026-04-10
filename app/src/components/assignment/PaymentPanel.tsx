@@ -93,29 +93,43 @@ export function PaymentPanel({ assignment, user, onPaymentComplete, onPaymentFai
 
   const handlePay = () => {
     if (!assignment.paymentAmount) { toast.error('No payment amount set'); return; }
+
+    const pubKey = import.meta.env.VITE_FLW_PUBLIC_KEY;
+    if (!pubKey) {
+      toast.error('Payment not configured. Contact support at apeacad3my@gmail.com');
+      return;
+    }
+    if (typeof window.FlutterwaveCheckout !== 'function') {
+      toast.error('Payment system is loading — please refresh the page and try again.');
+      return;
+    }
+
     const currencyCode = currencySymbol === '₦' ? 'NGN' : currencySymbol === '$' ? 'USD' : 'GBP';
-    window.FlutterwaveCheckout({
-      public_key: import.meta.env.VITE_FLW_PUBLIC_KEY,
-      tx_ref: `APE-${ref8}-${Date.now()}`,
-      amount: assignment.paymentAmount,
-      currency: currencyCode,
-      customer: {
-        email: user.email,
-        name: user.name,
-      },
-      customizations: {
-        title: 'ApeAcademy',
-        description: `${assignment.assignmentType || 'Assignment'} - ${assignment.courseName}`,
-        logo: '/favicon.svg',
-      },
-      callback: (_response: any) => {
-        setStep('confirming');
-        startPolling();
-      },
-      onclose: () => {
-        // User closed without completing - stay on ready
-      },
-    });
+    try {
+      window.FlutterwaveCheckout({
+        public_key: pubKey,
+        tx_ref: `APE-${ref8}-${Date.now()}`,
+        amount: assignment.paymentAmount,
+        currency: currencyCode,
+        customer: {
+          email: user.email,
+          name: user.name,
+        },
+        customizations: {
+          title: 'ApeAcademy',
+          description: `${assignment.assignmentType || 'Assignment'} - ${assignment.courseName}`,
+          logo: '/favicon.svg',
+        },
+        callback: (_response: any) => {
+          setStep('confirming');
+          startPolling();
+        },
+        onclose: () => {},
+      });
+    } catch (err: any) {
+      console.error('FlutterwaveCheckout error:', err);
+      toast.error('Payment failed to open. Please refresh and try again.');
+    }
   };
 
   const handleUseFreeCredit = async () => {
@@ -162,28 +176,44 @@ export function PaymentPanel({ assignment, user, onPaymentComplete, onPaymentFai
 
   const handleBankPay = () => {
     if (!assignment.paymentAmount) { toast.error('No payment amount set'); return; }
-    const currencyCode = currencySymbol === '\u20a6' ? 'NGN' : currencySymbol === '$' ? 'USD' : 'GBP';
-    window.FlutterwaveCheckout({
-      public_key: import.meta.env.VITE_FLW_PUBLIC_KEY,
-      tx_ref: `APE-${assignment.id.slice(0, 8).toUpperCase()}-${Date.now()}`,
-      amount: assignment.paymentAmount,
-      currency: currencyCode,
-      payment_options: 'banktransfer',
-      customer: {
-        email: user.email,
-        name: user.name,
-      },
-      customizations: {
-        title: 'ApeAcademy',
-        description: `${assignment.assignmentType || 'Assignment'} - ${assignment.courseName}`,
-        logo: '/favicon.svg',
-      },
-      callback: (_response: any) => {
-        setStep('confirming');
-        startPolling();
-      },
-      onclose: () => {},
-    });
+
+    const pubKey = import.meta.env.VITE_FLW_PUBLIC_KEY;
+    if (!pubKey) {
+      toast.error('Payment not configured. Contact support at apeacad3my@gmail.com');
+      return;
+    }
+    if (typeof window.FlutterwaveCheckout !== 'function') {
+      toast.error('Payment system is loading — please refresh the page and try again.');
+      return;
+    }
+
+    const currencyCode = currencySymbol === '₦' ? 'NGN' : currencySymbol === '$' ? 'USD' : 'GBP';
+    try {
+      window.FlutterwaveCheckout({
+        public_key: pubKey,
+        tx_ref: `APE-${assignment.id.slice(0, 8).toUpperCase()}-${Date.now()}`,
+        amount: assignment.paymentAmount,
+        currency: currencyCode,
+        payment_options: 'banktransfer',
+        customer: {
+          email: user.email,
+          name: user.name,
+        },
+        customizations: {
+          title: 'ApeAcademy',
+          description: `${assignment.assignmentType || 'Assignment'} - ${assignment.courseName}`,
+          logo: '/favicon.svg',
+        },
+        callback: (_response: any) => {
+          setStep('confirming');
+          startPolling();
+        },
+        onclose: () => {},
+      });
+    } catch (err: any) {
+      console.error('FlutterwaveCheckout error:', err);
+      toast.error('Payment failed to open. Please refresh and try again.');
+    }
   };
 
   const handleRetry = () => {
