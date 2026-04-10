@@ -42,10 +42,25 @@ module.exports = async function handler(req, res) {
         type: 'payment_completed',
         user_id: assignment.user_id,
         user_name: assignment.user_name,
+        user_email: assignment.user_email,
         assignment_id: assignment.id,
         description: `Auto-verified payment of ${currency} ${amount}. Ref: ${tx_ref}`,
         timestamp: new Date().toISOString(),
       });
+
+      // Trigger document generation immediately after payment confirmed
+      const supabaseUrl = process.env.VITE_SUPABASE_URL;
+      const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY;
+      if (supabaseUrl && supabaseAnonKey) {
+        fetch(`${supabaseUrl}/functions/v1/generate-and-deliver`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${supabaseAnonKey}`,
+          },
+          body: JSON.stringify({ assignment_id: assignment.id }),
+        }).catch((err) => console.error('generate-and-deliver trigger failed:', err));
+      }
     }
   }
 
