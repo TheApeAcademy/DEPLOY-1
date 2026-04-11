@@ -68,6 +68,22 @@ serve(async (req) => {
       description: `Admin updated assignment ${assignmentId} → ${status}${paymentAmount ? `. Price set to £${paymentAmount}` : ''}${notes ? `. Notes: ${notes}` : ''}`,
     });
 
+    // When admin confirms payment, auto-trigger document generation
+    if (status === 'submitted') {
+      const supabaseUrl = Deno.env.get('SUPABASE_URL');
+      const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY') || Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+      if (supabaseUrl && supabaseAnonKey) {
+        fetch(`${supabaseUrl}/functions/v1/generate-and-deliver`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${supabaseAnonKey}`,
+          },
+          body: JSON.stringify({ assignment_id: assignmentId }),
+        }).catch((err) => console.error('generate-and-deliver trigger failed:', err));
+      }
+    }
+
     return new Response(JSON.stringify({ success: true, assignment }), { headers: cors });
 
   } catch (err) {
