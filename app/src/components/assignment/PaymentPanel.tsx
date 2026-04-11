@@ -259,10 +259,12 @@ export function PaymentPanel({ assignment, user, onPaymentComplete, onPaymentFai
 
               <div className="space-y-3 mb-5">
                 {[
-                  { label: 'Account Name', value: 'PLACEHOLDER — update tomorrow' },
-                  { label: 'Account Number', value: 'PLACEHOLDER' },
-                  { label: 'Sort Code', value: 'XX-XX-XX' },
-                  { label: 'Bank', value: 'Wise (UK)' },
+                  { label: 'Account Name', value: 'Joshua Bankole Olusanu' },
+                  { label: 'Account Number', value: '42105963' },
+                  { label: 'Sort Code', value: '04-13-07' },
+                  { label: 'IBAN', value: 'GB32CLJU04130742105963' },
+                  { label: 'SWIFT / BIC', value: 'CLJUGB21XXX' },
+                  { label: 'Bank', value: 'Clear Junction Limited (Grey)' },
                   { label: 'Reference', value: `APE-${ref8}` },
                   { label: 'Amount', value: `${currencySymbol}${assignment.paymentAmount?.toFixed(2)}` },
                 ].map(({ label, value }) => (
@@ -270,7 +272,7 @@ export function PaymentPanel({ assignment, user, onPaymentComplete, onPaymentFai
                     <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: textVeryFaint }}>{label}</span>
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-semibold" style={{ color: label === 'Reference' || label === 'Amount' ? '#4ade80' : textPrimary }}>{value}</span>
-                      {(label === 'Account Number' || label === 'Sort Code' || label === 'Reference') && (
+                      {(label === 'Account Number' || label === 'Sort Code' || label === 'IBAN' || label === 'SWIFT / BIC' || label === 'Reference') && (
                         <button onClick={() => { navigator.clipboard.writeText(value); toast.success(`${label} copied!`); }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: textVeryFaint, padding: 0 }}>
                           <Copy className="h-3.5 w-3.5" />
                         </button>
