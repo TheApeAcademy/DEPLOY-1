@@ -326,37 +326,29 @@ export function PaymentPanel({ assignment, user, onPaymentComplete, onPaymentFai
                   </div>
                 </button>
 
-                {/* Bank Transfer */}
-                <button
-                  style={methodCardStyle('bank')}
-                  onClick={() => setPaymentMethod('bank')}
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="text-2xl">🏦</span>
-                    <div>
-                      <div className="font-semibold text-sm" style={{ color: textPrimary }}>Flutterwave Bank Transfer</div>
-                      <div className="text-xs" style={{ color: textFaint }}>Pay via bank transfer through Flutterwave</div>
+                {/* Bank Transfer — only available for NGN */}
+                {currencySymbol === '₦' && (
+                  <button
+                    style={methodCardStyle('bank')}
+                    onClick={() => setPaymentMethod('bank')}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">🏦</span>
+                      <div>
+                        <div className="font-semibold text-sm" style={{ color: textPrimary }}>Bank Transfer</div>
+                        <div className="text-xs" style={{ color: textFaint }}>Pay via bank transfer through Flutterwave</div>
+                      </div>
                     </div>
-                  </div>
-                  {paymentMethod === 'bank' && (
-                    <div className="mt-3 p-3 rounded-xl" style={{ background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.15)' }}>
-                      <p className="text-xs" style={{ color: textFaint, lineHeight: 1.5 }}>
-                        Flutterwave will generate a dedicated bank account for your transfer. Fast and automatic confirmation.
-                      </p>
-                    </div>
-                  )}
-                </button>
+                    {paymentMethod === 'bank' && (
+                      <div className="mt-3 p-3 rounded-xl" style={{ background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.15)' }}>
+                        <p className="text-xs" style={{ color: textFaint, lineHeight: 1.5 }}>
+                          Flutterwave will generate a dedicated bank account for your transfer. Fast and automatic confirmation.
+                        </p>
+                      </div>
+                    )}
+                  </button>
+                )}
               </div>
-
-              {/* Warning note for card only */}
-              {paymentMethod === 'card' && (
-                <div className="w-full p-3 rounded-xl mb-5"
-                  style={{ background: 'rgba(234,179,8,0.1)', border: '1px solid rgba(234,179,8,0.3)' }}>
-                  <p className="text-xs font-semibold" style={{ color: 'rgba(253,224,71,0.9)' }}>
-                    ⚠️ When the payment page opens, enter exactly <span className="font-bold">{currencySymbol}{assignment.paymentAmount?.toFixed(2)}</span> as the amount. Do not change this figure.
-                  </p>
-                </div>
-              )}
 
               <div className="flex items-center justify-center gap-2 text-sm mb-5" style={{ color: textFaint }}>
                 <Shield className="h-4 w-4 text-emerald-400" />
