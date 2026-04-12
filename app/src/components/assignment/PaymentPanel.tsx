@@ -170,51 +170,6 @@ export function PaymentPanel({ assignment, user, onPaymentComplete, onPaymentFai
     setClaimingFree(false);
   };
 
-  const handleBankPay = () => {
-    if (!assignment.paymentAmount) { toast.error('No payment amount set'); return; }
-
-    // Non-NGN users go to manual Wise bank transfer screen
-    if (currencySymbol !== '₦') {
-      setStep('bank_details');
-      return;
-    }
-
-    // NGN users: Flutterwave bank transfer
-    const pubKey = import.meta.env.VITE_FLW_PUBLIC_KEY || 'FLWPUBK-573134e5b4849c518275b425abbfeb71-X';
-    if (typeof window.FlutterwaveCheckout !== 'function') {
-      toast.error('Payment system is loading — please refresh the page and try again.');
-      return;
-    }
-
-    const currencyCode = 'NGN';
-    try {
-      window.FlutterwaveCheckout({
-        public_key: pubKey,
-        tx_ref: `APE-${assignment.id.slice(0, 8).toUpperCase()}-${Date.now()}`,
-        amount: assignment.paymentAmount,
-        currency: currencyCode,
-        payment_options: 'banktransfer',
-        customer: {
-          email: user.email,
-          name: user.name,
-        },
-        customizations: {
-          title: 'ApeAcademy',
-          description: `${assignment.assignmentType || 'Assignment'} - ${assignment.courseName}`,
-          logo: '/favicon.svg',
-        },
-        callback: (_response: any) => {
-          setStep('confirming');
-          startPolling();
-        },
-        onclose: () => {},
-      });
-    } catch (err: any) {
-      console.error('FlutterwaveCheckout error:', err);
-      toast.error('Payment failed to open. Please refresh and try again.');
-    }
-  };
-
   const handleRetry = () => {
     if (pollRef.current) clearInterval(pollRef.current);
     setStep('ready');
@@ -231,9 +186,9 @@ export function PaymentPanel({ assignment, user, onPaymentComplete, onPaymentFai
     border: `1px solid ${paymentMethod === method ? 'rgba(34,197,94,0.4)' : cellBorder}`,
     borderRadius: '16px',
     padding: '16px',
-    cursor: method === 'apple' ? 'not-allowed' : 'pointer',
+    cursor: (method === 'apple' || method === 'bank') ? 'not-allowed' : 'pointer',
     transition: 'all 0.2s',
-    opacity: method === 'apple' ? 0.55 : 1,
+    opacity: (method === 'apple' || method === 'bank') ? 0.55 : 1,
     fontFamily: 'inherit',
     display: 'block',
   });
@@ -385,29 +340,23 @@ export function PaymentPanel({ assignment, user, onPaymentComplete, onPaymentFai
                   </div>
                 </button>
 
-                {/* Bank Transfer */}
+                {/* Bank Transfer - Coming Soon */}
                 <button
                   style={methodCardStyle('bank')}
-                  onClick={() => setPaymentMethod('bank')}
+                  onClick={() => toast.info('Bank Transfer coming soon. Use Card Payment for now.')}
                 >
-                  <div className="flex items-center gap-3">
-                    <span className="text-2xl">🏦</span>
-                    <div>
-                      <div className="font-semibold text-sm" style={{ color: textPrimary }}>Bank Transfer</div>
-                      <div className="text-xs" style={{ color: textFaint }}>
-                        {currencySymbol === '₦' ? 'Pay via Flutterwave virtual account' : 'Transfer directly to our bank account'}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">🏦</span>
+                      <div>
+                        <div className="font-semibold text-sm" style={{ color: textPrimary }}>Bank Transfer</div>
+                        <div className="text-xs" style={{ color: textFaint }}>
+                          {currencySymbol === '₦' ? 'Pay via Flutterwave virtual account' : 'Transfer directly to our bank account'}
+                        </div>
                       </div>
                     </div>
+                    <span style={{ background: comingSoonBg, color: comingSoonColor, borderRadius: '6px', padding: '2px 8px', fontSize: '10px', fontWeight: 700 }}>Coming Soon</span>
                   </div>
-                  {paymentMethod === 'bank' && (
-                    <div className="mt-3 p-3 rounded-xl" style={{ background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.15)' }}>
-                      <p className="text-xs" style={{ color: textFaint, lineHeight: 1.5 }}>
-                        {currencySymbol === '₦'
-                          ? 'Flutterwave will generate a dedicated account number for your transfer.'
-                          : 'You\'ll get our bank details on the next screen. Takes 1-2 hours to confirm.'}
-                      </p>
-                    </div>
-                  )}
                 </button>
               </div>
 
@@ -421,14 +370,6 @@ export function PaymentPanel({ assignment, user, onPaymentComplete, onPaymentFai
                   style={{ background: 'linear-gradient(135deg,#047857,#10b981)' }}>
                   <span className="flex items-center gap-2">
                     Pay {currencySymbol}{assignment.paymentAmount?.toFixed(2)} <ArrowRight className="h-5 w-5" />
-                  </span>
-                </Button>
-              )}
-              {paymentMethod === 'bank' && (
-                <Button onClick={handleBankPay} className="w-full h-12 rounded-xl text-white font-semibold"
-                  style={{ background: 'linear-gradient(135deg,#047857,#10b981)' }}>
-                  <span className="flex items-center gap-2">
-                    Pay {currencySymbol}{assignment.paymentAmount?.toFixed(2)} via Bank Transfer <ArrowRight className="h-5 w-5" />
                   </span>
                 </Button>
               )}
